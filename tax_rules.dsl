@@ -6,11 +6,12 @@ bill: "bill" "{" items "}"
 
 items: item+
 
-item: CNAME ":" NUMBER -> line_item
+// A line item can now have two forms
+item: CNAME ":" NUMBER "*" NUMBER -> line_item_with_quantity
+    | CNAME ":" NUMBER           -> line_item_simple
 
 // --- Terminal Definitions ---
-// These define the basic building blocks (tokens) of our language.
 %import common.CNAME
 %import common.NUMBER
 %import common.WS
-%ignore WS // Tell Lark to ignore whitespace between tokens
+%ignore WS

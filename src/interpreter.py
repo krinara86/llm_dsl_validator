@@ -5,15 +5,22 @@ class BillInterpreter(Transformer):
         self.net_food_cost = 0
         self.net_drink_cost = 0
 
-    @v_args(inline=True)
-    def line_item(self, item_name, value):
+    def _classify_and_add(self, item_name, total_value):
         item_name_str = str(item_name).lower()
-        item_value = float(value)
-
         if item_name_str in ["schnitzel", "salad", "food"]:
-            self.net_food_cost += item_value
+            self.net_food_cost += total_value
         elif item_name_str in ["beer", "water", "wine", "drink"]:
-            self.net_drink_cost += item_value
+            self.net_drink_cost += total_value
+
+    @v_args(inline=True)
+    def line_item_with_quantity(self, item_name, quantity, price):
+        total_value = float(quantity) * float(price)
+        self._classify_and_add(item_name, total_value)
+
+    @v_args(inline=True)
+    def line_item_simple(self, item_name, value):
+        total_value = float(value)
+        self._classify_and_add(item_name, total_value)
 
     def bill(self, items):
         food_tax = self.net_food_cost * 0.07
@@ -23,8 +30,6 @@ class BillInterpreter(Transformer):
         return {
             "net_food_cost": self.net_food_cost,
             "net_drink_cost": self.net_drink_cost,
-            "food_tax": food_tax,
-            "drink_tax": drink_tax,
             "total_tax": food_tax + drink_tax,
             "final_bill": total_bill
         }
@@ -44,6 +49,6 @@ def calculate_bill_from_dsl(dsl_text: str, grammar_path: str) -> dict:
     tree = parser.parse(dsl_text)
 
     interpreter = BillInterpreter()
+    # The result of the transform is the first (and only) child of the tree.
     result = interpreter.transform(tree)
-
     return result
