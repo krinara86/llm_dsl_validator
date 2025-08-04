@@ -97,7 +97,7 @@ This interpreter is the "source of truth" for all calculations.
 
 ### The LLM Prompt
 
-The notebook uses a carefully engineered prompt to instruct the LLM to act as a translator, converting a user's conversational order into our formal DSL.
+The core logic in `src/core.py` uses a carefully engineered prompt to instruct the LLM to act as a translator, converting a user's conversational order into our formal DSL.
 
 ```python
 # From src/core.py
