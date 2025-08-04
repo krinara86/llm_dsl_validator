@@ -1,3 +1,4 @@
+# src/interpreter.py
 from lark import Lark, Transformer, v_args
 
 class BillInterpreter(Transformer):
@@ -7,9 +8,9 @@ class BillInterpreter(Transformer):
 
     def _classify_and_add(self, item_name, total_value):
         item_name_str = str(item_name).lower()
-        if item_name_str in ["schnitzel", "salad", "food"]:
+        if item_name_str in ["burger", "fries", "food"]:
             self.net_food_cost += total_value
-        elif item_name_str in ["beer", "water", "wine", "drink"]:
+        elif item_name_str in ["soda", "shake", "drink"]:
             self.net_drink_cost += total_value
 
     @v_args(inline=True)
@@ -49,6 +50,5 @@ def calculate_bill_from_dsl(dsl_text: str, grammar_path: str) -> dict:
     tree = parser.parse(dsl_text)
 
     interpreter = BillInterpreter()
-    # The result of the transform is the first (and only) child of the tree.
-    result = interpreter.transform(tree)
-    return result
+    transformed_tree = interpreter.transform(tree)
+    return transformed_tree.children[0]
