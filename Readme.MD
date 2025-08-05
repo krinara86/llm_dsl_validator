@@ -112,7 +112,7 @@ The interpreters, located in `src/interpreters/`, are Python classes that implem
 
 The core logic in `src/core.py` uses carefully engineered prompts to instruct the LLM to act as a translator for each domain.
 
-**1. Tax Calculation Prompt:**
+**1. Restaurant bill Prompt:**
 ```python
 prompt = """You are a helpful assistant that translates natural language into a custom DSL.
 The DSL format is:
@@ -123,6 +123,8 @@ bill {{
 Translate the following user order into this DSL. The item names should be simple, lowercase words like 'burger' or 'soda'.
 User Order: "{user_query}"
 DSL Response:"""
+
+**1. Cycling Prompt:**
 
 prompt = """You are a helpful assistant that translates natural language into a custom DSL for planning a bike ride.
 The DSL format is:
