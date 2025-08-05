@@ -86,6 +86,8 @@ bill {
 }
 ```
 
+![Restaurant Bill Demo](restaurantbilldemo.png)
+
 **2. Cycling Planner Grammar (`cycling_planner.dsl`):**
 ```
 // Grammar for Cycling Ride Planner DSL
@@ -107,6 +109,8 @@ ride {
   distance_km: 50
 }
 ```
+
+![Cycling Demo](cyclingdemo.png)
 
 ### Interpreters
 
