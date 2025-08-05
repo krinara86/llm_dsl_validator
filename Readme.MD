@@ -4,9 +4,7 @@ A system that uses a custom-built Domain-Specific Language (DSL) and interpreter
 
 Goal is to leverage an LLM for its natural language understanding capabilities while using a deterministic, custom-built interpreter for critical business rules.
 
-## System Architecture
-
-The core of this system is a two-stage process:
+## System 
 
 1.  **Translation:** An LLM (in this case Llama 3) takes a conversational, unstructured user query and translates it into a formal, structured representation using our custom-built DSLs.
 2.  **Interpretation:** A custom interpreter, written in Python using the Lark parsing library, executes the DSL code.
