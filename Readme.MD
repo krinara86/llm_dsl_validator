@@ -130,6 +130,7 @@ User Order: "{user_query}"
 DSL Response:"""
 ```
 
+
 **2. Cycling Planner Prompt:**
 ```python
 prompt = """You are a helpful assistant that translates natural language into a custom DSL for planning a bike ride.
@@ -142,3 +143,11 @@ Translate the following user request into this DSL. The 'terrain' value must be 
 User Request: "{user_query}"
 DSL Response:"""
 ```
+
+---
+
+## Next steps
+
+* Incorporate a proper front end: React/ Vue based?
+* Centralize the Ollama server: Host the backend in a central server
+* Evolve the DSLs
