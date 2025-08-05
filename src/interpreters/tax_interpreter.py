@@ -1,7 +1,7 @@
-# src/interpreter.py
-from lark import Lark, Transformer, v_args
+# src/interpreters/tax_interpreter.py
+from .base_interpreter import BaseInterpreter, v_args
 
-class BillInterpreter(Transformer):
+class BillInterpreter(BaseInterpreter):
     def __init__(self):
         self.net_food_cost = 0
         self.net_drink_cost = 0
@@ -34,21 +34,3 @@ class BillInterpreter(Transformer):
             "total_tax": food_tax + drink_tax,
             "final_bill": total_bill
         }
-
-    def CNAME(self, cname):
-        return cname.value
-
-    def NUMBER(self, num):
-        return float(num.value)
-
-
-def calculate_bill_from_dsl(dsl_text: str, grammar_path: str) -> dict:
-    with open(grammar_path, 'r') as f:
-        grammar = f.read()
-
-    parser = Lark(grammar)
-    tree = parser.parse(dsl_text)
-
-    interpreter = BillInterpreter()
-    transformed_tree = interpreter.transform(tree)
-    return transformed_tree.children[0]
