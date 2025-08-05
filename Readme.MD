@@ -86,7 +86,7 @@ bill {
 }
 ```
 
-![Restaurant Bill Demo](restaurantbilldemo.png)
+![Restaurant Bill Demo](restaurantbilldemo.jpg)
 
 **2. Cycling Planner Grammar (`cycling_planner.dsl`):**
 ```
@@ -110,7 +110,7 @@ ride {
 }
 ```
 
-![Cycling Demo](cyclingdemo.png)
+![Cycling Demo](cyclingdemo.jpg)
 
 ### Interpreters
 
