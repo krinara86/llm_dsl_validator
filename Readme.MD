@@ -124,7 +124,8 @@ Translate the following user order into this DSL. The item names should be simpl
 User Order: "{user_query}"
 DSL Response:"""
 
-**1. Cycling Prompt:**
+
+**2. Cycling Prompt:**
 
 prompt = """You are a helpful assistant that translates natural language into a custom DSL for planning a bike ride.
 The DSL format is:
