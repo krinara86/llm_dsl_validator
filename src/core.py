@@ -6,6 +6,7 @@ import os
 from .interpreters.base_interpreter import execute_dsl
 from .interpreters.tax_interpreter import BillInterpreter
 from .interpreters.cycling_interpreter import RideInterpreter
+from .interpreters.turtle_interpreter import TurtleInterpreter
 
 def extract_dsl_from_string(text, start_word):
     pattern = rf'{start_word}\s*\{{[^}}]*\}}'
@@ -55,3 +56,29 @@ Translate the following user request into this DSL. The 'terrain' value must be 
 User Request: "{user_query}"
 DSL Response:"""
     return _process_request(user_query, prompt, "ride", 'cycling_planner.dsl', RideInterpreter)
+
+def process_turtle_request(user_query: str) -> dict:
+    prompt = """You are a helpful assistant that translates natural language drawing instructions into a simple, one-letter command DSL for a turtle graphics program, wrapped in a `draw` block.
+
+The DSL format is:
+draw {{
+  c "color"
+  f number
+  r number
+  ...
+}}
+
+Available commands:
+- c "color": Change color (e.g., c "red", c "blue")
+- f number: Move forward
+- b number: Move backward
+- r number: Turn right by degrees
+- l number: Turn left by degrees
+- u: Pen up (no drawing)
+- d: Pen down (resume drawing)
+
+Translate the following user request into this DSL.
+
+User Request: "{user_query}"
+DSL Response:"""
+    return _process_request(user_query, prompt, "draw", 'turtle_dsl.dsl', TurtleInterpreter)
