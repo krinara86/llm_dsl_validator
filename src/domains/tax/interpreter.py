@@ -1,5 +1,5 @@
-# src/interpreters/tax_interpreter.py
-from .base_interpreter import BaseInterpreter, v_args
+# src/domains/tax/interpreter.py
+from ...framework.base_interpreter import BaseInterpreter, v_args
 
 class BillInterpreter(BaseInterpreter):
     # --- Business Rules ---
@@ -13,15 +13,12 @@ class BillInterpreter(BaseInterpreter):
     def _validate_and_classify(self, item_name, total_value):
         item_name_str = str(item_name).lower()
 
-        # Rule 1: Check if the item is on our menu
         if item_name_str not in self.VALID_MENU_ITEMS:
             raise ValueError(f"Validation Error: Item '{item_name_str}' is not on the menu.")
 
-        # Rule 2: Check for price limit
         if total_value > self.MAX_ITEM_PRICE:
             raise ValueError(f"Validation Error: Item '{item_name_str}' with price €{total_value:.2f} exceeds the maximum of €{self.MAX_ITEM_PRICE:.2f}.")
 
-        # If validation passes, classify the item
         if item_name_str in ["burger", "fries", "salad"]:
             self.net_food_cost += total_value
         elif item_name_str in ["soda", "shake", "water"]:

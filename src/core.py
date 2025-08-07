@@ -3,10 +3,10 @@ import requests
 import json
 import re
 import os
-from .interpreters.base_interpreter import execute_dsl
-from .interpreters.tax_interpreter import BillInterpreter
-from .interpreters.cycling_interpreter import RideInterpreter
-from .interpreters.event_interpreter import EventInterpreter
+from .framework.base_interpreter import execute_dsl
+from .domains.tax.interpreter import BillInterpreter
+from .domains.cycling.interpreter import RideInterpreter
+from .domains.event.interpreter import EventInterpreter
 
 
 def extract_dsl_from_string(text, start_word):
@@ -20,11 +20,12 @@ def extract_dsl_from_string(text, start_word):
     return match.group(0) if match else None
 
 def _process_request(user_query, prompt_template, dsl_start_word, grammar_file, interpreter_class):
+    # Note: grammar_file path is now relative to the project root
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
     grammar_path = os.path.join(project_root, grammar_file)
     prompt = prompt_template.format(user_query=user_query)
-    llm_dsl_code = None # Initialize here
+    llm_dsl_code = None 
     
     try:
         api_response_stream = requests.post('http://localhost:11434/api/generate', json={"model": "llama3:8b", "prompt": prompt, "stream": True}, stream=True)
@@ -51,7 +52,6 @@ def _process_with_json_assembler(user_query: str, prompt_template: str, grammar_
     llm_dsl_code = None
     
     try:
-        # Step 1: Get JSON from LLM
         api_response_stream = requests.post('http://localhost:11434/api/generate', json={"model": "llama3:8b", "prompt": prompt, "stream": True, "format": "json"}, stream=True)
         api_response_stream.raise_for_status()
         llm_raw_output = "".join(json.loads(chunk).get('response', '') for chunk in api_response_stream.iter_lines() if chunk)
@@ -59,10 +59,8 @@ def _process_with_json_assembler(user_query: str, prompt_template: str, grammar_
         if not llm_raw_output.strip(): raise ValueError("The LLM returned an empty JSON response.")
         extracted_data = json.loads(llm_raw_output)
 
-        # Step 2: Assemble DSL from JSON using Python
         llm_dsl_code = dsl_assembler_func(extracted_data)
 
-        # Step 3: Execute the perfectly-formed DSL
         dsl_result = execute_dsl(llm_dsl_code, grammar_path, interpreter_class)
         return {"status": "success", "llm_generated_dsl": llm_dsl_code, "interpreter_result": dsl_result}
     except Exception as e:
@@ -105,7 +103,7 @@ Return a single JSON object.
 
 User Request: "{user_query}"
 JSON Response:"""
-    return _process_with_json_assembler(user_query, prompt, 'event_plan.dsl', EventInterpreter, assemble_event_dsl)
+    return _process_with_json_assembler(user_query, prompt, 'src/domains/event/grammar.dsl', EventInterpreter, assemble_event_dsl)
 
 def process_order_request(user_query: str) -> dict:
     prompt = """You are an assistant that translates natural language into a DSL for a bill.
@@ -116,7 +114,7 @@ bill {{
 Translate the user order into this DSL.
 User Order: "{user_query}"
 DSL Response:"""
-    return _process_request(user_query, prompt, "bill", 'tax_rules.dsl', BillInterpreter)
+    return _process_request(user_query, prompt, "bill", 'src/domains/tax/grammar.dsl', BillInterpreter)
 
 def process_ride_plan_request(user_query: str) -> dict:
     prompt = """You are an assistant that translates natural language into a DSL for a bike ride.
@@ -128,4 +126,4 @@ ride {{
 Translate the user request into this DSL.
 User Request: "{user_query}"
 DSL Response:"""
-    return _process_request(user_query, prompt, "ride", 'cycling_planner.dsl', RideInterpreter)
+    return _process_request(user_query, prompt, "ride", 'src/domains/cycling/grammar.dsl', RideInterpreter)

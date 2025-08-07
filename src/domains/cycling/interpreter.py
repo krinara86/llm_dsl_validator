@@ -1,5 +1,5 @@
-# src/interpreters/cycling_interpreter.py
-from .base_interpreter import BaseInterpreter, v_args
+# src/domains/cycling/interpreter.py
+from ...framework.base_interpreter import BaseInterpreter, v_args
 
 class RideInterpreter(BaseInterpreter):
     # --- Business Rules ---
