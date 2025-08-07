@@ -1,5 +1,5 @@
-# src/interpreters/event_interpreter.py
-from .base_interpreter import BaseInterpreter, v_args
+# src/domains/event/interpreter.py
+from ...framework.base_interpreter import BaseInterpreter, v_args
 
 class EventInterpreter(BaseInterpreter):
     def __init__(self):
@@ -41,11 +41,9 @@ class EventInterpreter(BaseInterpreter):
         session_name = children[0]
         properties = dict(children[1:])
         
-        # --- Validation Checks ---
         speaker = properties.get('hosted_by')
         venue_name = properties.get('in_venue')
         
-        # MODIFIED RULE: Only validate the speaker if a name was actually provided.
         if speaker and speaker not in self.speakers:
             raise ValueError(f"Validation Error in session '{session_name}': Speaker '{speaker}' is not defined.")
         
