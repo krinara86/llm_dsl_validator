@@ -10,17 +10,14 @@ from .domains.event.interpreter import EventInterpreter
 
 
 def extract_dsl_from_string(text, start_word):
-    # This pattern looks for the start word followed by a quote or a brace
     pattern = rf'{start_word}\s*(".*?"|\{{[^}}]*\}})'
     match = re.search(pattern, text, re.DOTALL)
     if not match:
-        # Fallback for patterns that might have content between the start word and the brace
         pattern = rf'{start_word}\s+.*?\s*\{{[^}}]*\}}'
         match = re.search(pattern, text, re.DOTALL)
     return match.group(0) if match else None
 
 def _process_request(user_query, prompt_template, dsl_start_word, grammar_file, interpreter_class, model_name="llama3:8b"):
-    # Note: grammar_file path is now relative to the project root
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
     grammar_path = os.path.join(project_root, grammar_file)

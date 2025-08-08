@@ -1,8 +1,6 @@
-# src/domains/tax/interpreter.py
 from ...framework.base_interpreter import BaseInterpreter, v_args
 
 class BillInterpreter(BaseInterpreter):
-    # --- Business Rules ---
     VALID_MENU_ITEMS = {"burger", "fries", "soda", "shake", "water", "salad"}
     MAX_ITEM_PRICE = 50.0
 
