@@ -1,40 +1,74 @@
-# LLM to DSL Validator
+# LLM-Powered DSL Validator
 
-A system that uses a custom-built Domain-Specific Language (DSL) and interpreter to enforce business logic on the output of a Large Language Model (LLM).
+This project explores an architectural pattern for building reliable, rule-based applications powered by Large Language Models (LLMs). It aims to leverage an LLM for its powerful natural language understanding while using a deterministic, custom-built interpreter as a "source of truth" for enforcing critical domain-specific rules.
 
-Goal is to leverage an LLM for its natural language understanding capabilities while using a deterministic, custom-built interpreter for critical business rules.
+## The Story: Why Constrain an LLM?
 
-## System 
+Large Language Models are incredibly effective at interpreting human language. We can ask a model to plan a bike ride or calculate a bill, and it will often produce a correct answer. However, LLMs lack a deep, verifiable understanding of specific business rules and constraints. They might confidently make assumptions that are incorrect or unsafe in a given context.
 
-1.  **Translation:** An LLM (in this case Llama 3) takes a conversational, unstructured user query and translates it into a formal, structured representation using our custom-built DSLs.
-2.  **Interpretation:** A custom interpreter, written in Python using the Lark parsing library, executes the DSL code.
+This system demonstrates how a Domain-Specific Language (DSL) and a custom interpreter can act as a **semantic firewall**, ensuring that the LLM's output conforms to a set of hard-coded rules.
+
+Consider these scenarios, which this system is designed to handle:
+
+1.  **A Simple User Error:** A user asks the restaurant bot, `"I'll have the steak for €15."`
+    * The LLM correctly translates this into the DSL.
+    * However, our `BillInterpreter` knows steak is not on the menu. The request is rejected, not because the language was misunderstood, but because it violated a fundamental business rule.
+
+2.  **A Subtle Contradiction:** A user tells the event planning bot, `"Schedule a 'Deep Dive' workshop in Workshop Room A for 30 people. It needs A/V."`
+    * This is a perfectly reasonable request. The LLM, trying to be helpful, generates a syntactically perfect DSL plan.
+    * But our `EventInterpreter` has been programmed with expert knowledge: **Workshop Room A does not have an A/V system**. It cross-references the session's requirements with the venue's capabilities and invalidates the plan, preventing a real-world booking error.
+
+This is the core motivation: the DSL interpreter doesn't just check syntax; it validates the *meaning* and *implications* of the request against a trusted model of the domain.
+
+### The Vision: A Smarter Chatbot Loop
+
+This validation becomes even more powerful when used to guide the conversation. Instead of simply returning an error, a future version of this system could feed the interpreter's validation message back to the LLM.
+
+* **Interpreter Error:** `Validation Error: Session 'Deep Dive' requires A/V, but venue 'Workshop Room A' does not have an A/V system.`
+* **LLM's New Prompt:** `The user's plan failed with the error: "Workshop Room A has no A/V system." Formulate a helpful response and suggest an alternative.`
+* **Chatbot's Reply to User:** `"It looks like Workshop Room A doesn't have the A/V equipment needed for your session. The Grand Ballroom does have a full A/V system. Would you like to book that room instead?"`
+
+This creates a robust, helpful, and safe assistant that can guide users toward valid outcomes, grounded by the unyielding logic of the interpreter.
 
 ---
 
-## How to run
+## System Overview
+
+The system operates in a two-stage process:
+
+1.  **Translation:** An LLM (in this case, Llama 3) takes a conversational, unstructured user query and translates it into a formal, structured representation using our custom DSLs. For more complex domains like event planning, this is done by having the LLM extract entities into a JSON object, which is then programmatically assembled into the final DSL.
+2.  **Interpretation:** A custom interpreter, written in Python using the Lark parsing library, executes the DSL code, enforcing the domain's business logic.
+
+---
+
+## How to Run
 
 ### 1. Prerequisites: Install Ollama
 
 This demo requires a running Ollama server.
 
 1.  **Install Ollama:** Download from <https://ollama.com>.
-2.  **Download the Model:** Open a terminal and run:
+2.  **Download Models:** Open a terminal and run `ollama pull <model_name>` for each model you want to test. At a minimum, you will need `llama3:8b`.
     ```bash
     ollama pull llama3:8b
+    ollama pull mistral
     ```
 
-### 2. Setup the Python Environment (Install [Python](https://www.python.org/downloads/) if needed )
+### 2. Setup the Python Environment
 
 The demo is a Jupyter Notebook.
 
 1.  **Navigate to the Project Folder:**
     ```bash
-    cd llm_dsl_validator
+    cd LLM_DSL_VALIDATOR
     ```
 2.  **Create and Activate a Virtual Environment:**
     ```bash
     python -m venv venv
+    # On Windows (PowerShell)
     .\venv\Scripts\Activate.ps1
+    # On macOS/Linux
+    source venv/bin/activate
     ```
     *(Note: On PowerShell, you may first need to run `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process`)*
 
@@ -53,103 +87,108 @@ The demo is a Jupyter Notebook.
 
 ---
 
-## Implementation Details
+## Usage Instructions
 
-There are two small DSLs from the cycling and tax calculation domains. 
+The application interface in the Jupyter Notebook is straightforward.
 
-### The Custom DSLs
+![UI Overview](docs/ui_overview.jpg)
 
-The grammars are defined in `.dsl` files using the [Lark](https://github.com/lark-parser/lark) syntax.
-
-**1. Tax Calculation Grammar (`tax_rules.dsl`):**
-```
-// Grammar for our Tax Calculation DSL
-start: bill
-bill: "bill" "{" items "}"
-items: item+
-item: CNAME ":" NUMBER "*" NUMBER -> line_item_with_quantity
-    | CNAME ":" NUMBER           -> line_item_simple
-
-%import common.CNAME
-%import common.NUMBER
-%import common.WS
-%ignore WS
-```
-
-*Example DSL Code (Generated by LLM):*
-```
-bill {
-  burger: 2 * 10
-  soda: 3
-}
-```
-
-![Restaurant Bill Demo](restaurantbilldemo.jpg)
-
-**2. Cycling Planner Grammar (`cycling_planner.dsl`):**
-```
-// Grammar for Cycling Ride Planner DSL
-start: ride
-ride: "ride" "{" properties "}"
-properties: property+
-property: CNAME ":" (CNAME | NUMBER) -> prop_line
-
-%import common.CNAME
-%import common.NUMBER
-%import common.WS
-%ignore WS
-```
-
-*Example DSL Code (Generated by LLM):*
-```
-ride {
-  terrain: hilly
-  distance_km: 50
-}
-```
-
-![Cycling Demo](cyclingdemo.jpg)
-
-### Interpreters
-
-The interpreters, located in `src/interpreters/`, are Python classes that implement the Lark's `[Transformer](https://lark-parser.readthedocs.io/en/latest/visitors.html)` interface. They walk the parse tree generated by Lark and execute business logic.
-
-* **`BillInterpreter`** (`tax_interpreter.py`): This interpreter processes a restaurant bill. It categorizes items into "food" or "drink" based on keywords(hardcoced for now) and applies fixed tax rates (7% for food, 19% for drink) to calculate the final total.
-* **`RideInterpreter`** (`cycling_interpreter.py`): This interpreter processes a bike ride plan. It calculates an estimated ride duration based on the provided `distance_km` and `terrain` (flat, hilly, or mountainous), using a set of average speeds for each terrain type.
-
-### The LLM Prompts
-
-**1. Tax Calculation Prompt:**
-```python
-prompt = """You are a helpful assistant that translates natural language into a custom DSL.
-The DSL format is:
-bill {{
-  itemName: quantity * pricePerItem
-  anotherItemName: price
-}}
-Translate the following user order into this DSL. The item names should be simple, lowercase words like 'burger' or 'soda'.
-User Order: "{user_query}"
-DSL Response:"""
-```
-
-
-**2. Cycling Planner Prompt:**
-```python
-prompt = """You are a helpful assistant that translates natural language into a custom DSL for planning a bike ride.
-The DSL format is:
-ride {{
-  terrain: flat | hilly | mountainous
-  distance_km: number
-}}
-Translate the following user request into this DSL. The 'terrain' value must be an unquoted word.
-User Request: "{user_query}"
-DSL Response:"""
-```
+1.  **Select Model:** Use the first dropdown to choose which Ollama model to use for generating the DSL. The list is populated automatically from your running Ollama server.
+2.  **Select Domain:** Use the second dropdown to choose the business domain (e.g., Tax Calculation, Event Planning). This changes the example query and the underlying DSL/interpreter that will be used.
+3.  **Enter User Query:** The text area is pre-filled with an example query for the selected domain. You can edit this or write your own from scratch.
+4.  **Generate & Execute:** Click this button to start the process.
+5.  **Output Area:** The results appear below the button.
+    * **LLM-Generated DSL Code:** This section shows the raw DSL code that the selected model generated from your query.
+    * **Interpreter Execution Result:** This section shows the outcome. It will either be a success message with the calculated results or a red error message if the DSL failed the interpreter's validation rules.
 
 ---
 
-## Next steps
+## The Custom DSLs and Interpreters
 
-* Incorporate a proper front end: React/ Vue based?
-* Centralize the Ollama server: Host the backend in a central server
-* Evolve the DSLs
+The grammars are defined in `.dsl` files and the logic is implemented in corresponding Python interpreters.
+
+**1. Tax Calculation (`src/domains/tax/`)**
+* **Grammar (`grammar.dsl`):** Defines a `bill` containing line `items` with quantities and prices.
+* **Interpreter (`interpreter.py`):** The `BillInterpreter` categorizes items into food or drink and applies different tax rates (7% for food, 19% for drink).
+* *Example DSL Code:*
+    ```dsl
+    bill {
+      burger: 3 * 10
+      soda: 2 * 3
+    }
+    ```
+![Restaurant Bill Demo](restaurantbilldemo.jpg)
+
+**2. Cycling Planner (`src/domains/cycling/`)**
+* **Grammar (`grammar.dsl`):** Defines a `ride` with properties like `terrain` and `distance_km`.
+* **Interpreter (`interpreter.py`):** The `RideInterpreter` calculates an estimated ride duration based on average speeds for different terrain types.
+* *Example DSL Code:*
+    ```dsl
+    ride {
+      terrain: mountainous
+      distance_km: 200
+    }
+    ```
+![Cycling Demo](cyclingdemo.jpg)
+
+**3. Event Planning (`src/domains/event/`)**
+* **Grammar (`grammar.dsl`):** Defines a `conference_plan` containing `venue`, `speaker`, and `session` resources.
+* **Interpreter (`interpreter.py`):** The `EventInterpreter` validates the plan by cross-referencing session requirements against venue capabilities (e.g., capacity, A/V availability).
+* *Example DSL Code:*
+    ```dsl
+    conference_plan "AI Summit" {
+      venue "Workshop Room A" {
+        capacity: 40
+        has_av_system: false
+      }
+      session "Deep Dive into NLP" {
+        in_venue: "Workshop Room A"
+        expected_attendees: 35
+        requires_av: true
+      }
+    }
+    ```
+
+---
+
+## Code Structure and Extension
+
+The project is structured to make adding new domains straightforward.
+
+### Code Structure
+
+The source code is organized into a `framework` for core components and a `domains` package that holds each self-contained domain.
+
+```
+src/
+├── core.py               # Main logic, prompts, and LLM interaction
+├── framework/
+│   └── base_interpreter.py # The base class for all interpreters
+└── domains/
+    ├── tax/
+    │   ├── grammar.dsl
+    │   └── interpreter.py
+    ├── cycling/
+    │   └── ...
+    └── event/
+        └── ...
+```
+
+### How to Extend with a New Domain
+
+To add a new domain (e.g., "Bookings"), follow these steps:
+
+1.  **Create the Domain Package:** Create a new folder `src/domains/booking/`. Add an empty `__init__.py` file inside it.
+2.  **Define the Grammar:** Create `src/domains/booking/grammar.dsl` with your new language rules.
+3.  **Implement the Interpreter:** Create `src/domains/booking/interpreter.py`. The class inside should inherit from `BaseInterpreter` and implement methods to transform your DSL's grammar rules.
+4.  **Hook into Core Logic:** In `src/core.py`, import your new interpreter and create a new `process_booking_request` function that defines a prompt and calls the appropriate processing helper (`_process_request` or `_process_with_json_assembler`).
+5.  **Update the UI:** In `demo.ipynb`, add the new domain to the `Dropdown` options, include example queries, and add a new `elif` block to call your `process_booking_request` function.
+
+---
+
+## Next Steps
+
+* **Implement the Chatbot Loop:** Create the feedback loop where interpreter errors are sent back to the LLM to generate helpful, clarifying questions for the user.
+* **Incorporate a Proper Front End:** Replace the Jupyter Notebook with a web-based UI using a framework like React or Vue.
+* **Centralize the Backend:** Host the Python backend and the Ollama server in a central location to be accessed by the front end.
+* **Evolve the DSLs:** Continue to add complexity and rules to the existing DSLs to handle more sophisticated scenarios.
