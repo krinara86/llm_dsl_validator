@@ -19,7 +19,7 @@ def extract_dsl_from_string(text, start_word):
         match = re.search(pattern, text, re.DOTALL)
     return match.group(0) if match else None
 
-def _process_request(user_query, prompt_template, dsl_start_word, grammar_file, interpreter_class):
+def _process_request(user_query, prompt_template, dsl_start_word, grammar_file, interpreter_class, model_name="llama3:8b"):
     # Note: grammar_file path is now relative to the project root
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
@@ -28,7 +28,7 @@ def _process_request(user_query, prompt_template, dsl_start_word, grammar_file, 
     llm_dsl_code = None 
     
     try:
-        api_response_stream = requests.post('http://localhost:11434/api/generate', json={"model": "llama3:8b", "prompt": prompt, "stream": True}, stream=True)
+        api_response_stream = requests.post('http://localhost:11434/api/generate', json={"model": model_name, "prompt": prompt, "stream": True}, stream=True)
         api_response_stream.raise_for_status()
         llm_raw_output = "".join(json.loads(chunk).get('response', '') for chunk in api_response_stream.iter_lines() if chunk)
         
@@ -44,7 +44,7 @@ def _process_request(user_query, prompt_template, dsl_start_word, grammar_file, 
             error_response["llm_generated_dsl"] = llm_dsl_code
         return error_response
 
-def _process_with_json_assembler(user_query: str, prompt_template: str, grammar_file: str, interpreter_class, dsl_assembler_func):
+def _process_with_json_assembler(user_query: str, prompt_template: str, grammar_file: str, interpreter_class, dsl_assembler_func, model_name="llama3:8b"):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
     grammar_path = os.path.join(project_root, grammar_file)
@@ -52,7 +52,7 @@ def _process_with_json_assembler(user_query: str, prompt_template: str, grammar_
     llm_dsl_code = None
     
     try:
-        api_response_stream = requests.post('http://localhost:11434/api/generate', json={"model": "llama3:8b", "prompt": prompt, "stream": True, "format": "json"}, stream=True)
+        api_response_stream = requests.post('http://localhost:11434/api/generate', json={"model": model_name, "prompt": prompt, "stream": True, "format": "json"}, stream=True)
         api_response_stream.raise_for_status()
         llm_raw_output = "".join(json.loads(chunk).get('response', '') for chunk in api_response_stream.iter_lines() if chunk)
         
@@ -94,7 +94,7 @@ def assemble_event_dsl(data: dict) -> str:
     dsl.append('}')
     return "\n".join(dsl)
 
-def process_event_plan_request(user_query: str) -> dict:
+def process_event_plan_request(user_query: str, model_name: str = "llama3:8b") -> dict:
     prompt = """From the user's request, extract entities for a conference plan.
 The possible entities are: plan_name, venues, speakers, and sessions.
 - A venue has a `name`, `capacity` (number), and `has_av_system` (boolean).
@@ -103,9 +103,9 @@ Return a single JSON object.
 
 User Request: "{user_query}"
 JSON Response:"""
-    return _process_with_json_assembler(user_query, prompt, 'src/domains/event/grammar.dsl', EventInterpreter, assemble_event_dsl)
+    return _process_with_json_assembler(user_query, prompt, 'src/domains/event/grammar.dsl', EventInterpreter, assemble_event_dsl, model_name)
 
-def process_order_request(user_query: str) -> dict:
+def process_order_request(user_query: str, model_name: str = "llama3:8b") -> dict:
     prompt = """You are an assistant that translates natural language into a DSL for a bill.
 The DSL format is:
 bill {{
@@ -114,9 +114,9 @@ bill {{
 Translate the user order into this DSL.
 User Order: "{user_query}"
 DSL Response:"""
-    return _process_request(user_query, prompt, "bill", 'src/domains/tax/grammar.dsl', BillInterpreter)
+    return _process_request(user_query, prompt, "bill", 'src/domains/tax/grammar.dsl', BillInterpreter, model_name)
 
-def process_ride_plan_request(user_query: str) -> dict:
+def process_ride_plan_request(user_query: str, model_name: str = "llama3:8b") -> dict:
     prompt = """You are an assistant that translates natural language into a DSL for a bike ride.
 The DSL format is:
 ride {{
@@ -126,4 +126,4 @@ ride {{
 Translate the user request into this DSL.
 User Request: "{user_query}"
 DSL Response:"""
-    return _process_request(user_query, prompt, "ride", 'src/domains/cycling/grammar.dsl', RideInterpreter)
+    return _process_request(user_query, prompt, "ride", 'src/domains/cycling/grammar.dsl', RideInterpreter, model_name)
