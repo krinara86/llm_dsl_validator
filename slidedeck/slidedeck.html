@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM-Powered DSL Validator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+        :root {
+            --primary-color: #007BFF;
+            --secondary-color: #6c757d;
+            --background-color: #f8f9fa;
+            --text-color: #343a40;
+            --slide-background: #ffffff;
+            --heading-font: 'Inter', sans-serif;
+            --body-font: 'Inter', sans-serif;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--background-color);
+            font-family: var(--body-font);
+            color: var(--text-color);
+            /* REMOVED overflow: hidden; */
+        }
+
+        .presentation-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem 5rem;
+            box-sizing: border-box;
+            background-color: var(--slide-background);
+            text-align: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.6s ease-in-out;
+            /* ADDED overflow-y: auto; to allow scrolling per-slide */
+            overflow-y: auto;
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            z-index: 1;
+        }
+
+        .slide-content {
+            max-width: 1100px;
+            width: 100%;
+            /* Added min-height to help with vertical alignment on scroll */
+            min-height: fit-content;
+            margin: auto 0;
+            /* Center content vertically */
+        }
+
+        .diagram-slide .slide-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .slide h1 {
+            font-family: var(--heading-font);
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .slide h2 {
+            font-family: var(--heading-font);
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+
+        .slide p,
+        .slide li {
+            font-size: 1.25rem;
+            line-height: 1.8;
+            text-align: left;
+            margin-bottom: 1rem;
+        }
+
+        .slide ul {
+            list-style-position: outside;
+            padding-left: 2rem;
+        }
+
+        .slide b,
+        .slide strong {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .title-slide h1 {
+            font-size: 3.5rem;
+        }
+
+        .title-slide h2 {
+            color: var(--text-color);
+            font-weight: 400;
+        }
+
+        .image-container {
+            margin-top: 1.5rem;
+            text-align: center;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            max-height: 85vh;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .two-column {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .two-column .column {
+            flex: 1;
+        }
+
+        .nav-button {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.4);
+            color: white;
+            border: none;
+            padding: 1rem;
+            cursor: pointer;
+            z-index: 10;
+            font-size: 2rem;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .nav-button:hover {
+            background-color: rgba(0, 123, 255, 0.8);
+        }
+
+        #prev-btn {
+            left: 20px;
+        }
+
+        #next-btn {
+            right: 20px;
+        }
+
+        #slide-counter {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(0, 0, 0, 0.4);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-family: var(--heading-font);
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="presentation-container">
+        <div class="slide active title-slide">
+            <div class="slide-content">
+                <h1>LLM-Powered DSL Validator</h1>
+                <h2>A Framework for Building Reliable, Rule-Based Applications</h2>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-content">
+                <h2>The LLM Dilemma: Oracle vs. Pattern Matcher</h2>
+                <p>Users often perceive a Large Language Model as an <b>Oracle</b>—a source of truth expecting
+                    consistently reliable and factual answers.</p>
+                <p>In reality, an LLM is a sophisticated <b>Pattern Matcher</b>. It excels at generating plausible text
+                    but lacks a true understanding of facts, rules, or context. This fundamental gap is the primary
+                    source of its unreliability.</p>
+            </div>
+        </div>
+
+        <div class="slide diagram-slide">
+            <div class="slide-content">
+                <h2>The Reality of LLM Outputs</h2>
+                <div class="image-container">
+                    <img src="img/problem-illustration.svg"
+                        alt="Diagram contrasting the user's mental model of an LLM as an Oracle with the reality of it being a Pattern Matcher.">
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-content">
+                <h2>The High Cost of Plausible Errors</h2>
+                <p>As the previous diagram shows, an unconstrained LLM produces a mix of outputs. In business-critical
+                    applications, this creates significant risk:</p>
+                <ul>
+                    <li><b>Hallucinated Facts:</b> Inventing products, features, or data that don't exist.</li>
+                    <li><b>Logical Errors:</b> Violating fundamental business rules, like booking a room without the
+                        required capacity.</li>
+                    <li><b>Biased Content:</b> Reflecting and amplifying biases present in its training data.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Our Philosophy: The Model-First Approach</h2>
+                <p>Instead of relying on an LLM alone, we build a trusted, deterministic <b>Domain Model</b> first. This
+                    model is the application's source of truth—it contains all the hard-coded business rules,
+                    constraints, and facts.</p>
+                <p>Our framework then uses a <b>Semantic Firewall</b> to ensure the LLM's output conforms to this model
+                    before any action is taken.</p>
+            </div>
+        </div>
+
+        <div class="slide diagram-slide">
+            <div class="slide-content">
+                <h2>The Model-First Architecture</h2>
+                <div class="image-container">
+                    <img src="img/model-first-diagram.svg"
+                        alt="Diagram comparing the unreliable LLM-Only approach with the reliable Model-First approach.">
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-content">
+                <h2>How It Works: A Step-by-Step Flow</h2>
+                <p>Our system translates a user's intent into a verifiable action through a structured, multi-step
+                    process.</p>
+                <ol>
+                    <li><b>Translate:</b> An LLM translates the user's natural language into a formal, structured
+                        **Domain-Specific Language (DSL)**.</li>
+                    <li><b>Parse & Validate:</b> The DSL code is checked for correct syntax and then validated against
+                        the strict rules of our custom **Interpreter** (the Semantic Firewall).</li>
+                    <li><b>Execute:</b> Only if the request is 100% valid does the system proceed. If not, it returns a
+                        specific, actionable error.</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="slide diagram-slide">
+            <div class="slide-content">
+                <h2>System in Action: A Detailed Flow</h2>
+                <div class="image-container">
+                    <img src="img/system-flowchart.svg"
+                        alt="Detailed flowchart of the system architecture from user query to validated output or error."
+                        style="max-width: 100%;">
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Why It Works: A Clear Separation of Concerns</h2>
+                <p>The framework's strength lies in assigning tasks to the component best suited for them.</p>
+                <div class="two-column">
+                    <div class="column">
+                        <h3>🤖 The LLM (The Translator)</h3>
+                        <ul>
+                            <li>Understands unstructured language.</li>
+                            <li>Infers user intent.</li>
+                            <li>Translates intent into structured DSL.</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>⚙️ The Interpreter (The Enforcer)</h3>
+                        <ul>
+                            <li>Holds the domain's "ground truth."</li>
+                            <li>Enforces strict, non-negotiable rules.</li>
+                            <li>Provides deterministic, predictable outcomes.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-content">
+                <h2>In Practice: Domain Examples (Part 1)</h2>
+                <div class="two-column">
+                    <div class="column">
+                        <h3>Tax Calculation</h3>
+                        <p>The `BillInterpreter` validates item prices and applies the correct tax rates (e.g., 7% for
+                            food, 19% for drinks), preventing incorrect calculations.</p>
+                        <div class="image-container">
+                            <img src="img/restaurantbilldemo.jpg" alt="Restaurant Bill Demo Screenshot">
+                        </div>
+                    </div>
+                    <div class="column">
+                        <h3>Cycling Planner</h3>
+                        <p>The `RideInterpreter` validates that distance is within a safe maximum and that the terrain
+                            type is valid before calculating an accurate duration.</p>
+                        <div class="image-container">
+                            <img src="img/cyclingdemo.jpg" alt="Cycling Demo Screenshot">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-content">
+                <h2>In Practice: A more invovled Validation Scenario</h2>
+                <h3>Event Planning</h3>
+                <p>A user requests: <b>Let's plan our AI Summit. We need to book Dr. Sharma for a session called 'Intro
+                        to Transformers'. It will be in the Grand Ballroom, which has a capacity of 500 and A/V. We
+                        expect 450 people.</b></p>
+
+                <div class="image-container">
+                    <img src="img/ui_overview.jpg" alt="Screenshot of the UI showing the event planning domain">
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-content">
+                <h2>The Vision: An Intelligent Feedback Loop</h2>
+                <p>The "Invalid" pathway from our Semantic Firewall isn't just an error—it's actionable feedback.</p>
+                <div class="image-container">
+                    <img src="img/feedback-loop.svg"
+                        alt="Diagram of the feedback loop where interpreter errors are sent back to the LLM.">
+                </div>
+                <p>We can feed this specific error back to the LLM to generate a helpful, clarifying question for the
+                    user, turning a hard failure into a constructive conversation.</p>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Key Takeaways</h2>
+                <ul>
+                    <li><b>Reliability:</b> By grounding the LLM's output in a deterministic rule engine, we ensure
+                        predictable and correct outcomes.</li>
+                    <li><b>Safety:</b> It acts as a "semantic firewall," preventing invalid or unsafe operations before
+                        they can be executed.</li>
+                    <li><b>Extensibility:</b> The modular design allows new domains, with their unique rules and
+                        grammars, to be easily added.</li>
+                </ul>
+                <p>This is how we move from simply "using AI" to building truly trustworthy, enterprise-grade AI
+                    systems.</p>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-content">
+                <h1>Thank You</h1>
+                <h2>Discussion & Questions</h2>
+            </div>
+        </div>
+
+    </div>
+
+    <button id="prev-btn" class="nav-button">&lt;</button>
+    <button id="next-btn" class="nav-button">&gt;</button>
+    <div id="slide-counter"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const slideCounter = document.getElementById('slide-counter');
+            let currentSlide = 0;
+
+            function showSlide(index) {
+                slides.forEach((slide, i) => {
+                    slide.classList.toggle('active', i === index);
+                });
+                slideCounter.textContent = `${index + 1} / ${slides.length}`;
+
+                prevBtn.style.display = index === 0 ? 'none' : 'flex';
+                nextBtn.style.display = index === slides.length - 1 ? 'none' : 'flex';
+            }
+
+            function nextSlide() {
+                if (currentSlide < slides.length - 1) {
+                    currentSlide++;
+                    showSlide(currentSlide);
+                }
+            }
+
+            function prevSlide() {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    showSlide(currentSlide);
+                }
+            }
+
+            nextBtn.addEventListener('click', nextSlide);
+            prevBtn.addEventListener('click', prevSlide);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight') {
+                    nextSlide();
+                } else if (e.key === 'ArrowLeft') {
+                    prevSlide();
+                }
+            });
+
+            showSlide(currentSlide);
+        });
+    </script>
+
+</body>
+
+</html>

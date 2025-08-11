@@ -1,0 +1,18 @@
+graph TD
+    subgraph "Initial Request Processing"
+        A[🗣️ User Query<br><i>&quot;Book Room A with A/V&quot;</i>] --> B(⚙️ Interpreter Validates Plan);
+    end
+
+    B --> C{Validation Result};
+    C -- OK --> D[✅ Safe Action Executed];
+
+    subgraph "Intelligent Feedback Loop"
+        C -- Error --> E[🔴 Validation Error Message<br><i>&quot;Room A has no A/V&quot;</i>];
+        E --> F{🤖 LLM Re-evaluates Context<br><i>&quot;User wants A/V, Room A failed. Find alternative.&quot;</i>};
+        F --> G[🗣️ Helpful Suggestion to User<br><i>&quot;Room A lacks A/V. Room B has it. Would you like to book Room B instead?&quot;</i>];
+    end
+
+    style D fill:#d4edda,stroke:#155724
+    style E fill:#f8d7da,stroke:#721c24
+    style F fill:#cfe2ff,stroke:#0c5460,stroke-width:2px
+    style G fill:#d1ecf1,stroke:#0c5460

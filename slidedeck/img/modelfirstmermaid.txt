@@ -1,0 +1,23 @@
+graph TD
+    subgraph "LLM-Only Approach (Unreliable)"
+        A[User Query] --> B{LLM};
+        B --> C[Unvalidated Output];
+        B --> D[Risky Action];
+    end
+    
+    subgraph "Model-First Approach (Reliable)"
+        E[User Query] --> F{LLM};
+        F --> G[Generated DSL];
+        subgraph "Semantic Firewall"
+            H(Domain Model & Interpreter);
+        end
+        G --> H;
+        H -->|Validated| I[Safe, Correct Action];
+        H -->|Invalid| J[Error & Feedback];
+    end
+
+    style C fill:#f8d7da,stroke:#721c24
+    style D fill:#f8d7da,stroke:#721c24
+    style H fill:#d1ecf1,stroke:#0c5460,stroke-width:3px,stroke-dasharray: 5 5
+    style I fill:#d4edda,stroke:#155724
+    style J fill:#fff3cd,stroke:#856404
