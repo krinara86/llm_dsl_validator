@@ -3,10 +3,18 @@ from ...framework.base_interpreter import BaseInterpreter, v_args
 
 class EventInterpreter(BaseInterpreter):
     def __init__(self):
-        self.venues = {}
+        # The interpreter is now the "source of truth" for venue data.
+        self.venues = {
+            "Grand Ballroom": {"capacity": 500, "has_av_system": True},
+            "Workshop Room A": {"capacity": 40, "has_av_system": False},
+            "Workshop Room B": {"capacity": 40, "has_av_system": True},
+            "Lecture Hall C": {"capacity": 100, "has_av_system": True}
+        }
         self.speakers = set()
         self.sessions = []
         self.plan_name = ""
+        # New property to track venue bookings for validation.
+        self.venue_bookings = {}
 
     def _parse_boolean(self, cname):
         return str(cname).lower() == 'true'
@@ -22,17 +30,6 @@ class EventInterpreter(BaseInterpreter):
             "sessions": self.sessions
         }
 
-    def venue(self, children):
-        venue_name = children[0]
-        properties = dict(children[1:])
-        self.venues[venue_name] = properties
-
-    @v_args(inline=True)
-    def venue_capacity(self, capacity): return ("capacity", capacity)
-
-    @v_args(inline=True)
-    def venue_av(self, has_av): return ("has_av_system", self._parse_boolean(has_av))
-
     @v_args(inline=True)
     def speaker_def(self, name):
         self.speakers.add(name)
@@ -41,16 +38,19 @@ class EventInterpreter(BaseInterpreter):
         session_name = children[0]
         properties = dict(children[1:])
         
-        speaker = properties.get('hosted_by')
         venue_name = properties.get('in_venue')
         
-        if speaker and speaker not in self.speakers:
-            raise ValueError(f"Validation Error in session '{session_name}': Speaker '{speaker}' is not defined.")
+        # --- NEW VALIDATION LOGIC ---
         
         if venue_name not in self.venues:
-            raise ValueError(f"Validation Error in session '{session_name}': Venue '{venue_name}' is not defined.")
+            raise ValueError(f"Validation Error in session '{session_name}': Venue '{venue_name}' does not exist.")
+
+        if venue_name in self.venue_bookings:
+            conflicting_session = self.venue_bookings[venue_name]
+            raise ValueError(f"Validation Error in session '{session_name}': Venue '{venue_name}' is already booked by session '{conflicting_session}'.")
 
         venue = self.venues[venue_name]
+        
         attendees = properties.get('expected_attendees', 0)
         venue_capacity = venue.get('capacity', 0)
         if attendees > venue_capacity:
@@ -61,13 +61,17 @@ class EventInterpreter(BaseInterpreter):
         if session_reqs_av and not venue_has_av:
             raise ValueError(f"Validation Error in session '{session_name}': Session requires A/V, but venue '{venue_name}' does not have an A/V system.")
 
+        self.venue_bookings[venue_name] = session_name
         self.sessions.append({"name": session_name, **properties})
 
     @v_args(inline=True)
     def session_speaker(self, name): return ("hosted_by", name)
+    
     @v_args(inline=True)
     def session_venue(self, name): return ("in_venue", name)
+    
     @v_args(inline=True)
     def session_attendees(self, num): return ("expected_attendees", num)
+    
     @v_args(inline=True)
     def session_requires_av(self, req_av): return ("requires_av", self._parse_boolean(req_av))

@@ -84,18 +84,11 @@ def extract_dsl_from_string(text: str, start_word: str) -> str:
     return match.group(0) if match else None
 
 def assemble_event_dsl_from_json(json_string: str) -> str:
-    """Assembles the event planning DSL from a JSON string."""
+    """Assembles the event planning DSL from a JSON string, IGNORING venue definitions."""
     data = json.loads(json_string)
     dsl = []
     plan_name = data.get("plan_name", "Unnamed Plan")
     dsl.append(f'conference_plan "{plan_name}" {{')
-    
-    for venue in data.get("venues", []):
-        dsl.append(f'  venue "{venue.get("name", "N/A")}" {{')
-        dsl.append(f'    capacity: {venue.get("capacity", 0)}')
-        dsl.append(f'    has_av_system: {str(venue.get("has_av_system", False)).lower()}')
-        dsl.append('  }')
-
     for speaker in data.get("speakers", []):
         dsl.append(f'  speaker "{speaker.get("name", "N/A")}"')
 
@@ -110,12 +103,10 @@ def assemble_event_dsl_from_json(json_string: str) -> str:
     dsl.append('}')
     return "\n".join(dsl)
 
-# --- Public API ---
 def process_event_plan_request(user_query: str, model_name: str = AppConfig.DEFAULT_MODEL) -> Dict[str, Any]:
     """Processes a user request to create an event plan by generating JSON and then a DSL."""
     prompt = """From the user's request, extract entities for a conference plan.
-The possible entities are: plan_name, venues, speakers, and sessions.
-- A venue has a `name`, `capacity` (number), and `has_av_system` (boolean).
+The possible entities are: plan_name, speakers, and sessions.
 - A session has a `name`, `hosted_by` (string), `in_venue` (string), `expected_attendees` (number), and `requires_av` (boolean).
 Return a single JSON object.
 
@@ -129,6 +120,7 @@ JSON Response:"""
         model_name,
         dsl_extractor=assemble_event_dsl_from_json
     )
+
 
 def process_order_request(user_query: str, model_name: str = AppConfig.DEFAULT_MODEL) -> Dict[str, Any]:
     """Processes a user request to create a bill by generating a DSL."""

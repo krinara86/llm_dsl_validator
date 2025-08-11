@@ -2,11 +2,7 @@ start: conference_plan
 
 conference_plan: "conference_plan" ESCAPED_STRING "{" plan_item* "}"
 
-plan_item: venue | speaker | session
-
-venue: "venue" ESCAPED_STRING "{" venue_prop* "}"
-venue_prop: "capacity" ":" NUMBER -> venue_capacity
-          | "has_av_system" ":" CNAME -> venue_av // CNAME will be 'true' or 'false'
+plan_item: speaker | session
 
 speaker: "speaker" ESCAPED_STRING -> speaker_def
 
