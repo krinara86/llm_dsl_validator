@@ -1,0 +1,19 @@
+graph TD
+    subgraph "User's Mental Model"
+        A[LLM as an Oracle] -->|Expects| B(Reliable, Factual Answers);
+    end
+
+    subgraph "Reality"
+        C(LLM as a Pattern Matcher) -->|Actually Produces| D{Mix of Outputs};
+        D --> D1[✅ Correct Information];
+        D --> D2[❌ Hallucinated Facts];
+        D --> D3[⚠️ Logical Errors];
+        D --> D4[❗ Biased Content];
+    end
+
+    style A fill:#cce5ff,stroke:#333,stroke-width:2px
+    style C fill:#ffe6e6,stroke:#333,stroke-width:2px
+    style D1 fill:#d4edda,stroke:#155724
+    style D2 fill:#f8d7da,stroke:#721c24
+    style D3 fill:#fff3cd,stroke:#856404
+    style D4 fill:#f5c6cb,stroke:#721c24

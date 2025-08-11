@@ -1,0 +1,11 @@
+graph TD;
+    A[🗣️ User Query <br><i>&quot;Plan a 100km hilly ride&quot;</i>] --> B{🤖 LLM Translator};
+    B --> C[📝 DSL Output <br><code>ride &#123;<br>terrain: hilly<br>distance_km: 100<br>&#125;</code>];
+    C --> D{Lark Parser <br><i>Syntax Check</i>};
+    D --> E[🌳 Parsed Tree];
+    E --> F{⚙️ Ride Interpreter <br><i>Semantic Validation</i>};
+    F -- Validation OK --> G[✅ Validated Output <br><i>Estimated Duration: 5.55 hours</i>];
+    F -- Validation Fails --> H[🔴 Error <br><i>&quot;Distance exceeds maximum&quot;</i>];
+
+    style G fill:#d4edda,stroke:#c3e6cb
+    style H fill:#f8d7da,stroke:#f5c6cb
