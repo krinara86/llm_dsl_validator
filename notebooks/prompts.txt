@@ -1,0 +1,86 @@
+#####################################################################
+# PROMPT TEST SUITE FOR EVENT MANAGEMENT DOMAIN
+#####################################################################
+
+# Instructions:
+# 1. Select the "Event Planning" domain in the UI.
+# 2. Select the appropriate role ('admin' or 'scheduler') for the test.
+# 3. Copy and paste the "User Query" into the text area and run.
+# 4. Compare the result with the "Expected Outcome".
+# 5. For a clean test, you can delete the 'state.json' file before starting.
+
+# ====================================================================
+# ADMIN ROLE - SUCCESSFUL ACTIONS
+# ====================================================================
+
+# Test: Admin creates a single, new venue.
+# Role: admin
+# User Query: Can you please set up a new room for us? It's called 'Main Auditorium', has seating for 1200, and includes a full AV system.
+# Expected Outcome: SUCCESS. The interpreter creates the venue. The state file now contains 'Main Auditorium'.
+
+# Test: Admin creates multiple venues in one request.
+# Role: admin
+# User Query: I need to add two workshop rooms. 'Workshop A' holds 50 people and has AV. 'Workshop B' holds 35 and does not have AV.
+# Expected Outcome: SUCCESS. Both venues are created and added to the state.
+
+# Test: Admin modifies an existing venue.
+# Role: admin
+# User Query: We had a renovation in the Main Auditorium. Please update its capacity to 1500.
+# Expected Outcome: SUCCESS. The capacity of 'Main Auditorium' in the state file is changed to 1500.
+
+# Test: Admin schedules a valid session. (Admins can do everything)
+# Role: admin
+# User Query: Please schedule the 'Keynote Address' by Jane Doe in the 'Main Auditorium'. We expect 1100 attendees, and it requires AV.
+# Expected Outcome: SUCCESS. A new session is added and the 'Main Auditorium' is marked as booked.
+
+# Test: Complex command with multiple actions.
+# Role: admin
+# User Query: Let's prepare for the conference. First, create a 'Lecture Hall' with 200 capacity and AV. Then, book a session in it called 'Advanced AI' for 180 people, hosted by Sam Ray.
+# Expected Outcome: SUCCESS. A new venue 'Lecture Hall' is created, and the 'Advanced AI' session is immediately scheduled within it.
+
+# ====================================================================
+# SCHEDULER ROLE - SUCCESSFUL ACTIONS
+# ====================================================================
+
+# Test: Scheduler books a valid session in an existing room.
+# (Run an admin command to create 'Main Auditorium' first).
+# Role: scheduler
+# User Query: I need to book the 'Welcome Session' in the 'Main Auditorium'. 1000 people will attend. It needs AV.
+# Expected Outcome: SUCCESS. The session is created and the venue is booked.
+
+# ====================================================================
+# FAILURE SCENARIOS (ANY ROLE)
+# ====================================================================
+
+# Test: Role Mismatch - Scheduler tries to create a venue.
+# Role: scheduler
+# User Query: Please create a new room called 'Small Hall' with capacity 50.
+# Expected Outcome: FAILURE. Interpreter raises a RoleMismatchError.
+
+# Test: Role Mismatch - Scheduler tries to modify a venue.
+# Role: scheduler
+# User Query: Update the capacity for 'Workshop A' to 60.
+# Expected Outcome: FAILURE. Interpreter raises a RoleMismatchError.
+
+# Test: Booking an already booked venue.
+# (Run a command to book a session in 'Main Auditorium' first).
+# Role: scheduler
+# User Query: Schedule a 'Fireside Chat' in the 'Main Auditorium' for 50 people.
+# Expected Outcome: FAILURE. Interpreter raises a validation error that the venue is already booked.
+
+# Test: Booking a session in a non-existent venue.
+# Role: scheduler
+# User Query: Please book the 'Data Science Panel' in the 'Imaginary Room'.
+# Expected Outcome: FAILURE. Interpreter raises a validation error that the venue does not exist.
+
+# Test: Booking a session that exceeds venue capacity.
+# (Run an admin command to create 'Workshop B' with capacity 35).
+# Role: scheduler
+# User Query: I need to schedule 'Group Discussion' in 'Workshop B'. We expect 40 attendees.
+# Expected Outcome: FAILURE. Interpreter raises a validation error for exceeding capacity.
+
+# Test: Booking a session that requires AV in a venue that doesn't have it.
+# (Run an admin command to create 'Workshop B' with no AV).
+# Role: scheduler
+# User Query: Let's book the 'ML Presentation' in 'Workshop B'. It will have 20 people but it needs an AV system.
+# Expected Outcome: FAILURE. Interpreter raises a validation error for missing AV system.

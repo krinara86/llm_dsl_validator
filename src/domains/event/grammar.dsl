@@ -1,16 +1,23 @@
-start: conference_plan
+start: event_command
 
-conference_plan: "conference_plan" ESCAPED_STRING "{" plan_item* "}"
+event_command: "role" ESCAPED_STRING "{" command* "}"
 
-plan_item: speaker | session
+command: create_venue | modify_venue | schedule_session
 
-speaker: "speaker" ESCAPED_STRING -> speaker_def
+// Admin actions
+create_venue: "create_venue" ESCAPED_STRING "{" venue_prop* "}"
+modify_venue: "modify_venue" ESCAPED_STRING "{" venue_prop* "}"
 
-session: "session" ESCAPED_STRING "{" session_prop* "}"
+venue_prop: "capacity" ":" NUMBER -> venue_capacity
+          | "has_av_system" ":" CNAME -> venue_has_av // true or false
+
+// Scheduler/Admin action
+schedule_session: "schedule_session" ESCAPED_STRING "{" session_prop* "}"
+
 session_prop: "hosted_by" ":" ESCAPED_STRING -> session_speaker
             | "in_venue" ":" ESCAPED_STRING -> session_venue
             | "expected_attendees" ":" NUMBER -> session_attendees
-            | "requires_av" ":" CNAME -> session_requires_av // CNAME will be 'true' or 'false'
+            | "requires_av" ":" CNAME -> session_requires_av
 
 %import common.CNAME
 %import common.NUMBER
