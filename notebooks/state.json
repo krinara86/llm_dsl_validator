@@ -1,0 +1,40 @@
+{
+  "venues": {
+    "Main Auditorium": {
+      "capacity": 1500.0,
+      "has_av_system": true
+    },
+    "Workshop A": {
+      "capacity": 50.0,
+      "has_av_system": true
+    },
+    "Workshop B": {
+      "capacity": 35.0,
+      "has_av_system": false
+    },
+    "Lecture Hall": {
+      "capacity": 200.0,
+      "has_av_system": true
+    }
+  },
+  "sessions": [
+    {
+      "name": "Keynote Address",
+      "hosted_by": "Jane Doe",
+      "in_venue": "Main Auditorium",
+      "expected_attendees": 1100.0,
+      "requires_av": true
+    },
+    {
+      "name": "Advanced AI",
+      "hosted_by": "Sam Ray",
+      "in_venue": "Lecture Hall",
+      "expected_attendees": 180.0,
+      "requires_av": false
+    }
+  ],
+  "venue_bookings": {
+    "Main Auditorium": "Keynote Address",
+    "Lecture Hall": "Advanced AI"
+  }
+}
