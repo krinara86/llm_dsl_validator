@@ -15,6 +15,18 @@
     "Lecture Hall": {
       "capacity": 200.0,
       "has_av_system": true
+    },
+    "Grand Ballroom": {
+      "capacity": 500.0,
+      "has_av_system": true
+    },
+    "Grand Ballroom 2": {
+      "capacity": 500.0,
+      "has_av_system": true
+    },
+    "Grand Ballroom 3": {
+      "capacity": 5000.0,
+      "has_av_system": false
     }
   },
   "sessions": [
@@ -31,10 +43,18 @@
       "in_venue": "Lecture Hall",
       "expected_attendees": 180.0,
       "requires_av": false
+    },
+    {
+      "name": "Some talk",
+      "hosted_by": "Max mustermann",
+      "in_venue": "grand ballroom 3",
+      "expected_attendees": 4000.0,
+      "requires_av": false
     }
   ],
   "venue_bookings": {
     "Main Auditorium": "Keynote Address",
-    "Lecture Hall": "Advanced AI"
+    "Lecture Hall": "Advanced AI",
+    "Grand Ballroom 3": "Some talk"
   }
 }

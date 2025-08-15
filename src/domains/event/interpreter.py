@@ -25,10 +25,12 @@ class EventInterpreter(BaseInterpreter):
         if self.role != 'admin':
             raise ValueError(f"RoleMismatchError: Role '{self.role}' is not authorized to create venues. Requires 'admin'.")
 
-        if name in self.state["venues"]:
+        # This check is now case-insensitive to prevent duplicates like 'Room A' and 'room a'.
+        if name.lower() in [v.lower() for v in self.state["venues"]]:
             raise ValueError(f"ValidationError: Venue '{name}' already exists.")
         
         properties = dict(props)
+        # Store with the name as provided (after quote stripping in core.py) to preserve capitalization.
         self.state["venues"][name] = {
             "capacity": properties.get("capacity", 0),
             "has_av_system": properties.get("has_av_system", False)
@@ -40,12 +42,15 @@ class EventInterpreter(BaseInterpreter):
         if self.role != 'admin':
             raise ValueError(f"RoleMismatchError: Role '{self.role}' is not authorized to modify venues. Requires 'admin'.")
 
-        if name not in self.state["venues"]:
+        # Find the actual venue key in a case-insensitive way.
+        key_to_modify = next((v for v in self.state["venues"] if v.lower() == name.lower()), None)
+
+        if not key_to_modify:
             raise ValueError(f"ValidationError: Cannot modify venue '{name}' because it does not exist.")
             
         properties = dict(props)
-        self.state["venues"][name].update(properties)
-        self.actions_performed.append(f"Modified venue '{name}'")
+        self.state["venues"][key_to_modify].update(properties)
+        self.actions_performed.append(f"Modified venue '{key_to_modify}'")
 
     def schedule_session(self, children):
         if self.role not in ['admin', 'scheduler']:
@@ -55,15 +60,20 @@ class EventInterpreter(BaseInterpreter):
         properties = dict(children[1:])
         venue_name = properties.get('in_venue')
         
-        # --- VALIDATION LOGIC ---
-        if venue_name not in self.state['venues']:
+        # --- VALIDATION LOGIC (Now case-insensitive) ---
+
+        # Find the actual venue key case-insensitively.
+        venue_key_actual = next((v for v in self.state['venues'] if v.lower() == venue_name.lower()), None)
+        if not venue_key_actual:
             raise ValueError(f"ValidationError in session '{session_name}': Venue '{venue_name}' does not exist.")
 
-        if venue_name in self.state['venue_bookings']:
-            conflicting_session = self.state['venue_bookings'][venue_name]
-            raise ValueError(f"ValidationError in session '{session_name}': Venue '{venue_name}' is already booked by session '{conflicting_session}'.")
+        # Check for bookings using the actual key, but also check case-insensitively for safety.
+        booking_key_actual = next((v for v in self.state['venue_bookings'] if v.lower() == venue_name.lower()), None)
+        if booking_key_actual:
+            conflicting_session = self.state['venue_bookings'][booking_key_actual]
+            raise ValueError(f"ValidationError in session '{session_name}': Venue '{booking_key_actual}' is already booked by session '{conflicting_session}'.")
 
-        venue = self.state['venues'][venue_name]
+        venue = self.state['venues'][venue_key_actual]
         
         attendees = properties.get('expected_attendees', 0)
         venue_capacity = venue.get('capacity', 0)
@@ -73,9 +83,10 @@ class EventInterpreter(BaseInterpreter):
         session_reqs_av = properties.get('requires_av', False)
         venue_has_av = venue.get('has_av_system', False)
         if session_reqs_av and not venue_has_av:
-            raise ValueError(f"ValidationError in session '{session_name}': Session requires A/V, but venue '{venue_name}' does not have an A/V system.")
+            raise ValueError(f"ValidationError in session '{session_name}': Session requires A/V, but venue '{venue_key_actual}' does not have an A/V system.")
 
-        self.state['venue_bookings'][venue_name] = session_name
+        # Use the actual, original-cased key for booking to maintain data consistency.
+        self.state['venue_bookings'][venue_key_actual] = session_name
         self.state['sessions'].append({"name": session_name, **properties})
         self.actions_performed.append(f"Scheduled session '{session_name}'")
 

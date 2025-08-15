@@ -96,6 +96,11 @@ def _process_dsl_request(
         return error_response
 
 # --- DSL Extraction and Assembly ---
+
+def _normalize_string(value: str) -> str:
+    """Removes leading/trailing whitespace and surrounding quotes."""
+    return str(value).strip().strip("'\"")
+
 def extract_dsl_from_string(text: str, start_word: str, user_query: str = None) -> str:
     """Extracts a DSL code block from a string based on a starting keyword."""
     pattern = rf'{start_word}\s*(".*?"|\{{[^}}]*\}})'
@@ -128,7 +133,8 @@ def assemble_event_dsl_from_json(json_string: str, user_query: str) -> str:
     dsl.append(f'role "{role}" {{')
 
     for venue in data.get("create_venues", []):
-        dsl.append(f'  create_venue "{venue.get("name", "N/A")}" {{')
+        name = _normalize_string(venue.get("name", "N/A"))
+        dsl.append(f'  create_venue "{name}" {{')
         if venue.get("capacity") is not None:
             dsl.append(f'    capacity: {venue["capacity"]}')
         if venue.get("has_av_system") is not None:
@@ -136,7 +142,8 @@ def assemble_event_dsl_from_json(json_string: str, user_query: str) -> str:
         dsl.append('  }')
 
     for venue in data.get("modify_venues", []):
-        dsl.append(f'  modify_venue "{venue.get("name", "N/A")}" {{')
+        name = _normalize_string(venue.get("name", "N/A"))
+        dsl.append(f'  modify_venue "{name}" {{')
         if venue.get("capacity") is not None:
             dsl.append(f'    capacity: {venue["capacity"]}')
         if venue.get("has_av_system") is not None:
@@ -144,13 +151,14 @@ def assemble_event_dsl_from_json(json_string: str, user_query: str) -> str:
         dsl.append('  }')
 
     for session in data.get("schedule_sessions", []):
-        dsl.append(f'  schedule_session "{session.get("name", "N/A")}" {{')
-        # --- NEW DEFENSIVE CHECKS ---
-        # Only add a property to the DSL if its value is present in the JSON from the LLM.
+        name = _normalize_string(session.get("name", "N/A"))
+        dsl.append(f'  schedule_session "{name}" {{')
         if session.get("hosted_by"):
-            dsl.append(f'    hosted_by: "{session["hosted_by"]}"')
+            hosted_by = _normalize_string(session["hosted_by"])
+            dsl.append(f'    hosted_by: "{hosted_by}"')
         if session.get("in_venue"):
-            dsl.append(f'    in_venue: "{session["in_venue"]}"')
+            in_venue = _normalize_string(session["in_venue"])
+            dsl.append(f'    in_venue: "{in_venue}"')
         if session.get("expected_attendees") is not None:
             dsl.append(f'    expected_attendees: {session["expected_attendees"]}')
         if session.get("requires_av") is not None:
