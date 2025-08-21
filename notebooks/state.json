@@ -92,6 +92,13 @@
       "in_venue": "Workshop A",
       "expected_attendees": 20.0,
       "requires_av": false
+    },
+    {
+      "name": "Cricket for dummies",
+      "hosted_by": "Steve smith",
+      "in_venue": "Room B",
+      "expected_attendees": 25.0,
+      "requires_av": false
     }
   ],
   "venue_bookings": {
@@ -100,6 +107,7 @@
     "Grand Ballroom 3": "Some talk",
     "Grand Ballroom 2": "AI DSL convergence",
     "Grand Ballroom": "Static analysis",
-    "Workshop A": "Why AI sucks"
+    "Workshop A": "Why AI sucks",
+    "Room B": "Cricket for dummies"
   }
 }
