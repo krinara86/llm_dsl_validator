@@ -380,6 +380,26 @@ def orchestrate_request(query: str, role: str, model_name: str,
         conversation_state["task_details"] = extracted_info
         conversation_state["status"] = "processing"
     
+    # Early validation: Check role permissions
+    action = conversation_state["task_details"].get("action")
+    
+    # Check if this action is allowed for the current role
+    if action in ["create_venue", "modify_venue"] and role != "admin":
+        error_msg = (
+            f"<div style='background-color: #ffebee; padding: 10px; border-radius: 5px; "
+            f"border-left: 4px solid #f44336; margin: 10px 0;'>"
+            f"<b>❌ Permission Denied</b><br>"
+            f"The action '{action.replace('_', ' ').title()}' requires admin privileges.<br>"
+            f"Your current role is: <b>{role}</b><br><br>"
+            f"As a scheduler, you can only schedule sessions in existing venues."
+            f"</div>"
+        )
+        return {
+            "status": "error",
+            "message": error_msg,
+            "new_state": {}
+        }
+    
     # Format understanding and check for missing parameters
     understanding = format_understanding(conversation_state["task_details"], role)
     
@@ -402,7 +422,49 @@ def orchestrate_request(query: str, role: str, model_name: str,
             "new_state": conversation_state
         }
     
-    # All parameters collected - ready for confirmation
+    # Additional validation before confirmation
+    params = conversation_state["task_details"].get("parameters", {})
+    state = load_state()
+    
+    # Validate venue exists for modify_venue action
+    if action == "modify_venue":
+        venue_name = params.get("name", "")
+        if venue_name not in state.get("venues", {}):
+            error_msg = (
+                f"<div style='background-color: #ffebee; padding: 10px; border-radius: 5px; "
+                f"border-left: 4px solid #f44336; margin: 10px 0;'>"
+                f"<b>❌ Venue Not Found</b><br>"
+                f"Cannot modify venue '{venue_name}' because it doesn't exist.<br><br>"
+                f"Available venues: {', '.join(state.get('venues', {}).keys()) if state.get('venues') else 'None'}"
+                f"</div>"
+            )
+            return {
+                "status": "error",
+                "understanding_html": understanding["formatted_html"],
+                "message": error_msg,
+                "new_state": {}
+            }
+    
+    # Validate venue exists and is available for schedule_session
+    if action == "schedule_session":
+        venue_name = params.get("in_venue", "")
+        if venue_name not in state.get("venues", {}):
+            error_msg = (
+                f"<div style='background-color: #ffebee; padding: 10px; border-radius: 5px; "
+                f"border-left: 4px solid #f44336; margin: 10px 0;'>"
+                f"<b>❌ Venue Not Found</b><br>"
+                f"Cannot schedule session in '{venue_name}' because it doesn't exist.<br><br>"
+                f"Available venues: {', '.join(state.get('venues', {}).keys()) if state.get('venues') else 'None'}"
+                f"</div>"
+            )
+            return {
+                "status": "error",
+                "understanding_html": understanding["formatted_html"],
+                "message": error_msg,
+                "new_state": {}
+            }
+    
+    # All parameters collected and validated - ready for confirmation
     conversation_state["status"] = "awaiting_confirmation"
     conversation_state["missing_params"] = []
     
@@ -449,10 +511,40 @@ def execute_confirmed_task(role: str, conversation_state: Dict) -> Dict:
             "message": success_msg,
             "dsl_code": dsl_code
         }
-    except (ValueError, ConnectionError) as e:
+    except ValueError as e:
+        # Handle validation errors from the interpreter
+        error_msg = str(e)
+        
+        # Parse different types of validation errors for clearer messages
+        if "RoleMismatchError" in error_msg:
+            return {
+                "status": "error",
+                "message": f"❌ Role Permission Error: {error_msg.split(':', 1)[1] if ':' in error_msg else error_msg}",
+                "dsl_code": dsl_code
+            }
+        elif "ValidationError" in error_msg:
+            return {
+                "status": "error",
+                "message": f"❌ Validation Failed: {error_msg.split(':', 1)[1] if ':' in error_msg else error_msg}",
+                "dsl_code": dsl_code
+            }
+        else:
+            return {
+                "status": "error",
+                "message": f"❌ Error: {error_msg}",
+                "dsl_code": dsl_code
+            }
+    except ConnectionError as e:
         return {
             "status": "error",
-            "message": f"❌ Error: {e}",
+            "message": f"❌ Connection Error: {e}",
+            "dsl_code": dsl_code
+        }
+    except Exception as e:
+        # Catch any other unexpected errors
+        return {
+            "status": "error",
+            "message": f"❌ Unexpected Error: {e}",
             "dsl_code": dsl_code
         }
 

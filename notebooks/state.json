@@ -99,6 +99,13 @@
       "in_venue": "Room B",
       "expected_attendees": 25.0,
       "requires_av": false
+    },
+    {
+      "name": "Why AI sucks",
+      "hosted_by": "A professor X",
+      "in_venue": "Workshop B",
+      "expected_attendees": 24.0,
+      "requires_av": false
     }
   ],
   "venue_bookings": {
@@ -108,6 +115,7 @@
     "Grand Ballroom 2": "AI DSL convergence",
     "Grand Ballroom": "Static analysis",
     "Workshop A": "Why AI sucks",
-    "Room B": "Cricket for dummies"
+    "Room B": "Cricket for dummies",
+    "Workshop B": "Why AI sucks"
   }
 }
