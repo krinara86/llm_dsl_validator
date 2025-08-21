@@ -37,7 +37,7 @@ The application interface in the Jupyter Notebook is straightforward.
 
 ![UI Overview](docs/ui_overview.jpg)
 
-1.  **Select Model:** Choose which Ollama model to use for generating the DSL.
+1.  **Select Model:** Choose which Ollama or Together AI model to use for generating the DSL.
 2.  **Select Domain:** Choose the business domain (e.g., Tax Calculation, Event Planning).
 3.  **Select Role (if applicable):** For domains like Event Planning, a role selector will appear.
 4.  **Enter User Query:** Write your request in natural language.
@@ -50,20 +50,32 @@ The application interface in the Jupyter Notebook is straightforward.
 
 ### 1. Prerequisites: Install Ollama
 
-This demo requires a running Ollama server.
+This demo requires a running Ollama server for local model inference.
 
 1.  **Install Ollama:** Download from <https://ollama.com>.
 2.  **Download Models:** Open a terminal and run `ollama pull <model_name>` for each model you want to test (e.g., `llama3:8b`).
 
-### 2. Setup the Python Environment
+### 2. Optional: Configure Together AI for Faster Performance
+
+For significantly faster performance, you can configure the application to use remote models hosted by Together AI.
+
+1.  **Get an API Key:** Sign up for a free account at <https://www.together.ai/> and get your API key.
+2.  **Store Your API Key:**
+    * In the project's root directory, find the file named `.env.example`.
+    * Make a copy of this file and rename the copy to `.env`.
+    * Open the new `.env` file and replace `"YOUR_API_KEY_HERE"` with your actual Together AI key.
+    * The `.env` file is listed in `.gitignore`, so your secret key will never be committed to the repository.
+3.  **Select a Model in the UI:** When you run the notebook, the "Select Model" dropdown will now include models prefixed with `togetherai/`. Choosing one of these will use the fast remote API instead of your local Ollama server.
+
+### 3. Setup the Python Environment
 
 1.  Navigate to the project folder and create a virtual environment.
-2.  Install dependencies: `pip install -r requirements.txt`
+2.  Install dependencies: `pip install -r requirements.txt`. This now includes the `python-dotenv` package needed to read your API key file.
 
-### 3. Launch the Notebook
+### 4. Launch the Notebook
 
 1.  Start the Jupyter Server: `jupyter notebook`
-2.  Run the Demo: Open `notebooks/demo.ipynb` and execute the cells.
+2.  Run the Demo: Open `notebooks/event_chatbot_demo.ipynb` and execute the cells.
 
 ---
 
@@ -99,9 +111,9 @@ These are simple, one-shot commands that don't rely on past interactions.
 
 ---
 
-### Stateful Domain: Event Management
+## Stateful Domain: Event Management
 
-This is the most advanced domain, demonstrating statefulness and Role-Based Access Control (RBAC). It simulates managing a conference by creating venues and scheduling sessions, with a strict set of rules enforced by the interpreter.
+This is the most advanced domain, demonstrating statefulness, Role-Based Access Control (RBAC), and a conversational interface. It simulates managing a conference by creating venues and scheduling sessions, with a strict set of rules enforced by the interpreter.
 
 #### Core Concepts
 
@@ -109,6 +121,10 @@ This is the most advanced domain, demonstrating statefulness and Role-Based Acce
 * **Role-Based Access Control (RBAC)**: To control who can do what, the system implements two user roles:
     * **`admin`**: Full permissions. Can create/modify venues and schedule sessions.
     * **`scheduler`**: Limited permissions. Can only schedule sessions in existing venues.
+* **Conversational Interface**: The system now functions as an interactive chatbot. If a user's request is incomplete (e.g., they ask to schedule a session but don't specify a venue), the assistant will not fail. Instead, it will ask a clarifying question and provide helpful suggestions based on the user's requirements. It then uses the context from the user's follow-up response to successfully complete the original request.
+
+*Example: A user provides an incomplete request, and the assistant asks for clarification, leading to a successful multi-turn booking.*
+![Successful multi-turn booking](docs/multi_turn_success.png)
 
 #### Understanding the DSL and its Commands
 
