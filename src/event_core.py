@@ -4,17 +4,28 @@ import json
 import re
 import os
 from typing import Dict, Any, List
+from pathlib import Path
 
-# NEW: Import the dotenv library
-from dotenv import load_dotenv
+
+def load_api_key_manually():
+    try:
+        project_root = Path(__file__).parent.parent
+        dotenv_path = project_root / '.env'
+        if not dotenv_path.exists(): return
+        with open(dotenv_path) as f:
+            for line in f:
+                if line.strip() and not line.strip().startswith('#'):
+                    key, value = line.strip().split('=', 1)
+                    value = value.strip("'\"")
+                    os.environ[key] = value
+    except Exception:
+        pass
+
+load_api_key_manually()
 
 from .framework.base_interpreter import execute_dsl
 from .domains.event.interpreter import EventInterpreter
 
-# NEW: Load variables from the .env file into the environment
-load_dotenv()
-
-# --- Configuration & State Management ---
 class AppConfig:
     LLM_API_URL = "http://localhost:11434/api/generate"
     DEFAULT_MODEL = "llama3:8b"
@@ -38,39 +49,21 @@ def save_state(state: Dict[str, Any]):
     with open(AppConfig.STATE_FILE, 'w') as f:
         json.dump(state, f, indent=2)
 
-# --- Core Logic ---
 def _execute_llm_request(prompt: str, model_name: str, is_json_format: bool = False) -> str:
-    """
-    Handles LLM requests for BOTH local Ollama and remote Together AI models.
-    """
     if model_name.startswith("togetherai/"):
-        # The os.getenv call now reads the key loaded from the .env file
         api_key = os.getenv("TOGETHER_API_KEY")
-        if not api_key:
-            raise ValueError("TOGETHER_API_KEY not found. Please create a .env file with your key.")
-        
+        if not api_key: raise ValueError("TOGETHER_API_KEY not found. Please check your .env file.")
         together_model_name = model_name.split("/", 1)[1]
-        
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        }
-        
-        payload = {
-            "model": together_model_name,
-            "messages": [{"role": "user", "content": prompt}],
-        }
-        if is_json_format:
-            payload["response_format"] = {"type": "json_object"}
-            
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        payload = {"model": together_model_name, "messages": [{"role": "user", "content": prompt}]}
+        if is_json_format: payload["response_format"] = {"type": "json_object"}
         try:
             response = requests.post("https://api.together.xyz/v1/chat/completions", headers=headers, json=payload, timeout=90)
             response.raise_for_status()
             return response.json()['choices'][0]['message']['content']
         except requests.exceptions.RequestException as e:
             raise ConnectionError(f"Together AI API request failed: {e}")
-
-    else: # Fallback to existing Ollama logic
+    else:
         try:
             payload = {"model": model_name, "prompt": prompt, "stream": False}
             if is_json_format: payload["format"] = "json"
@@ -80,7 +73,6 @@ def _execute_llm_request(prompt: str, model_name: str, is_json_format: bool = Fa
         except requests.exceptions.RequestException as e:
             raise ConnectionError(f"Ollama API request failed: {e}")
 
-# --- The rest of the file remains the same ---
 def _normalize_string(value: str) -> str:
     return str(value).strip().strip("'\"")
 
@@ -133,6 +125,7 @@ Your response to the user:
 def process_event_request_simple(conversation_history: List[Dict], role: str, model_name: str) -> Dict:
     state = load_state()
     latest_user_query = conversation_history[-1]['content']
+    
     if len(conversation_history) <= 2:
         is_scheduling_request = any(keyword in latest_user_query.lower() for keyword in ["schedule", "book", "session", "talk"])
         venues = state.get("venues", {})
@@ -141,13 +134,30 @@ def process_event_request_simple(conversation_history: List[Dict], role: str, mo
             clarification_prompt = generate_clarification_prompt_for_missing_venue(latest_user_query, state)
             final_message = _execute_llm_request(clarification_prompt, model_name)
             return {"status": "clarification_needed", "message": final_message}
+
     history_str = ""
     for turn in conversation_history:
         speaker = "User" if turn['role'] == 'user' else 'Assistant'
         history_str += f"{speaker}: {turn['content']}\n"
-    prompt_template = f"""You are a system that translates a user's request into a single, structured JSON command. Analyze the user's LATEST message in the context of the ENTIRE conversation history to gather all necessary details. If the latest message is a response to your question, you MUST combine the information from the history to form a complete command.
+            
+    prompt_template = f"""You are a system that translates a user's request into a single, structured JSON command. Analyze the user's LATEST message in the context of the ENTIRE conversation history to gather all necessary details. Your task is to create one JSON object containing the appropriate action. The JSON should only have one of these top-level keys: "create_venues" or "schedule_sessions".
 ---
-[EXAMPLE]
+[EXAMPLE 1: Creating a venue]
+CONVERSATION HISTORY:
+Assistant: Hello! I'm ready to help you plan your event.
+User: Please create a new room called 'Side Hall' with a capacity for 25 people. It does not need AV.
+JSON FOR LATEST MESSAGE ("Please create a new room..."):
+{{
+  "create_venues": [
+    {{
+      "name": "Side Hall",
+      "capacity": 25,
+      "has_av_system": false
+    }}
+  ]
+}}
+---
+[EXAMPLE 2: Scheduling a session with a follow-up]
 CONVERSATION HISTORY:
 Assistant: Hello! I'm ready to help you plan your event.
 User: I need to schedule a talk on 'Advanced AI' for 150 people. It needs AV.
@@ -170,6 +180,7 @@ CONVERSATION HISTORY:
 {history_str}
 JSON FOR LATEST MESSAGE ("{latest_user_query}"):
 """
+
     try:
         llm_json_output = _execute_llm_request(prompt_template, model_name, is_json_format=True)
         llm_dsl_code = assemble_event_dsl_from_json(llm_json_output, role)
@@ -179,3 +190,47 @@ JSON FOR LATEST MESSAGE ("{latest_user_query}"):
         return {"status": "success", "message": dsl_result['message']}
     except (ValueError, ConnectionError) as e:
         return {"status": "error", "message": f"🔴 Validation Error: {e}"}
+
+def orchestrate_long_text_request(full_text: str, role: str, model_name: str) -> Dict:
+    """
+    Detects if text is a long document, and if so, pre-processes it to extract tasks.
+    Otherwise, it processes the text as a simple, single command.
+    """
+    # Heuristic: If text is long, assume it's a document to be processed.
+    if len(full_text) > 200:
+        pre_processor_prompt = f"""You are a task extraction assistant. Read the following document and identify all distinct event management tasks.
+The only valid tasks are creating venues and scheduling sessions.
+For each task you find, formulate a simple, self-contained, one-sentence command.
+Output your findings as a JSON object with a single key "tasks" which contains a list of these command strings.
+
+DOCUMENT:
+---
+{full_text}
+---
+
+JSON with extracted tasks:
+"""
+        try:
+            extracted_tasks_json = _execute_llm_request(pre_processor_prompt, model_name, is_json_format=True)
+            task_data = json.loads(extracted_tasks_json)
+            tasks = task_data.get("tasks", [])
+            
+            if not tasks:
+                return {"status": "error", "message": "I read the document, but couldn't find any actionable tasks like creating a venue or scheduling a session."}
+
+          
+            results = []
+            for task in tasks:
+                task_history = [{'role': 'user', 'content': task}]
+                result = process_event_request_simple(task_history, role, model_name)
+                results.append(result['message'])
+            
+            summary = "I've processed the document and performed the following actions:\n- " + "\n- ".join(results)
+            return {"status": "success", "message": summary}
+
+        except Exception as e:
+            return {"status": "error", "message": f"🔴 Error during document processing: {e}"}
+
+    else:
+        conversation_history = [{'role': 'user', 'content': full_text}]
+        return process_event_request_simple(conversation_history, role, model_name)

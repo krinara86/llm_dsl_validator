@@ -27,6 +27,30 @@
     "Grand Ballroom 3": {
       "capacity": 5000.0,
       "has_av_system": false
+    },
+    "Room A": {
+      "capacity": 10.0,
+      "has_av_system": false
+    },
+    "Room B": {
+      "capacity": 40.0,
+      "has_av_system": true
+    },
+    "Room C": {
+      "capacity": 20.0,
+      "has_av_system": true
+    },
+    "Room D": {
+      "capacity": 60.0,
+      "has_av_system": true
+    },
+    "Automatically Assigned Venue Name": {
+      "capacity": 45.0,
+      "has_av_system": true
+    },
+    "Innovation Center": {
+      "capacity": 0,
+      "has_av_system": false
     }
   },
   "sessions": [
@@ -56,12 +80,26 @@
       "in_venue": "Grand Ballroom 2",
       "expected_attendees": 500.0,
       "requires_av": true
+    },
+    {
+      "name": "Static analysis",
+      "in_venue": "Grand Ballroom",
+      "expected_attendees": 400.0,
+      "requires_av": false
+    },
+    {
+      "name": "Why AI sucks",
+      "in_venue": "Workshop A",
+      "expected_attendees": 20.0,
+      "requires_av": false
     }
   ],
   "venue_bookings": {
     "Main Auditorium": "Keynote Address",
     "Lecture Hall": "Advanced AI",
     "Grand Ballroom 3": "Some talk",
-    "Grand Ballroom 2": "AI DSL convergence"
+    "Grand Ballroom 2": "AI DSL convergence",
+    "Grand Ballroom": "Static analysis",
+    "Workshop A": "Why AI sucks"
   }
 }
