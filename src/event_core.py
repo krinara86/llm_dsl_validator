@@ -5,8 +5,14 @@ import re
 import os
 from typing import Dict, Any, List
 
+# NEW: Import the dotenv library
+from dotenv import load_dotenv
+
 from .framework.base_interpreter import execute_dsl
 from .domains.event.interpreter import EventInterpreter
+
+# NEW: Load variables from the .env file into the environment
+load_dotenv()
 
 # --- Configuration & State Management ---
 class AppConfig:
@@ -34,16 +40,47 @@ def save_state(state: Dict[str, Any]):
 
 # --- Core Logic ---
 def _execute_llm_request(prompt: str, model_name: str, is_json_format: bool = False) -> str:
-    """LLM request handler with a timeout to prevent freezing."""
-    try:
-        payload = {"model": model_name, "prompt": prompt, "stream": False}
-        if is_json_format: payload["format"] = "json"
-        response = requests.post(AppConfig.LLM_API_URL, json=payload, timeout=90)
-        response.raise_for_status()
-        return response.json().get('response', '')
-    except requests.exceptions.RequestException as e:
-        raise ConnectionError(f"API request failed: {e}")
+    """
+    Handles LLM requests for BOTH local Ollama and remote Together AI models.
+    """
+    if model_name.startswith("togetherai/"):
+        # The os.getenv call now reads the key loaded from the .env file
+        api_key = os.getenv("TOGETHER_API_KEY")
+        if not api_key:
+            raise ValueError("TOGETHER_API_KEY not found. Please create a .env file with your key.")
+        
+        together_model_name = model_name.split("/", 1)[1]
+        
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+        
+        payload = {
+            "model": together_model_name,
+            "messages": [{"role": "user", "content": prompt}],
+        }
+        if is_json_format:
+            payload["response_format"] = {"type": "json_object"}
+            
+        try:
+            response = requests.post("https://api.together.xyz/v1/chat/completions", headers=headers, json=payload, timeout=90)
+            response.raise_for_status()
+            return response.json()['choices'][0]['message']['content']
+        except requests.exceptions.RequestException as e:
+            raise ConnectionError(f"Together AI API request failed: {e}")
 
+    else: # Fallback to existing Ollama logic
+        try:
+            payload = {"model": model_name, "prompt": prompt, "stream": False}
+            if is_json_format: payload["format"] = "json"
+            response = requests.post(AppConfig.LLM_API_URL, json=payload, timeout=90)
+            response.raise_for_status()
+            return response.json().get('response', '')
+        except requests.exceptions.RequestException as e:
+            raise ConnectionError(f"Ollama API request failed: {e}")
+
+# --- The rest of the file remains the same ---
 def _normalize_string(value: str) -> str:
     return str(value).strip().strip("'\"")
 
@@ -75,18 +112,13 @@ def generate_clarification_prompt_for_missing_venue(user_query: str, state: dict
     attendees_match = re.search(r"(\d+)\s*(people|seats|attendees)", user_query, re.IGNORECASE)
     attendees_req = int(attendees_match.group(1)) if attendees_match else 0
     av_req = "av" in user_query.lower() or "audio visual" in user_query.lower()
-
     suggestions = []
     for name, props in state.get("venues", {}).items():
         if name not in state.get("venue_bookings", {}) and props.get("capacity", 0) >= attendees_req:
             if av_req and not props.get("has_av_system", False): continue
             suggestions.append(f"- '{name}' (Capacity: {int(props.get('capacity',0))}, Has A/V: {props.get('has_av_system')})")
-    
-    if suggestions:
-        context = "Based on your request, here are some available venues that might work:\n" + "\n".join(suggestions)
-    else:
-        context = "Unfortunately, no currently available venues meet the requirements."
-
+    if suggestions: context = "Based on the request, here are some available venues that might work:\n" + "\n".join(suggestions)
+    else: context = "Unfortunately, no currently available venues meet the requirements."
     return f"""You are an event planning assistant. Your goal is to respond to a user who tried to schedule an event without a venue.
 Your task:
 1. Briefly explain that a venue is required.
@@ -101,35 +133,43 @@ Your response to the user:
 def process_event_request_simple(conversation_history: List[Dict], role: str, model_name: str) -> Dict:
     state = load_state()
     latest_user_query = conversation_history[-1]['content']
-    
-    # This logic combines the conversation history to form a complete request
-    query_to_process = latest_user_query
-    if len(conversation_history) > 2:
-        last_assistant_message = conversation_history[-2]['content'].lower()
-        # Checks if the assistant's last message was a question asking to choose a venue
-        if "which one would you like" in last_assistant_message or "which venue" in last_assistant_message:
-            # If so, combine the user's original request with their new answer
-            original_user_request = conversation_history[-3]['content']
-            query_to_process = f"{original_user_request} Please schedule it in the '{latest_user_query}'."
-
-    # Proactive check for missing venue
-    is_scheduling_request = any(keyword in query_to_process.lower() for keyword in ["schedule", "book", "session", "talk"])
-    if is_scheduling_request:
+    if len(conversation_history) <= 2:
+        is_scheduling_request = any(keyword in latest_user_query.lower() for keyword in ["schedule", "book", "session", "talk"])
         venues = state.get("venues", {})
-        is_venue_mentioned = any(venue.lower() in query_to_process.lower() for venue in venues)
-        if not is_venue_mentioned:
-            clarification_prompt = generate_clarification_prompt_for_missing_venue(query_to_process, state)
+        is_venue_mentioned = any(venue.lower() in latest_user_query.lower() for venue in venues)
+        if is_scheduling_request and not is_venue_mentioned:
+            clarification_prompt = generate_clarification_prompt_for_missing_venue(latest_user_query, state)
             final_message = _execute_llm_request(clarification_prompt, model_name)
             return {"status": "clarification_needed", "message": final_message}
-
-    # Standard logic now uses the combined query, which is much easier for the LLM
-    prompt_template = f"""You are a system that translates a user's request into a single, structured JSON command.
-Create a JSON command for the following request. The JSON should only have one of these top-level keys: "create_venues" or "schedule_sessions".
-
-User Request: "{query_to_process}"
-
-JSON Response:"""
-
+    history_str = ""
+    for turn in conversation_history:
+        speaker = "User" if turn['role'] == 'user' else 'Assistant'
+        history_str += f"{speaker}: {turn['content']}\n"
+    prompt_template = f"""You are a system that translates a user's request into a single, structured JSON command. Analyze the user's LATEST message in the context of the ENTIRE conversation history to gather all necessary details. If the latest message is a response to your question, you MUST combine the information from the history to form a complete command.
+---
+[EXAMPLE]
+CONVERSATION HISTORY:
+Assistant: Hello! I'm ready to help you plan your event.
+User: I need to schedule a talk on 'Advanced AI' for 150 people. It needs AV.
+Assistant: I can help with that. To proceed, we'll need to know which venue you'd like to book.
+User: Let's use the Lecture Hall.
+JSON FOR LATEST MESSAGE ("Let's use the Lecture Hall."):
+{{
+  "schedule_sessions": [
+    {{
+      "name": "Advanced AI",
+      "expected_attendees": 150,
+      "requires_av": true,
+      "in_venue": "Lecture Hall"
+    }}
+  ]
+}}
+---
+[CURRENT TASK]
+CONVERSATION HISTORY:
+{history_str}
+JSON FOR LATEST MESSAGE ("{latest_user_query}"):
+"""
     try:
         llm_json_output = _execute_llm_request(prompt_template, model_name, is_json_format=True)
         llm_dsl_code = assemble_event_dsl_from_json(llm_json_output, role)
@@ -137,6 +177,5 @@ JSON Response:"""
         dsl_result = execute_dsl(llm_dsl_code, AppConfig.get_grammar_path('src/domains/event/grammar.dsl'), interpreter)
         save_state(dsl_result['new_state'])
         return {"status": "success", "message": dsl_result['message']}
-
     except (ValueError, ConnectionError) as e:
         return {"status": "error", "message": f"🔴 Validation Error: {e}"}

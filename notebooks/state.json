@@ -50,11 +50,18 @@
       "in_venue": "grand ballroom 3",
       "expected_attendees": 4000.0,
       "requires_av": false
+    },
+    {
+      "name": "AI DSL convergence",
+      "in_venue": "Grand Ballroom 2",
+      "expected_attendees": 500.0,
+      "requires_av": true
     }
   ],
   "venue_bookings": {
     "Main Auditorium": "Keynote Address",
     "Lecture Hall": "Advanced AI",
-    "Grand Ballroom 3": "Some talk"
+    "Grand Ballroom 3": "Some talk",
+    "Grand Ballroom 2": "AI DSL convergence"
   }
 }
