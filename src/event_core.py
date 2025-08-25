@@ -6,7 +6,6 @@ import os
 from typing import Dict, Any, List, Optional, Tuple
 from pathlib import Path
 
-# --- SETUP AND CONFIGURATION ---
 
 def load_api_key_manually():
     try:
@@ -36,7 +35,7 @@ class AppConfig:
     def get_grammar_path(grammar_file: str) -> str:
         return os.path.join(AppConfig.PROJECT_ROOT, grammar_file)
 
-# --- STATE MANAGEMENT ---
+
 
 def load_state() -> Dict[str, Any]:
     if not os.path.exists(AppConfig.STATE_FILE): 
@@ -54,7 +53,7 @@ def save_state(state: Dict[str, Any]):
     with open(AppConfig.STATE_FILE, 'w') as f:
         json.dump(state, f, indent=2)
 
-# --- LLM COMMUNICATION ---
+
 
 def _execute_llm_request(prompt: str, model_name: str, is_json_format: bool = False) -> str:
     if model_name.startswith("togetherai/"):
@@ -84,7 +83,7 @@ def _execute_llm_request(prompt: str, model_name: str, is_json_format: bool = Fa
         except requests.exceptions.RequestException as e:
             raise ConnectionError(f"Ollama API request failed: {e}")
 
-# --- SCHEMA DEFINITION ---
+
 
 SCHEMA = {
     "create_venue": {
@@ -118,7 +117,6 @@ SCHEMA = {
     }
 }
 
-# --- DSL ASSEMBLY ---
 
 def _normalize_string(value: str) -> str:
     return str(value).strip().strip("'\"")
@@ -156,7 +154,7 @@ def assemble_event_dsl_from_json(task_details: Dict, role: str) -> str:
     dsl.append('}')
     return "\n".join(dsl)
 
-# --- EXTRACTION AND PARSING ---
+
 
 def extract_task_details(query: str, model_name: str) -> Dict:
     prompt = f"""
