@@ -172,9 +172,10 @@ class ChatInterface:
         else:
             self._process_query(query)
     
-    def _process_query(self, query: str):
-        """Process a single query."""
-        self._add_message(f"<b>You:</b> {query}", 'user')
+    def _process_query(self, query: str, pre_filled_details: dict = None):
+        """Process a single query, potentially with pre-filled details."""
+        if not pre_filled_details:
+             self._add_message(f"<b>You:</b> {query}", 'user')
         self.user_input.value = ''
         
         # Process with system
@@ -182,7 +183,8 @@ class ChatInterface:
             query,
             self.role_selector.value,
             self.model_selector.value,
-            self.conversation_state
+            self.conversation_state,
+            pre_filled_details
         )
         
         self.conversation_state = result.get('new_state', self.conversation_state)
@@ -231,10 +233,19 @@ class ChatInterface:
             return
         
         self.current_task_index = self.total_tasks - len(self.task_queue) + 1
-        task = self.task_queue.pop(0)
+        task_object = self.task_queue.pop(0)
         
-        self._add_message(f"<b>Task {self.current_task_index}:</b> {task}", 'system')
-        self._process_query(task)
+        task_description = task_object.get("task_description", "Unnamed Task")
+        
+        # *** FIX IS HERE ***
+        # Package the extracted action and details into the format the orchestrator expects.
+        details_for_orchestrator = {
+            "action": task_object.get("action", "unknown"),
+            "parameters": task_object.get("details", {})
+        }
+        
+        self._add_message(f"<b>Processing Task {self.current_task_index}/{self.total_tasks}:</b> {task_description}", 'system')
+        self._process_query(task_description, details_for_orchestrator)
     
     def _on_confirm(self, b):
         """Handle confirmation button click."""

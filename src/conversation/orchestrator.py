@@ -1,4 +1,5 @@
 # src/conversation/orchestrator.py
+import re
 from typing import Dict, List
 from ..core.state_manager import StateManager
 from ..core.config import AppConfig
@@ -17,7 +18,7 @@ class ConversationOrchestrator:
         self.clarifier = ClarificationGenerator(self.state_manager)
     
     def process_request(self, query: str, role: str, model_name: str,
-                       conversation_state: Dict = None) -> Dict:
+                       conversation_state: Dict = None, pre_filled_details: Dict = None) -> Dict:
         """Process a user request through the conversation flow."""
         
         if not conversation_state:
@@ -28,11 +29,15 @@ class ConversationOrchestrator:
         # Handle clarification responses
         if conversation_state.get("status") == "awaiting_clarification":
             conversation_state = self._handle_clarification(
-                query, conversation_state, model_name
+                query, conversation_state
             )
         else:
-            # New request - extract task details
-            extracted = self.extractor.extract_task_details(query, model_name)
+            # New request - determine task details
+            if pre_filled_details and pre_filled_details.get('action') != 'unknown':
+                extracted = pre_filled_details
+            else:
+                extracted = self.extractor.extract_task_details(query, model_name)
+            
             if extracted.get("action") in [None, "unknown", "error"]:
                 return self._error_response(
                     "I couldn't understand your request. Please try rephrasing."
@@ -73,7 +78,6 @@ class ConversationOrchestrator:
         """Validate the request against permissions and state."""
         action = task_details.get("action")
         
-        # Check permissions
         if action in DOMAIN_SCHEMA:
             allowed_roles = DOMAIN_SCHEMA[action].get("permissions", [])
             if role not in allowed_roles:
@@ -88,58 +92,79 @@ class ConversationOrchestrator:
                     "new_state": {}
                 }
         
-        # Additional validation can be added here
         return {"status": "ok"}
-    
-    def _handle_clarification(self, query: str, conversation_state: Dict,
-                            model_name: str) -> Dict:
-        """Handle a clarification response from the user."""
+
+    def _handle_clarification(self, query: str, conversation_state: Dict) -> Dict:
+        """Handle a batch clarification response from the user."""
         missing_params = conversation_state.get("missing_params", [])
         if not missing_params:
             return conversation_state
-        
-        current_param = missing_params[0]
+
         task_details = conversation_state.get("task_details", {})
         action = task_details.get("action")
-        param_type = DOMAIN_SCHEMA.get(action, {}).get(
-            "param_types", {}
-        ).get(current_param, "text")
+        param_types = DOMAIN_SCHEMA.get(action, {}).get("param_types", {})
         
-        # Parse the response based on parameter type
-        if param_type == "boolean":
-            value = TaskExtractor.parse_boolean(query)
-        elif param_type == "number":
-            value = TaskExtractor.parse_number(query)
-        elif param_type == "venue_selection":
-            # Try to match venue name
-            state = self.state_manager.load()
-            value = None
-            for venue_name in state.get("venues", {}).keys():
-                if venue_name.lower() in query.lower():
-                    value = venue_name
-                    break
-            if not value:
-                value = query.strip()
-        else:
-            value = query.strip()
+        updated_params = {}
         
-        # Update task details
+        # Try to parse key:value pairs
+        lines = query.strip().split('\n')
+        key_value_pattern = re.compile(r"([\w\s_]+)\s*:\s*(.+)")
+        
+        found_key_value = False
+        for line in lines:
+            match = key_value_pattern.match(line.strip())
+            if match:
+                found_key_value = True
+                key = match.group(1).strip().replace(' ', '_').lower()
+                raw_value = match.group(2).strip()
+                for param in missing_params:
+                    if param.lower() == key:
+                        updated_params[param] = raw_value
+                        break
+        
+        # If no key:value pairs found AND only one thing was missing,
+        # assume the whole query is the value for that single parameter.
+        if not found_key_value and len(missing_params) == 1:
+            param = missing_params[0]
+            updated_params[param] = query.strip()
+        
+        # Update task details with parsed values
         if "parameters" not in task_details:
             task_details["parameters"] = {}
-        task_details["parameters"][current_param] = value
+            
+        for param, raw_value in updated_params.items():
+            param_type = param_types.get(param, "text")
+            value = None
+
+            if param_type == "boolean":
+                value = TaskExtractor.parse_boolean(raw_value)
+            elif param_type == "number":
+                value = TaskExtractor.parse_number(raw_value)
+            elif param_type == "venue_selection":
+                state = self.state_manager.load()
+                # Prioritize exact match, then case-insensitive, then substring
+                exact_match = next((v for v in state.get("venues", {}) if v == raw_value), None)
+                case_match = next((v for v in state.get("venues", {}) if v.lower() == raw_value.lower()), None)
+                substring_match = next((v for v in state.get("venues", {}) if raw_value.lower() in v.lower()), None)
+                value = exact_match or case_match or substring_match or raw_value
+            else:
+                value = raw_value
+                
+            task_details["parameters"][param] = value
+
         conversation_state["task_details"] = task_details
-        
         return conversation_state
-    
+
     def _request_clarification(self, understanding: Dict,
                              conversation_state: Dict,
                              role: str, model_name: str) -> Dict:
-        """Request clarification for missing parameters."""
+        """Request clarification for all missing parameters at once."""
+        missing_params = understanding["missing_params"]
         conversation_state["status"] = "awaiting_clarification"
-        conversation_state["missing_params"] = understanding["missing_params"]
+        conversation_state["missing_params"] = missing_params
         
         clarification_msg = self.clarifier.generate_message(
-            [understanding["missing_params"][0]],
+            missing_params,
             conversation_state["task_details"],
             role,
             model_name

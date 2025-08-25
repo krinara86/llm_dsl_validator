@@ -51,6 +51,26 @@
     "Innovation Center": {
       "capacity": 0,
       "has_av_system": false
+    },
+    "Room X": {
+      "capacity": 45.0,
+      "has_av_system": false
+    },
+    "Room 1": {
+      "capacity": 10.0,
+      "has_av_system": false
+    },
+    "Room 2": {
+      "capacity": 40.0,
+      "has_av_system": true
+    },
+    "Room 5": {
+      "capacity": 109.0,
+      "has_av_system": false
+    },
+    "Room 6": {
+      "capacity": 407.0,
+      "has_av_system": true
     }
   },
   "sessions": [
@@ -118,6 +138,20 @@
       "in_venue": "Room C",
       "expected_attendees": 5.0,
       "requires_av": true
+    },
+    {
+      "name": "Some talk",
+      "hosted_by": "PersonY",
+      "in_venue": "Room 1",
+      "expected_attendees": 10.0,
+      "requires_av": false
+    },
+    {
+      "name": "Random talk by Z",
+      "hosted_by": "PersonZ",
+      "in_venue": "Room 6",
+      "expected_attendees": 30.0,
+      "requires_av": false
     }
   ],
   "venue_bookings": {
@@ -130,6 +164,8 @@
     "Room B": "Cricket for dummies",
     "Workshop B": "Why AI sucks",
     "Room D": "Maarten Fekkers",
-    "Room C": "talk by Krishna"
+    "Room C": "talk by Krishna",
+    "Room 1": "Some talk",
+    "Room 6": "Random talk by Z"
   }
 }
