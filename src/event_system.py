@@ -19,10 +19,9 @@ class EventSystem:
         self.state_manager = StateManager(AppConfig.STATE_FILE)
     
     def process_query(self, query: str, role: str, model_name: str,
-                     conversation_state: dict = None) -> dict:
-        """Process a single query."""
+                     conversation_state: dict = None, pre_filled_details: dict = None) -> dict:
         return self.orchestrator.process_request(
-            query, role, model_name, conversation_state
+            query, role, model_name, conversation_state, pre_filled_details
         )
     
     def execute_task(self, role: str, conversation_state: dict) -> dict:
@@ -30,7 +29,6 @@ class EventSystem:
         return self.executor.execute(role, conversation_state)
     
     def process_document(self, document: str, role: str, model_name: str) -> dict:
-        """Process a document containing multiple tasks."""
         return self.document_processor.extract_tasks(document, model_name)
     
     def get_current_state(self) -> dict:

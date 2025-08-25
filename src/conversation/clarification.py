@@ -11,37 +11,46 @@ class ClarificationGenerator:
     def generate_message(self, missing_params: List[str], 
                         task_details: Dict, role: str, 
                         model_name: str) -> str:
-        """Generate a clarification message for missing parameters."""
+        """Generate a single clarification message for all missing parameters."""
         
-        messages = []
+        if not missing_params:
+            return ""
+
         state = self.state_manager.load()
+        action = task_details.get("action", "")
         
+        # Introduction
+        messages = [
+            f"<b>To proceed with '{action.replace('_', ' ').title()}', please provide the following details.</b>",
+            "<i>Reply with each item on a new line, like this:</i>",
+            "<pre style='background-color:#f5f5f5; padding:5px; border-radius:3px;'>parameter_name: your_value</pre>"
+        ]
+
+        # Individual parameter prompts
         for param in missing_params:
-            action = task_details.get("action", "")
             param_type = DOMAIN_SCHEMA.get(action, {}).get(
                 "param_types", {}
             ).get(param, "text")
             
+            msg = ""
             if param == "in_venue":
                 msg = self._venue_clarification(task_details, state)
-            elif param == "name":
-                msg = "<b>Please provide the name:</b><br><i>Type the exact name you want to use.</i>"
             elif param in ["capacity", "expected_attendees"]:
-                msg = f"<b>Please provide the {param.replace('_', ' ')}:</b><br><i>Enter a number (e.g., 50)</i>"
+                msg = f"• <b>{param}</b>: (Enter a number, e.g., 50)"
             elif param in ["has_av_system", "requires_av"]:
-                question = param.replace('_', ' ').replace('has', 'have').replace('requires', 'require')
-                msg = f"<b>Does it {question}?</b><br><i>Answer: yes or no</i>"
+                msg = f"• <b>{param}</b>: (Answer 'yes' or 'no')"
             elif param == "hosted_by":
-                msg = "<b>Who is hosting this session?</b><br><i>Enter the host's name</i>"
-            else:
-                msg = f"<b>Please provide {param.replace('_', ' ')}:</b><br><i>Enter the value</i>"
+                msg = f"• <b>{param}</b>: (Enter the host's name)"
+            else: # Catches 'name' and any other text fields
+                msg = f"• <b>{param}</b>: (Enter the desired text)"
             
-            messages.append(msg)
+            if msg:
+                messages.append(msg)
         
-        return "<br><br>".join(messages)
+        return "<br>".join(messages)
     
     def _venue_clarification(self, task_details: Dict, state: Dict) -> str:
-        """Generate venue selection clarification."""
+        """Generate venue selection clarification with available options."""
         attendees_req = task_details.get("parameters", {}).get("expected_attendees", 0)
         av_req = task_details.get("parameters", {}).get("requires_av", False)
         
@@ -53,16 +62,14 @@ class ClarificationGenerator:
                 if capacity >= attendees_req and (not av_req or has_av):
                     suitable_venues.append((name, capacity, has_av))
         
+        msg = f"• <b>in_venue</b>: (Choose from the available options below)"
         if suitable_venues:
-            msg = "<b>Please select a venue from the available options:</b><br>"
-            msg += "<ul style='margin: 5px 0;'>"
+            msg += "<ul style='margin-top: 4px;'>"
             for venue_name, capacity, has_av in suitable_venues:
                 av_text = "Has A/V" if has_av else "No A/V"
-                msg += f"<li><b>{venue_name}</b> (Capacity: {capacity}, {av_text})</li>"
+                msg += f"<li><code>{venue_name}</code> (Capacity: {capacity}, {av_text})</li>"
             msg += "</ul>"
-            msg += "<i>Type the exact name of your chosen venue.</i>"
         else:
-            msg = "<b>No venues currently meet your requirements.</b><br>"
-            msg += "Please create a suitable venue first or adjust your requirements."
+            msg += "<br><i>(No suitable venues are currently available.)</i>"
         
         return msg
