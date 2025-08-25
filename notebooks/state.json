@@ -106,6 +106,18 @@
       "in_venue": "Workshop B",
       "expected_attendees": 24.0,
       "requires_av": false
+    },
+    {
+      "name": "Maarten Fekkers",
+      "in_venue": "Room D",
+      "expected_attendees": 10.0,
+      "requires_av": false
+    },
+    {
+      "name": "talk by Krishna",
+      "in_venue": "Room C",
+      "expected_attendees": 5.0,
+      "requires_av": true
     }
   ],
   "venue_bookings": {
@@ -116,6 +128,8 @@
     "Grand Ballroom": "Static analysis",
     "Workshop A": "Why AI sucks",
     "Room B": "Cricket for dummies",
-    "Workshop B": "Why AI sucks"
+    "Workshop B": "Why AI sucks",
+    "Room D": "Maarten Fekkers",
+    "Room C": "talk by Krishna"
   }
 }
