@@ -1,5 +1,7 @@
 # src/conversation/document_processor.py
 import json
+# --- NEW ---
+import re
 from typing import Dict, List
 from ..core.llm_client import LLMClient
 
@@ -47,7 +49,19 @@ You are an expert event management assistant. Your task is to analyze the docume
             response_str = LLMClient.execute_request(
                 prompt, model_name, is_json_format=True
             )
-            result = json.loads(response_str)
+            
+            # --- NEW: Robust JSON extraction ---
+            # Find the JSON block within the potentially noisy response string
+            json_match = re.search(r'\{.*\}', response_str, re.DOTALL)
+            
+            if not json_match:
+                # This handles cases where the model returns an empty string or no JSON
+                raise json.JSONDecodeError("No JSON object found in the model's response.", response_str, 0)
+            
+            clean_json_str = json_match.group(0)
+            result = json.loads(clean_json_str)
+            # --- END NEW ---
+
             tasks = result.get("tasks", [])
 
             if not tasks:

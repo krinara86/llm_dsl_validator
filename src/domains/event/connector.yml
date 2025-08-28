@@ -1,0 +1,94 @@
+# The single source of truth for all natural language interactions in the Event Management domain.
+domain_name: "Event Management"
+
+actions:
+  create_venue:
+    description: "Creates a new venue, such as a conference room or auditorium, for events."
+    parameters:
+      name:
+        description: "The unique name for the new venue. For example, 'Grand Ballroom' or 'Room 201'."
+        clarification_prompt: "What would you like to name the new venue?"
+        examples:
+          - "Grand Ballroom"
+          - "Room 201"
+          - "Innovation Hub"
+      capacity:
+        description: "The maximum number of people the venue can hold."
+        clarification_prompt: "What is the maximum capacity of this venue?"
+        examples:
+          - "150"
+          - "50"
+      has_av_system:
+        description: "A boolean (true/false) indicating if the venue is equipped with an audio/visual system."
+        clarification_prompt: "Does this venue have an A/V system? (yes/no)"
+        examples:
+          - "yes"
+          - "no"
+    error_messages:
+      validation_error: "I'm sorry, but a venue with that name already exists. Please choose a different name."
+      permission_denied: "You do not have the required 'admin' role to create a new venue."
+      generic_error: "An unexpected error occurred while trying to create the venue."
+
+  modify_venue:
+    description: "Modifies the properties of an existing venue, such as its capacity or A/V status."
+    parameters:
+      name:
+        description: "The name of the existing venue to modify."
+        clarification_prompt: "What is the name of the venue you want to modify?"
+        examples:
+          - "Main Auditorium"
+          - "Workshop B"
+      capacity:
+        description: "The new maximum number of people the venue can hold."
+        clarification_prompt: "What is the new capacity for the venue?"
+        examples:
+          - "200"
+          - "75"
+      has_av_system:
+        description: "A boolean (true/false) indicating if the venue should now have an audio/visual system."
+        clarification_prompt: "Should this venue now have an A/V system? (yes/no)"
+        examples:
+          - "yes"
+          - "no"
+    error_messages:
+      validation_error: "I'm sorry, but I couldn't find a venue with that name to modify."
+      permission_denied: "You do not have the required 'admin' role to modify a venue."
+      generic_error: "An unexpected error occurred while trying to modify the venue."
+
+  schedule_session:
+    description: "Schedules a new session, talk, or presentation in one of the available venues."
+    parameters:
+      name:
+        description: "The official title of the session."
+        clarification_prompt: "What is the title of the session?"
+        examples:
+          - "Keynote Address"
+          - "Advanced AI Workshop"
+      in_venue:
+        description: "The name of the venue where the session will take place."
+        clarification_prompt: "Which venue should this session be in? I can show you available options that fit your needs."
+        examples:
+          - "Main Auditorium"
+          - "Room C"
+      expected_attendees:
+        description: "The number of people expected to attend the session."
+        clarification_prompt: "How many attendees are you expecting?"
+        examples:
+          - "100"
+          - "45"
+      requires_av:
+        description: "A boolean (true/false) indicating if the session requires an audio/visual system."
+        clarification_prompt: "Does this session require A/V equipment? (yes/no)"
+        examples:
+          - "yes"
+          - "no"
+      hosted_by:
+        description: "The name of the person or organization hosting the session."
+        clarification_prompt: "Who will be hosting or presenting this session?"
+        examples:
+          - "Jane Doe"
+          - "AI Corp"
+    error_messages:
+      validation_error: "There was a scheduling conflict. The venue might be booked, too small, or lack the required A/V system."
+      permission_denied: "You do not have the required 'admin' or 'scheduler' role to schedule a session."
+      generic_error: "An unexpected error occurred while trying to schedule the session."
