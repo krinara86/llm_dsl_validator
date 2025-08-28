@@ -23,8 +23,9 @@ DOMAIN_SCHEMA = {
         "permissions": ["admin"]
     },
     "schedule_session": {
-        "required": ["name", "in_venue", "expected_attendees", "requires_av"],
-        "optional": ["hosted_by"],
+        # --- MODIFIED ---
+        "required": ["name", "in_venue", "expected_attendees", "requires_av", "hosted_by"],
+        "optional": [],
         "param_types": {
             "name": "text",
             "in_venue": "venue_selection",

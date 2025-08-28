@@ -71,6 +71,58 @@
     "Room 6": {
       "capacity": 407.0,
       "has_av_system": true
+    },
+    "The Innovation Hub": {
+      "capacity": 75.0,
+      "has_av_system": true
+    },
+    "Workshop C": {
+      "capacity": 30.0,
+      "has_av_system": false
+    },
+    "Workshop D": {
+      "capacity": 50.0,
+      "has_av_system": true
+    },
+    "Workshop E": {
+      "capacity": 30.0,
+      "has_av_system": false
+    },
+    "Workshop F": {
+      "capacity": 50.0,
+      "has_av_system": true
+    },
+    "Workshop X": {
+      "capacity": 30.0,
+      "has_av_system": false
+    },
+    "Workshop Y": {
+      "capacity": 50.0,
+      "has_av_system": true
+    },
+    "The Innovation Hub 2": {
+      "capacity": 75.0,
+      "has_av_system": true
+    },
+    "Workshop 1": {
+      "capacity": 30.0,
+      "has_av_system": false
+    },
+    "Workshop 2": {
+      "capacity": 50.0,
+      "has_av_system": true
+    },
+    "The Innovation Hub 3": {
+      "capacity": 175.0,
+      "has_av_system": true
+    },
+    "Workshop 4": {
+      "capacity": 30.0,
+      "has_av_system": false
+    },
+    "Workshop 5": {
+      "capacity": 50.0,
+      "has_av_system": true
     }
   },
   "sessions": [
@@ -152,6 +204,47 @@
       "in_venue": "Room 6",
       "expected_attendees": 30.0,
       "requires_av": false
+    },
+    {
+      "name": "Next-Gen AI",
+      "in_venue": "Room A",
+      "expected_attendees": 5.0,
+      "requires_av": false
+    },
+    {
+      "name": "Agile Methodologies",
+      "hosted_by": "The Dev Team",
+      "in_venue": "Workshop D",
+      "expected_attendees": 45.0,
+      "requires_av": true
+    },
+    {
+      "name": "Agile Methodologies",
+      "hosted_by": "The Dev Team",
+      "in_venue": "Workshop F",
+      "expected_attendees": 45.0,
+      "requires_av": true
+    },
+    {
+      "name": "Agile Methodologies",
+      "hosted_by": "The Dev Team",
+      "in_venue": "Workshop Y",
+      "expected_attendees": 45.0,
+      "requires_av": true
+    },
+    {
+      "name": "AI and DSLs work together",
+      "hosted_by": "Krishna",
+      "in_venue": "Workshop 2",
+      "expected_attendees": 10.0,
+      "requires_av": false
+    },
+    {
+      "name": "Agile Methodologies",
+      "hosted_by": "The Dev Team",
+      "in_venue": "Workshop 5",
+      "expected_attendees": 45.0,
+      "requires_av": true
     }
   ],
   "venue_bookings": {
@@ -166,6 +259,12 @@
     "Room D": "Maarten Fekkers",
     "Room C": "talk by Krishna",
     "Room 1": "Some talk",
-    "Room 6": "Random talk by Z"
+    "Room 6": "Random talk by Z",
+    "Room A": "Next-Gen AI",
+    "Workshop D": "Agile Methodologies",
+    "Workshop F": "Agile Methodologies",
+    "Workshop Y": "Agile Methodologies",
+    "Workshop 2": "AI and DSLs work together",
+    "Workshop 5": "Agile Methodologies"
   }
 }
