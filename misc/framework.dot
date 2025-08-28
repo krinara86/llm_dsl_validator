@@ -1,0 +1,36 @@
+digraph Framework {
+    graph [rankdir=TD, splines=ortho, nodesep=0.6, pad="0.5"];
+    node [shape=box, style=rounded, fontname="Arial", fontsize=10];
+    edge [fontname="Arial", fontsize=9];
+
+    subgraph cluster_A {
+        label = "A. Expertise & Formalization";
+        bgcolor = "#f5f5f5";
+        
+        SME [label="Subject Matter Expert"];
+        LE [label="Language Engineer"];
+        SME -> LE [label="Defines Business Rules"];
+    }
+
+    subgraph cluster_B {
+        label = "B. System Blueprint (Source of Truth)";
+        bgcolor = "#E8F5E9";
+
+        DSL [label="Formal DSL\n(Business Rules & Validation)"];
+        Connector [label="Language Connector\n(Connects DSL to Plain Language)"];
+    }
+
+    subgraph cluster_C {
+        label = "C. Live Application";
+        bgcolor = "#f3e5f5";
+        
+        Agent [label="Conversational AI Assistant", shape=diamond];
+        User [label="End User", shape=ellipse];
+        User -> Agent [label=" Interacts via \n Plain Language "];
+    }
+    
+    LE -> {DSL, Connector} [label="Builds"];
+    
+    Connector -> Agent [label="Helps Understand User", style=dashed, arrowhead=odot];
+    DSL -> Agent [label="Enforces Rules / Guides Clarification", style=dashed, arrowhead=odot];
+}
