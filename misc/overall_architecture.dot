@@ -1,0 +1,51 @@
+digraph G {
+    rankdir=TB; // Top to Bottom
+    node [shape=box, style=filled, fillcolor=lightblue, fontname="Helvetica"];
+    edge [fontname="Helvetica"];
+
+    subgraph cluster_ui {
+        label = "UI Layer";
+        color = orange;
+        UI [label="User Interface\n(interface.py, ipynb)", fillcolor=lightgoldenrodyellow];
+    }
+
+    subgraph cluster_core_entry {
+        label = "Core System Entry";
+        color = green;
+        EventSystem [label="EventSystem\n(event_system.py)", fillcolor=powderblue];
+    }
+
+    subgraph cluster_conversation {
+        label = "Conversation Layer";
+        color = blue;
+        ConversationLayer [label="Orchestrator, Extractor,\nFormatter, Clarification, DocProcessor", fillcolor=lightgreen];
+    }
+
+    subgraph cluster_execution {
+        label = "Execution Layer";
+        color = red;
+        ExecutionLayer [label="Executor, DSLBuilder,\nInterpreter", fillcolor=lightcoral];
+    }
+
+    subgraph cluster_domain {
+        label = "Domain & Services";
+        color = purple;
+        DomainDefinition [label="Schema (schema.py),\nGrammar (grammar.dsl),\nConnector (connector.yml)", fillcolor=lightpink];
+        CoreServices [label="Config, StateManager,\nLLMClient, ConnectorLoader", fillcolor=lightgray];
+        ExternalLLM [label="External LLM", shape=cylinder, fillcolor=orange];
+        BackendDB [label="Backend DB", shape=cylinder, fillcolor=wheat];
+    }
+
+    UI -> EventSystem [label="User Request"];
+    EventSystem -> ConversationLayer [label="Process Query/Document"];
+    ConversationLayer -> ExecutionLayer [label="Confirmed Task" style=dashed]; // Dashed for a logical flow rather than direct call
+    EventSystem -> ExecutionLayer [label="Execute Confirmed Task"]; // Direct call from EventSystem after confirmation
+
+    ConversationLayer -> CoreServices [label="Uses LLMClient"];
+    ConversationLayer -> DomainDefinition [label="Uses Connector, Schema"];
+    CoreServices -> ExternalLLM [label="API Calls"];
+
+    ExecutionLayer -> DomainDefinition [label="Uses Grammar, Schema"];
+    ExecutionLayer -> CoreServices [label="Uses StateManager"];
+    CoreServices -> BackendDB [label="Read/Write Data"];
+}
