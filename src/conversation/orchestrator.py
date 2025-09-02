@@ -18,9 +18,6 @@ class ConversationOrchestrator:
         self.extractor = TaskExtractor()
         self.formatter = MessageFormatter()
         self.clarifier = ClarificationGenerator(self.state_manager)
-        # --- NEW ---
-        # Load the connector for the 'event' domain on initialization.
-        # In a multi-domain system, this could be determined dynamically.
         self.connector = load_connector('event')
     
     def process_request(self, query: str, role: str, model_name: str,
@@ -32,18 +29,14 @@ class ConversationOrchestrator:
         
         conversation_state["history"].append({"role": "user", "content": query})
         
-        # Handle clarification responses
         if conversation_state.get("status") == "awaiting_clarification":
             conversation_state = self._handle_clarification(
                 query, conversation_state
             )
         else:
-            # New request - determine task details
             if pre_filled_details and pre_filled_details.get('action') != 'unknown':
                 extracted = pre_filled_details
             else:
-                # --- MODIFIED ---
-                # Pass the connector to the extractor
                 extracted = self.extractor.extract_task_details(query, model_name, self.connector)
             
             if extracted.get("action") in [None, "unknown", "error"]:
@@ -53,25 +46,21 @@ class ConversationOrchestrator:
             conversation_state["task_details"] = extracted
             conversation_state["status"] = "processing"
         
-        # Validate permissions and requirements
         validation_result = self._validate_request(
             conversation_state["task_details"], role
         )
         if validation_result["status"] == "error":
             return validation_result
         
-        # Format understanding and check for missing parameters
         understanding = self.formatter.format_understanding(
             conversation_state["task_details"], role
         )
         
         if understanding["missing_params"]:
-            # Need clarification
             return self._request_clarification(
                 understanding, conversation_state, role, model_name
             )
         
-        # Ready for confirmation
         conversation_state["status"] = "awaiting_confirmation"
         conversation_state["missing_params"] = []
         
@@ -163,8 +152,6 @@ class ConversationOrchestrator:
         conversation_state["status"] = "awaiting_clarification"
         conversation_state["missing_params"] = missing_params
         
-        # --- MODIFIED ---
-        # Pass the connector to the clarifier
         clarification_msg = self.clarifier.generate_message(
             missing_params,
             conversation_state["task_details"],

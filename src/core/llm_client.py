@@ -44,7 +44,6 @@ class LLMClient:
         hf_model = model_name.split("/", 1)[1]
         
         try:
-            # Use the recommended InferenceClient
             client = InferenceClient(token=hf_token)
             
             # The free Inference API does not support enforced JSON mode.

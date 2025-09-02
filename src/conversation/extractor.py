@@ -9,7 +9,6 @@ class TaskExtractor:
     
     @staticmethod
     def extract_task_details(query: str, model_name: str, connector: Dict[str, Any]) -> Dict:
-        """Extract task details from user query using a dynamically generated prompt."""
         
         action_names = list(connector.get("actions", {}).keys())
         

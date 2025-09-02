@@ -3,8 +3,6 @@ import yaml
 from pathlib import Path
 from typing import Dict, Any
 
-# --- NEW ---
-# Simple in-memory cache to avoid re-reading the YAML file on every request.
 _connector_cache: Dict[str, Dict[str, Any]] = {}
 
 def load_connector(domain: str) -> Dict[str, Any]:
@@ -25,7 +23,6 @@ def load_connector(domain: str) -> Dict[str, Any]:
         return _connector_cache[domain]
 
     try:
-        # Assuming a standard project structure.
         project_root = Path(__file__).parent.parent.parent
         connector_path = project_root / "src" / "domains" / domain / "connector.yml"
 
