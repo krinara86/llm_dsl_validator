@@ -1,209 +1,117 @@
-# LLM-Powered DSL Validator
+# LLM-Powered DSL Framework
 
-This project explores a framework for building reliable, rule-based applications powered by Large Language Models (LLMs). It aims to leverage an LLM for its natural language understanding while using a deterministic, custom-built interpreter as a "source of truth" for enforcing critical domain-specific rules.
+This project is a framework for building reliable, rule-based applications that use a Large Language Model (LLM) for natural language understanding. The core principle is to leverage an LLM for its powerful language parsing capabilities while using a deterministic, custom-built interpreter to enforce critical, domain-specific rules.
 
-## Why Constrain an LLM?
+## The Semantic Firewall Concept
 
-Large Language Models are quite effective at interpreting human language. We can ask a model to plan a bike ride or calculate a bill, and it will often produce a correct answer. However, LLMs lack a deep, verifiable understanding of specific business rules and constraints. They might confidently make assumptions that are incorrect or unsafe in a given context.
+While LLMs are effective at interpreting human language, they lack a verifiable understanding of specific business rules and constraints. They might confidently hallucinate answers or make unsafe assumptions. This framework uses a Domain-Specific Language (DSL) and a custom interpreter to act as a **semantic firewall**, ensuring that the LLM's output conforms to a set of hard-coded, verifiable rules before any action is taken.
 
-This system demonstrates how a Domain-Specific Language (DSL) and a custom interpreter can act as a **semantic firewall**, ensuring that the LLM's output conforms to a set of hard-coded rules.
+The DSL interpreter doesn't just check syntax; it validates the *meaning* and *implications* of a request against a trusted model of the domain. For example:
 
-Consider these scenarios, which this system is designed to handle:
-
-1.  **User Error:** A user asks the restaurant bot, `"I'll have the steak for €15."`
-    * The LLM correctly translates this into the DSL.
-    * However, an interpreter written with the knowledge of the restaurant expert knows steak is not on the menu. The request is rejected, not because the language was misunderstood, but because it violated a fundamental business rule.
-
-2.  **LLM Misunderstanding:** A user tells the event planning bot, `"Schedule a 'Deep Dive' workshop in Workshop Room A for 30 people. It needs A/V."`
-    * This is a perfectly reasonable request. The LLM generates a syntactically valid DSL plan.
-    * But an interpreter that has been programmed with expert knowledge—**Workshop Room A does not have an A/V system**—will cross-reference the session's requirements with the venue's capabilities and invalidate the plan, preventing a real-world booking error.
-
-In essence, the motivation is this: the DSL interpreter doesn't just check syntax; it validates the *meaning* and *implications* of the request against a trusted model of the domain.
+* An LLM might correctly understand a request to schedule a 30-person meeting in "Workshop Room A".
+* However, a stateful interpreter, programmed with expert knowledge, knows that "Workshop Room A" has a maximum capacity of 20. It will reject the command, not because the language was misunderstood, but because it violated a fundamental business rule.
 
 ---
 
-## System Overview
+## System Architecture
 
-1.  **Translation:** An LLM takes a conversational, unstructured user query and translates it into a formal, structured representation using our custom DSLs.
-2.  **State Management:** For complex domains like Event Planning, the system is **stateful**. It loads the current state of the domain from a JSON file before processing a request.
-3.  **Interpretation & Validation:** A custom Python interpreter executes the DSL code. This interpreter is the "source of truth," enforcing all business logic, rules, and user permissions.
-4.  **State Persistence:** If the interpreter validates the command successfully, any changes to the state are saved back to the JSON file, persisting them for the next interaction.
+The framework is designed with a modular, layered architecture to separate concerns. This makes the system extensible, allowing new domains and DSLs to be added primarily through configuration rather than extensive code changes.
 
----
+![Overall System Architecture](misc/overall_architecture.png)
 
-## Usage Instructions
+1.  **UI Layer:** The user-facing component (e.g., a Jupyter Notebook) that captures user input and displays conversation history.
+2.  **Conversation Layer:**  It uses an **Orchestrator** to manage the conversation flow. It leverages an **Extractor** (powered by an LLM) to turn natural language into a structured command, a **Clarifier** to ask for missing information, and a **Formatter** to generate UI messages.
+3.  **Execution Layer:** Once a command is confirmed, control is shifted to the execution layer. A **DSL Builder** converts the structured command into a formal DSL string. This string is then parsed and executed by a domain-specific **Interpreter**.
+4.  **Domain Definition:** A new domain is defined by providing three key files:
+    * `connector.yml`: Provides natural language descriptions for the LLM.
+    * `schema.py`: Defines the formal structure, permissions, and DSL syntax of the domain.
+    * `grammar.dsl`: Defines the formal grammar for the DSL parser.
 
-The application interface in the Jupyter Notebook is straightforward.
-
-![UI Overview](docs/ui_overview.jpg)
-
-1.  **Select Model:** Choose which Ollama or Together AI model to use for generating the DSL.
-2.  **Select Domain:** Choose the business domain (e.g., Tax Calculation, Event Planning).
-3.  **Select Role (if applicable):** For domains like Event Planning, a role selector will appear.
-4.  **Enter User Query:** Write your request in natural language.
-5.  **Generate & Execute:** Click the button to run the process.
-6.  **Output Area:** The results appear below, showing the generated DSL and the success or failure message from the interpreter.
+![Conversation Flow](misc/conversation_flow.png)
 
 ---
 
-## How to Run
+## How to Run the Demo
 
 ### 1. Prerequisites: Install Ollama
 
-This demo requires a running Ollama server for local model inference.
+A running Ollama server is required for local model inference.
 
 1.  **Install Ollama:** Download from <https://ollama.com>.
-2.  **Download Models:** Open a terminal and run `ollama pull <model_name>` for each model you want to test (e.g., `llama3:8b`).
+2.  **Download a Model:** In a terminal, run `ollama pull llama3:8b`.
 
-### 2. Optional: Configure Together AI for Faster Performance
+### 2. Optional: Configure Together AI
 
-For significantly faster performance, you can configure the application to use remote models hosted by Together AI.
+For faster performance, you can use remote models from Together AI.
 
-1.  **Get an API Key:** Sign up for a free account at <https://www.together.ai/> and get your API key.
-2.  **Store Your API Key:**
-    * In the project's root directory, find the file named `.env.example`.
-    * Make a copy of this file and rename the copy to `.env`.
-    * Open the new `.env` file and replace `"YOUR_API_KEY_HERE"` with your actual Together AI key.
-    * The `.env` file is listed in `.gitignore`, so your secret key will never be committed to the repository.
-3.  **Select a Model in the UI:** When you run the notebook, the "Select Model" dropdown will now include models prefixed with `togetherai/`. Choosing one of these will use the fast remote API instead of your local Ollama server.
+1.  **Get an API Key:** Sign up at <https://www.together.ai/>.
+2.  **Store Your API Key:** Copy the `.env.example` file to a new file named `.env`. Open `.env` and paste your API key. The `.env` file is included in `.gitignore`, so your key will remain private.
+3.  **Select a Model:** The UI dropdown will include `togetherai/` models. Choosing one will use the remote API.
 
 ### 3. Setup the Python Environment
 
 1.  Navigate to the project folder and create a virtual environment.
-2.  Install dependencies: `pip install -r requirements.txt`. This now includes the `python-dotenv` package needed to read your API key file.
+2.  Install dependencies: `pip install -r requirements.txt`.
 
 ### 4. Launch the Notebook
 
 1.  Start the Jupyter Server: `jupyter notebook`
-2.  Run the Demo: Open `notebooks/event_chatbot_demo.ipynb` and execute the cells.
+2.  Open `notebooks/event_chatbot_simplified.ipynb` and run the cells to start the chat interface.
 
 ---
 
-## Example Domains
+## How to Extend the Framework with a New DSL
 
-The grammars are defined in `.dsl` files and the logic is implemented in corresponding Python interpreters.
+The framework is designed to be easily extended. To add a new domain (e.g., "Inventory Management"), you would follow this recipe:
 
-### Stateless Domains
-
-These are simple, one-shot commands that don't rely on past interactions.
-
-**1. Tax Calculation (`src/domains/tax/`)**
-* **Interpreter:** Categorizes items into food or drink and applies different tax rates.
-* **Example DSL Code:**
-    ```dsl
-    bill {
-      burger: 3 * 10
-      soda: 2 * 3
-    }
-    ```
-![Restaurant Bill Demo](docs/restaurantbilldemo.jpg)
-
-**2. Cycling Planner (`src/domains/cycling/`)**
-* **Interpreter:** Calculates an estimated ride duration based on average speeds for different terrain types.
-* **Example DSL Code:**
-    ```dsl
-    ride {
-      terrain: mountainous
-      distance_km: 200
-    }
-    ```
-![Cycling Demo](docs/cyclingdemo.jpg)
+1.  **Create a `connector.yml` file:** Define your new actions (e.g., `add_item`) and parameters (e.g., `item_name`, `quantity`) with user-friendly descriptions and clarification prompts for the LLM.
+2.  **Create a `schema.py` file:** Define the formal structure for your new actions. Specify required parameters, permissions, and, most importantly, the `dsl_syntax` and `dsl_keyword` metadata that the generic `DSLBuilder` will use.
+3.  **Create a `grammar.dsl` file:** Write the formal Lark grammar for your new DSL's syntax.
+4.  **Write a new `Interpreter` class:** This is the main piece of new code required. Create a class like `InventoryInterpreter` that inherits from `BaseInterpreter`. Implement methods with names that match your grammar rules (e.g., an `add_item` method) to contain the execution logic.
+5.  **Wire it into the system:** Update the main system coordinator to load the configuration and interpreter for your new domain.
 
 ---
 
-## Stateful Domain: Event Management
+## Example Domain: Event Management
 
-This is the most advanced domain, demonstrating statefulness, Role-Based Access Control (RBAC), and a conversational interface. It simulates managing a conference by creating venues and scheduling sessions, with a strict set of rules enforced by the interpreter.
+The primary example is for managing a conference. It demonstrates Role-Based Access Control (RBAC), a conversational interface for handling incomplete requests, and strict rule enforcement.
 
-#### Core Concepts
-
-* **Stateful Persistence**: The "state" of the conference—all the venues that exist and all the sessions that are booked—is stored in a `state.json` file. This creates a persistent, evolving model of the conference that can be modified over multiple interactions.
-* **Role-Based Access Control (RBAC)**: To control who can do what, the system implements two user roles:
-    * **`admin`**: Full permissions. Can create/modify venues and schedule sessions.
-    * **`scheduler`**: Limited permissions. Can only schedule sessions in existing venues.
-* **Conversational Interface**: The system now functions as an interactive chatbot. If a user's request is incomplete (e.g., they ask to schedule a session but don't specify a venue), the assistant will not fail. Instead, it will ask a clarifying question and provide helpful suggestions based on the user's requirements. It then uses the context from the user's follow-up response to successfully complete the original request.
-
-*Example: A user provides an incomplete request, and the assistant asks for clarification, leading to a successful multi-turn booking.*
 ![Successful multi-turn booking](docs/multi_turn_success.png)
 
-#### Understanding the DSL and its Commands
-
-The LLM translates your natural language into a simple but powerful DSL. The interpreter then executes this DSL, enforcing the rules.
-
-**Admin Command: `create_venue`**
-
-Allows an **admin** to add a new room to the conference.
-
-*Example: Creating a single room.*
-![Creating a single room](docs/createroomadmin.png)
-
-*Example: Creating multiple rooms in a single command.*
+#### Admin Command: `create_venue`
+Allows an **admin** to add a new room.
 ![Creating multiple rooms](docs/addingworkshopmultiadmin.png)
 
-**Admin Command: `modify_venue`**
-
-Allows an **admin** to change the properties of an existing venue.
-
-*Example: Updating a venue's capacity.*
+#### Admin Command: `modify_venue`
+Allows an **admin** to change a venue's properties.
 ![Updating a venue's capacity](docs/updatecapacity.png)
 
-**Admin & Scheduler Command: `schedule_session`**
-
-Used by both roles to book a session. The interpreter validates this command against several rules.
-
-*Example: A scheduler successfully books a session in a valid room.*
+#### Admin & Scheduler Command: `schedule_session`
+Used by both roles to book a session.
 ![Successful booking](docs/schedule1.png)
 
-**Combined Commands**
-
-The system can handle multiple actions in a single request.
-
-*Example: An admin creates a new venue and immediately schedules a session in it.*
-![Creating and scheduling in one command](docs/createschedulecomboadmin.png)
-
 #### The Interpreter as a "Semantic Firewall"
+The interpreter rejects commands that are syntactically correct but logically invalid according to the domain's rules.
 
-The interpreter rejects commands that are syntactically correct but logically invalid.
-
-**Validation Rule: Role Mismatch**
-
-*Example: A scheduler attempts to create a venue (an admin-only action).*
+**Role Mismatch:** A `scheduler` attempts an admin-only action.
 ![Role Mismatch Error](docs/rolemismatch.png)
 
-**Validation Rule: Venue Must Exist**
-
-*Example: A user tries to book a session in an "Imaginary Room".*
+**Venue Must Exist:** A user tries to book a session in an "Imaginary Room".
 ![Missing Room Error](docs/missingroom.png)
 
-**Validation Rule: No Double Booking**
-
-*Example: A user tries to book a session in an already-booked venue.*
+**No Double Booking:** A user tries to book a session in an already-booked venue.
 ![Conflicting Schedule Error](docs/conflictingschedule.png)
 
-**Validation Rule: Capacity Check**
-
-*Example: A user tries to book 40 people into a room with a capacity of 35.*
+**Capacity Check:** A booking for 40 people is attempted in a room with a capacity of 35.
 ![Exceeds Capacity Error](docs/exceedscapacity.png)
 
-**Validation Rule: A/V System Check**
-
-*Example: A user requests an A/V system in a room that doesn't have one.*
+**A/V System Check:** A user requests an A/V system in a room that doesn't have one.
 ![No A/V System Error](docs/noavsystem.png)
-
----
-
-## How to Extend Code
-
-The project is structured to make adding new domains straightforward. To add a new domain, you would:
-1.  Add the new command to the grammar (`.dsl` file).
-2.  Implement the corresponding method in the interpreter (`.py` file), including validation logic.
-3.  Update the core prompt in `src/core.py` to teach the LLM the new command.
-4.  Update the UI in `demo.ipynb` if any new inputs are required.
 
 ---
 
 ## Next Steps
 
-* **Implement the Chatbot Loop:** Create a feedback loop where interpreter errors are sent back to the LLM to generate helpful, clarifying questions for the user.
-* **Incorporate a Proper Front End:** Replace the Jupyter Notebook with a web-based UI.
+* **Implement a Dynamic Domain Loader:** Improve the system coordinator to dynamically load the correct domain's configuration based on user input.
+* **Enhance the Feedback Loop:** Send interpreter errors back to the LLM to generate more context-aware, helpful responses to the user.
 * **Evolve the DSLs:** Continue to add complexity and rules to handle more sophisticated scenarios.
