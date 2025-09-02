@@ -23,21 +23,20 @@ class TaskExecutor:
                 role
             )
             
-            # Load current state and create interpreter
             state = self.state_manager.load()
             interpreter = EventInterpreter(state, role)
             
-            # Execute DSL
+            
             result = execute_dsl(
                 dsl_code,
                 AppConfig.get_grammar_path('event'),
                 interpreter
             )
             
-            # Save new state
+            
             self.state_manager.save(result['new_state'])
             
-            # Build success message
+            
             action = conversation_state["task_details"].get("action", "").replace('_', ' ').title()
             name = conversation_state["task_details"].get("parameters", {}).get("name", "")
             success_msg = f"✅ Successfully completed: {action}"

@@ -123,6 +123,10 @@
     "Workshop 5": {
       "capacity": 50.0,
       "has_av_system": true
+    },
+    "Room New": {
+      "capacity": 500.0,
+      "has_av_system": false
     }
   },
   "sessions": [
@@ -245,6 +249,13 @@
       "in_venue": "Workshop 5",
       "expected_attendees": 45.0,
       "requires_av": true
+    },
+    {
+      "name": "Dsls in Finance",
+      "hosted_by": "Atanas",
+      "expected_attendees": 50.0,
+      "requires_av": false,
+      "in_venue": "Room New"
     }
   ],
   "venue_bookings": {
@@ -265,6 +276,7 @@
     "Workshop F": "Agile Methodologies",
     "Workshop Y": "Agile Methodologies",
     "Workshop 2": "AI and DSLs work together",
-    "Workshop 5": "Agile Methodologies"
+    "Workshop 5": "Agile Methodologies",
+    "Room New": "Dsls in Finance"
   }
 }
