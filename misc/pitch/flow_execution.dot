@@ -1,0 +1,34 @@
+digraph ExecutionFlow {
+    graph [rankdir=LR, nodesep=1.0, ranksep=2.0, pad="1.5,1.0", fontname="Arial", fontsize=18, dpi=120];
+    node [shape=box, style="rounded,filled", fontname="Arial", fontsize=16, penwidth=2];
+    edge [fontname="Arial", fontsize=14, fontcolor="black", penwidth=3];
+
+    // --- Blueprint Artifact ---
+    subgraph cluster_Blueprint {
+        label="Blueprint Artifact";
+        fontsize=18;
+        bgcolor = "#FAFAFA";
+        CoreDSL [label="Core DSL & Interpreter", fillcolor="#EDE7F6", shape=box3d];
+    }
+    
+    // --- Execution Layer Components ---
+    subgraph cluster_Execution {
+        label = "Execution Layer (Per Task)";
+        fontsize=18;
+        bgcolor = "#FCE4EC";
+        
+        Confirmed_Tasks [label="Confirmed Tasks\n(Batch from Conversation)", shape=ellipse, fillcolor="#F0F4FF"];
+        DSL_Builder [label="DSL Builder", fillcolor="#F3E5F5"];
+        Interpreter [label="Interpreter", fillcolor="#F3E5F5", shape=diamond];
+        Final_Response [label="Batch Results\n(Success/Error per task)", shape=house, fillcolor="#C8E6C9"];
+    }
+
+    // --- Main Flow ---
+    Confirmed_Tasks -> DSL_Builder [label="Generate\nDSL Instructions", penwidth=4, fontsize=14];
+    DSL_Builder -> Interpreter [label="Execute\nEach Task", penwidth=4, fontsize=14];
+    Interpreter -> Final_Response [penwidth=4];
+
+    // --- Governance (Extra Visible) ---
+    edge [style=dashed, arrowhead=open, color="#B71C1C", fontcolor="#B71C1C", constraint=false, penwidth=4, arrowsize=2.0];
+    CoreDSL -> Interpreter [label="Validates\nEach Task", fontsize=14, fontcolor="#B71C1C"];
+}
