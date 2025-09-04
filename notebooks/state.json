@@ -128,20 +128,28 @@
       "capacity": 500.0,
       "has_av_system": false
     },
-    "Zimmer R1": {
+    "Zimmer Z1": {
       "capacity": 10.0,
       "has_av_system": false
     },
-    "Zimmer W1": {
-      "capacity": 10.0,
-      "has_av_system": false
-    },
-    "Zimmer W2": {
+    "Zimmer Z2": {
       "capacity": 40.0,
       "has_av_system": true
     },
-    "Zimmer R4": {
+    "Zimmer Z3": {
+      "capacity": 20.0,
+      "has_av_system": true
+    },
+    "Zimmer Z4": {
       "capacity": 60.0,
+      "has_av_system": true
+    },
+    "Zimmer X1": {
+      "capacity": 10.0,
+      "has_av_system": false
+    },
+    "Zimmer X2": {
+      "capacity": 40.0,
       "has_av_system": true
     }
   },
@@ -274,11 +282,18 @@
       "in_venue": "Room New"
     },
     {
-      "name": "AI Ethics",
-      "requires_av": false,
+      "name": "Why AI need DSLs for validation",
+      "hosted_by": "Kri",
       "in_venue": "Room X",
       "expected_attendees": 20.0,
-      "hosted_by": "Mr X"
+      "requires_av": false
+    },
+    {
+      "name": "Why AI needs DSLS",
+      "expected_attendees": 60.0,
+      "hosted_by": "Atanas",
+      "in_venue": "Zimmer Z4",
+      "requires_av": false
     }
   ],
   "venue_bookings": {
@@ -301,6 +316,7 @@
     "Workshop 2": "AI and DSLs work together",
     "Workshop 5": "Agile Methodologies",
     "Room New": "Dsls in Finance",
-    "Room X": "AI Ethics"
+    "Room X": "Why AI need DSLs for validation",
+    "Zimmer Z4": "Why AI needs DSLS"
   }
 }
