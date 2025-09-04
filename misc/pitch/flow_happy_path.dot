@@ -1,0 +1,68 @@
+digraph SystemFlow {
+    graph [rankdir=TD, nodesep=1.0, ranksep=2.0, pad="1.5,1.0", fontname="Arial", fontsize=18, dpi=120];
+    node [shape=box, style="rounded,filled", fontname="Arial", fontsize=16, penwidth=2];
+    edge [fontname="Arial", fontsize=14, fontcolor="black", penwidth=3];
+
+    // --- Setup Phase ---
+    subgraph cluster_Setup {
+        label = "Setup Phase (One-Time)";
+        fontsize=20;
+        bgcolor = "#FAFAFA";
+        
+        // Group 1: Core Business Logic
+        subgraph cluster_Logic {
+            label = "Business Logic Definition";
+            fontsize=18;
+            bgcolor = "#FFF8E1";
+            SME [label="Subject Matter Expert", fillcolor="#F5F5F5"];
+            CoreDSL [label="Core DSL & Interpreter", fillcolor="#EDE7F6", shape=box3d];
+            SME -> CoreDSL [label="Defines\nBusiness Rules", penwidth=4, fontsize=14];
+        }
+
+        // Group 2: Conversational Interface Layer
+        subgraph cluster_Interface_Setup {
+            label = "Conversational Interface Definition";
+            fontsize=18;
+            bgcolor = "#E0F2F1";
+            LE [label="Language Engineer", fillcolor="#E0F7FA"];
+            Schema [label="Schema", fillcolor="#E0F7FA"];
+            Connector [label="Language Connector", fillcolor="#E0F7FA"];
+            LE -> Schema [label="Creates", penwidth=4, fontsize=14];
+            LE -> Connector [label="Creates", penwidth=4, fontsize=14];
+        }
+    }
+
+    // --- Runtime Phase ---
+    subgraph cluster_Runtime {
+        label = "Runtime Phase (Per Input)";
+        fontsize=20;
+        bgcolor = "#FFFFFF";
+
+        User [label="End User", fillcolor="#E3F2FD"];
+
+        subgraph cluster_Conversation {
+            label = "Conversation Layer";
+            fontsize=18;
+            bgcolor="#F0F4FF";
+            ConversationManager [label="Conversation Manager\n(Task Extractor)", fillcolor="#E3F2FD"];
+        }
+
+        subgraph cluster_Execution {
+            label = "Execution Layer";
+            fontsize=18;
+            bgcolor="#FCE4EC";
+            Executor [label="Batch Executor", fillcolor="#F3E5F5"];
+        }
+    }
+
+    // --- Main Connections ---
+    User -> ConversationManager [label="Provides Unstructured\nInput (Email/Doc/Query)", penwidth=4, fontsize=14];
+    ConversationManager -> Executor [label="Sends Multiple\nConfirmed Tasks", penwidth=4, fontsize=14];
+    User -> Executor [label="Returns Batch\nResults", dir=back, penwidth=4, fontsize=14];
+    
+    // --- Governance Connections (Maximum Visibility) ---
+    edge [style=dotted, arrowhead=odot, color="#1976D2", fontcolor="#1976D2", constraint=false, penwidth=5, arrowsize=2.0];
+    Connector -> ConversationManager [label="Guides Task\nExtraction", fontsize=14, fontcolor="#1976D2"];
+
+
+}

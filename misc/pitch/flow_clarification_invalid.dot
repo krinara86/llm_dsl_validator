@@ -1,0 +1,45 @@
+digraph ClarificationFlow {
+    graph [rankdir=LR, nodesep=1.0, ranksep=2.0, pad="1.5,1.0", fontname="Arial", fontsize=18, dpi=120];
+    node [shape=box, style="rounded,filled", fontname="Arial", fontsize=16, penwidth=2];
+    edge [fontname="Arial", fontsize=14, fontcolor="black", penwidth=3];
+    
+    // --- Blueprint Artifacts ---
+    subgraph cluster_Blueprint {
+        label="Blueprint Artifacts";
+        fontsize=18;
+        bgcolor = "#FAFAFA";
+        Connector [label="Language Connector", fillcolor="#E0F2F1"];
+        Schema [label="Schema", fillcolor="#E0F2F1"];
+        CoreDSL [label="Core DSL & Interpreter", fillcolor="#EDE7F6", shape=box3d];
+    }
+    
+    // --- Conversation Layer Components ---
+    subgraph cluster_Conversation {
+        label = "Conversation Layer";
+        fontsize=18;
+        bgcolor = "#F0F4FF";
+        
+        Unstructured_Input [label="Unstructured Input\n(Email/Doc/Query)", shape=ellipse, fillcolor="#E3F2FD"];
+        Translator [label="Translator\n(LLM Extraction)", fillcolor="#E3F2FD"];
+        ConversationManager [label="Conversation Manager", fillcolor="#E3F2FD", shape=diamond];
+        Clarification [label="Ask Clarification\nQuestions", shape=invhouse, fillcolor="#FFF9C4"];
+        To_Execution [label="Proceed to\nExecution Layer", shape=house, fillcolor="#C8E6C9"];
+        Reject [label="Reject & Return Error", shape=invhouse, fillcolor="#FFCDD2"];
+    }
+
+    // --- Main Flow ---
+    Unstructured_Input -> Translator [label="Extract Tasks", penwidth=4];
+    Translator -> ConversationManager [label="Multiple Tasks", penwidth=4];
+
+    // --- Conditional Paths ---
+    ConversationManager -> Clarification [label="Tasks Incomplete?\n[Yes]", penwidth=4, fontsize=14, labeldistance=3];
+    Unstructured_Input -> Clarification [label="Get More Info", dir=back, penwidth=4, fontsize=14];
+    ConversationManager -> To_Execution [label="Tasks Complete?\n[Yes]", penwidth=4, fontsize=14, labeldistance=3];
+    ConversationManager -> Reject [label="Tasks Invalid?\n[Yes]", penwidth=4, fontsize=14, labeldistance=3];
+
+    // --- Governance (Extra Visible) ---
+    edge [style=dashed, arrowhead=open, color="#B71C1C", fontcolor="#B71C1C", constraint=false, penwidth=4, arrowsize=2.0];
+    Connector -> Translator [label="Guides\nExtraction", fontsize=14, fontcolor="#B71C1C"];
+    Schema -> ConversationManager [label="Validates\nCompleteness", fontsize=14, fontcolor="#B71C1C"];
+    CoreDSL -> Reject [label="Enforces\nRules", fontsize=14, fontcolor="#B71C1C"];
+}
