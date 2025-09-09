@@ -8,7 +8,7 @@ class ClarificationGenerator:
     def __init__(self, state_manager):
         self.state_manager = state_manager
     
-    # --- MODIFIED ---
+   
     def generate_message(self, missing_params: List[str], 
                         task_details: Dict, role: str, 
                         model_name: str, connector: Dict[str, Any]) -> str:
@@ -21,22 +21,18 @@ class ClarificationGenerator:
         action = task_details.get("action", "")
         action_connector = connector.get("actions", {}).get(action, {})
         
-        # Introduction
+       
         messages = [
             f"<b>To proceed with '{action.replace('_', ' ').title()}', I need a bit more information.</b>",
             "<i>You can reply with each item on a new line, like this:</i>",
             "<pre style='background-color:#f5f5f5; padding:5px; border-radius:3px;'>parameter_name: your_value</pre>"
         ]
-
-        # Individual parameter prompts from the connector
         for param in missing_params:
             param_connector = action_connector.get("parameters", {}).get(param, {})
-            # Use the specific prompt from connector.yml, with a fallback.
             prompt = param_connector.get("clarification_prompt", f"Please provide a value for '{param}'.")
             
             msg = f"• <b>{param}</b>: {prompt}"
             
-            # Special case: for venue selection, also show available options.
             if param == "in_venue":
                 msg += self._venue_clarification(task_details, state)
             

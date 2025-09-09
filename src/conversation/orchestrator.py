@@ -7,7 +7,6 @@ from ..domains.event.schema import DOMAIN_SCHEMA
 from .extractor import TaskExtractor
 from .formatter import MessageFormatter
 from .clarification import ClarificationGenerator
-# --- NEW ---
 from ..core.connector_loader import load_connector
 
 class ConversationOrchestrator:

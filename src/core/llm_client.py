@@ -4,7 +4,6 @@ import requests
 from typing import List
 from .config import AppConfig
 
-# --- MODIFIED ---
 # Use InferenceApi for older library versions or InferenceClient for newer ones
 try:
     from huggingface_hub import InferenceClient
@@ -15,7 +14,6 @@ except ImportError:
 class LLMClient:
     """Handles communication with LLM APIs."""
     
-    # --- MODIFIED ---
     @staticmethod
     def execute_request(prompt: str, model_name: str, 
                        is_json_format: bool = False) -> str:
@@ -29,7 +27,7 @@ class LLMClient:
         else: # Default to Ollama
             return LLMClient._ollama_request(prompt, model_name, is_json_format)
 
-    # --- NEW ---
+
     @staticmethod
     def _huggingface_request(prompt: str, model_name: str, 
                             is_json_format: bool) -> str:
@@ -45,9 +43,6 @@ class LLMClient:
         
         try:
             client = InferenceClient(token=hf_token)
-            
-            # The free Inference API does not support enforced JSON mode.
-            # We rely on the model's instruction-following capabilities.
             response = client.chat_completion(
                 messages=[{"role": "user", "content": prompt}],
                 model=hf_model,
@@ -95,7 +90,6 @@ class LLMClient:
         except requests.exceptions.RequestException as e:
             raise ConnectionError(f"Ollama API request failed: {e}")
     
-    # --- MODIFIED ---
     @staticmethod
     def get_available_models():
         """Get a curated list of available models."""
@@ -114,7 +108,6 @@ class LLMClient:
             'togetherai/mistralai/Mixtral-8x7B-Instruct-v0.1',
         ])
         
-        # --- NEW: Curated list for speed and reliability ---
         models.extend([
             'huggingface/meta-llama/Meta-Llama-3-8B-Instruct',
             'huggingface/mistralai/Mistral-7B-Instruct-v0.2',

@@ -4,24 +4,20 @@ from copy import deepcopy
 
 class EventInterpreter(BaseInterpreter):
     def __init__(self, state, role):
-        # The interpreter is initialized with the current state and the user's role.
-        self.state = deepcopy(state) # Work on a copy to avoid partial updates on error
+        self.state = deepcopy(state) 
         self.role = role
         self.actions_performed = []
-        self.search_results = None  # Store search results for read-only operations
-
+        self.search_results = None  
     def _parse_boolean(self, cname):
         return str(cname).lower() == 'true'
 
     def event_command(self, children):
-        # Check if this was a search operation
         if self.search_results is not None:
             return {
                 "operation_type": "read_only",
                 "results": self.search_results,
                 "message": "Search completed successfully."
             }
-        # Otherwise it's a state-changing operation
         return {
             "operation_type": "state_changing",
             "message": "Execution successful. " + ", ".join(self.actions_performed),
@@ -33,12 +29,10 @@ class EventInterpreter(BaseInterpreter):
         if self.role != 'admin':
             raise ValueError(f"RoleMismatchError: Role '{self.role}' is not authorized to create venues. Requires 'admin'.")
 
-        # This check is now case-insensitive to prevent duplicates like 'Room A' and 'room a'.
         if name.lower() in [v.lower() for v in self.state["venues"]]:
             raise ValueError(f"ValidationError: Venue '{name}' already exists.")
         
         properties = dict(props)
-        # Store with the name as provided (after quote stripping in core.py) to preserve capitalization.
         self.state["venues"][name] = {
             "capacity": properties.get("capacity", 0),
             "has_av_system": properties.get("has_av_system", False)
@@ -50,7 +44,6 @@ class EventInterpreter(BaseInterpreter):
         if self.role != 'admin':
             raise ValueError(f"RoleMismatchError: Role '{self.role}' is not authorized to modify venues. Requires 'admin'.")
 
-        # Find the actual venue key in a case-insensitive way.
         key_to_modify = next((v for v in self.state["venues"] if v.lower() == name.lower()), None)
 
         if not key_to_modify:
@@ -68,14 +61,10 @@ class EventInterpreter(BaseInterpreter):
         properties = dict(children[1:])
         venue_name = properties.get('in_venue')
         
-        # --- VALIDATION LOGIC (Now case-insensitive) ---
-
-        # Find the actual venue key case-insensitively.
         venue_key_actual = next((v for v in self.state['venues'] if v.lower() == venue_name.lower()), None)
         if not venue_key_actual:
             raise ValueError(f"ValidationError in session '{session_name}': Venue '{venue_name}' does not exist.")
 
-        # Check for bookings using the actual key, but also check case-insensitively for safety.
         booking_key_actual = next((v for v in self.state['venue_bookings'] if v.lower() == venue_name.lower()), None)
         if booking_key_actual:
             conflicting_session = self.state['venue_bookings'][booking_key_actual]
@@ -93,12 +82,10 @@ class EventInterpreter(BaseInterpreter):
         if session_reqs_av and not venue_has_av:
             raise ValueError(f"ValidationError in session '{session_name}': Session requires A/V, but venue '{venue_key_actual}' does not have an A/V system.")
 
-        # Use the actual, original-cased key for booking to maintain data consistency.
         self.state['venue_bookings'][venue_key_actual] = session_name
         self.state['sessions'].append({"name": session_name, **properties})
         self.actions_performed.append(f"Scheduled session '{session_name}'")
 
-    # --- NEW: Find operations ---
     def find_venues(self, children):
         """Search for venues based on criteria."""
         if self.role not in ['admin', 'scheduler', 'viewer']:
@@ -183,7 +170,6 @@ class EventInterpreter(BaseInterpreter):
             'count': len(results)
         }
 
-    # --- Property Helpers for state-changing operations ---
     @v_args(inline=True)
     def venue_capacity(self, num): return ("capacity", num)
     

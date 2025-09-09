@@ -23,7 +23,6 @@ class MessageFormatter:
         optional = schema.get("optional", [])
         param_types = schema.get("param_types", {})
         
-        # Categorize parameters
         available_params = {}
         missing_params = []
         

@@ -16,9 +16,8 @@ class ChatInterface:
         self.task_queue = []
         self.current_task_index = 0
         self.total_tasks = 0
-        self.clarification_widgets = []  # Store widgets for parameter input
+        self.clarification_widgets = []  
         
-        # Initialize UI components
         self._create_widgets()
         self._setup_handlers()
         self._apply_styles()
@@ -160,10 +159,10 @@ class ChatInterface:
             self.state_accordion,
             self.progress_label,
             self.chat_history,
-            self.clarification_area,  # Add clarification area
+            self.clarification_area,  
             input_area,
             confirm_area,
-            self.submit_params_button  # Add submit params button
+            self.submit_params_button  
         ])
         
         display(layout)
@@ -200,7 +199,6 @@ class ChatInterface:
             param_label = param.replace('_', ' ').title()
             
             if param_type == "boolean":
-                # Create radio buttons for boolean
                 widget = widgets.RadioButtons(
                     options=['Yes', 'No'],
                     description=f'{param_label}:',
@@ -209,7 +207,6 @@ class ChatInterface:
                 param_widgets[param] = widget
                 
             elif param_type == "number":
-                # Create number input
                 widget = widgets.IntText(
                     description=f'{param_label}:',
                     style={'description_width': 'initial'}
@@ -217,7 +214,6 @@ class ChatInterface:
                 param_widgets[param] = widget
                 
             elif param_type == "venue_selection":
-                # Create dropdown for venue selection
                 venues = list(state.get('venues', {}).keys())
                 if venues:
                     widget = widgets.Dropdown(
@@ -250,7 +246,6 @@ class ChatInterface:
         if not query:
             return
         
-        # Clear any existing clarification widgets
         self.clarification_area.children = []
         self.clarification_widgets = []
         self.submit_params_button.layout.visibility = 'hidden'
@@ -276,12 +271,10 @@ class ChatInterface:
         
         self.conversation_state = result.get('new_state', self.conversation_state)
         
-        # Handle response
         if result['status'] == 'clarification_needed':
             if 'understanding_html' in result:
                 self._add_message(result['understanding_html'])
             
-            # Create input widgets for missing parameters
             self._show_parameter_inputs(result)
             
         elif result['status'] == 'confirmation_needed':
@@ -291,7 +284,6 @@ class ChatInterface:
             self._show_confirmation_buttons(True)
             
         elif result['status'] == 'execute_immediately':
-            # For read-only operations, execute immediately
             if 'understanding_html' in result:
                 self._add_message(result['understanding_html'])
             self._execute_task_immediate()
@@ -308,32 +300,26 @@ class ChatInterface:
         if not missing_params:
             return
         
-        # Create header
         header = widgets.HTML(
             "<div class='param-input-area'>"
             "<b>Please provide the following information:</b>"
             "</div>"
         )
         
-        # Create input widgets
         self.clarification_widgets = self._create_input_widgets_for_params(missing_params, task_details)
         
-        # Arrange widgets in a nice layout
         widget_list = [header]
         for param_name, widget in self.clarification_widgets.items():
             widget_list.append(widget)
         
-        # Add widgets to clarification area
         self.clarification_area.children = widget_list
         
-        # Show submit button
         self.submit_params_button.layout.visibility = 'visible'
         self.user_input.disabled = True
         self.send_button.disabled = True
     
     def _on_submit_params(self, b):
         """Handle parameter submission from widgets."""
-        # Collect values from widgets
         collected_values = []
         
         for param_name, widget in self.clarification_widgets.items():
@@ -351,17 +337,14 @@ class ChatInterface:
             if value and value != '':
                 collected_values.append(f"{param_name}: {value}")
         
-        # Build response string
         response = '\n'.join(collected_values)
         
-        # Clear clarification area
         self.clarification_area.children = []
         self.clarification_widgets = []
         self.submit_params_button.layout.visibility = 'hidden'
         self.user_input.disabled = False
         self.send_button.disabled = False
         
-        # Process the response
         if response:
             self._add_message(f"<b>You:</b><br>{response.replace(chr(10), '<br>')}", 'user')
             self._process_query(response)
@@ -375,13 +358,11 @@ class ChatInterface:
             self.conversation_state
         )
         
-        # Remove searching message
         self.chat_history.children = self.chat_history.children[:-1]
         
         if result['status'] in ['success', 'search_results']:
             self._add_message(f"<b>Results:</b><br>{result['message']}")
             
-            # Show DSL code if available and not a search
             if result['status'] == 'success' and 'dsl_code' in result and result['dsl_code']:
                 self._show_dsl_code(result['dsl_code'])
         else:
@@ -440,13 +421,11 @@ class ChatInterface:
             self.conversation_state
         )
         
-        # Remove executing message
         self.chat_history.children = self.chat_history.children[:-1]
         
         if result['status'] == 'success':
             self._add_message(f"<b>Assistant:</b> {result['message']}", 'system')
             
-            # Show DSL code if available
             if 'dsl_code' in result and result['dsl_code']:
                 self._show_dsl_code(result['dsl_code'])
             
@@ -528,7 +507,6 @@ class ChatInterface:
                 html += "<tr><td colspan='4'><i>No venues yet</i></td></tr>"
             html += "</table>"
             
-            # Sessions table
             html += "<h4 style='margin-top:15px;'>Scheduled Sessions</h4>"
             html += "<table border='1' style='width:100%;'>"
             html += "<tr><th>Name</th><th>Venue</th><th>Host</th><th>Attendees</th><th>A/V</th></tr>"

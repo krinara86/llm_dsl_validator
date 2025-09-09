@@ -22,7 +22,6 @@ class TaskExtractor:
         for param_name, param_desc in all_params.items():
             param_guidance.append(f'* `{param_name}`: {param_desc}')
 
-        # --- MODIFIED: Added a critical rule to prevent hallucinating placeholders ---
         prompt = f"""
 You are a highly accurate data extraction assistant. Your single purpose is to extract the user's intent and its associated parameters from the text provided.
 You MUST respond with only a single, valid JSON object and nothing else. Do not provide any conversational text, explanations, or markdown.
