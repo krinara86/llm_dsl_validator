@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,7 +11,6 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: #1a1a2e;
@@ -20,7 +18,6 @@
             overflow: hidden;
             line-height: 1.6;
         }
-
         /* Slide Container */
         .slide-container {
             position: relative;
@@ -28,7 +25,6 @@
             height: 100vh;
             overflow: hidden;
         }
-
         /* Individual Slides */
         .slide {
             position: absolute;
@@ -46,16 +42,13 @@
             overflow-y: auto;
             overflow-x: hidden;
         }
-
         .slide.active {
             opacity: 1;
             transform: translateX(0);
         }
-
         .slide.prev {
             transform: translateX(-100%);
         }
-
         h1 {
             font-size: 3.5em;
             font-weight: 700;
@@ -64,7 +57,6 @@
             margin-bottom: 30px;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
-
         h2 {
             font-size: 2.8em;
             font-weight: 600;
@@ -73,7 +65,6 @@
             text-align: center;
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
         }
-
         h3 {
             font-size: 2em;
             font-weight: 500;
@@ -82,7 +73,6 @@
             margin-top: 20px;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
-        
         p {
             font-size: 1.3em;
             margin-bottom: 20px;
@@ -91,7 +81,6 @@
             line-height: 1.8;
             color: #e0e0e0;
         }
-
         pre {
             background: rgba(13, 13, 26, 0.95);
             border: 2px solid #444;
@@ -106,17 +95,14 @@
             line-height: 1.7;
             color: #f0f0f0;
         }
-
         code {
             font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
         }
-
         /* Highlight important text in pre blocks */
         pre strong {
             color: #4fc3f7;
             font-weight: 600;
         }
-
         .email-example {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
             border-left: 4px solid #ffb74d;
@@ -125,12 +111,10 @@
             text-align: left;
             font-size: 1.1em;
         }
-
         .extracted-tasks {
             background: rgba(129, 199, 132, 0.1);
             border: 2px solid #81c784;
         }
-        
         .code-comparison {
             display: flex;
             gap: 40px;
@@ -138,19 +122,16 @@
             width: 100%;
             max-width: 1400px;
         }
-
         .code-section {
             flex: 1;
             position: relative;
         }
-        
         .code-section h4 {
-             color: #ffb74d;
-             margin-bottom: 15px;
-             font-size: 1.5em;
-             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            color: #ffb74d;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
-
         /* Diagram container for better control */
         .diagram-container {
             width: 100%;
@@ -161,7 +142,6 @@
             border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         .diagram-note {
             color: #ffb74d;
             font-size: 1.1em;
@@ -169,7 +149,6 @@
             font-style: italic;
             text-align: center;
         }
-
         /* Navigation */
         .nav-btn {
             position: fixed;
@@ -190,26 +169,25 @@
             align-items: center;
             justify-content: center;
         }
-
         .nav-btn:hover {
             background: rgba(255, 255, 255, 0.15);
             color: rgba(255, 255, 255, 0.8);
             border-color: rgba(255, 255, 255, 0.3);
             transform: translateY(-50%) scale(1.1);
         }
-
         .nav-btn:disabled {
             opacity: 0.3;
             cursor: not-allowed;
         }
-
         .nav-btn:disabled:hover {
             transform: translateY(-50%);
         }
-
-        #prevBtn { left: 30px; }
-        #nextBtn { right: 30px; }
-
+        #prevBtn {
+            left: 30px;
+        }
+        #nextBtn {
+            right: 30px;
+        }
         .slide-number {
             position: fixed;
             top: 30px;
@@ -221,7 +199,6 @@
             padding: 5px 15px;
             border-radius: 20px;
         }
-
         .progress-bar {
             position: fixed;
             top: 0;
@@ -232,7 +209,6 @@
             z-index: 1000;
             box-shadow: 0 2px 8px rgba(79, 195, 247, 0.4);
         }
-
         /* Keyboard hint */
         .keyboard-hint {
             position: fixed;
@@ -246,7 +222,6 @@
             border-radius: 20px;
             z-index: 1000;
         }
-
         .highlight-box {
             background: rgba(79, 195, 247, 0.1);
             border: 2px solid #4fc3f7;
@@ -254,19 +229,45 @@
             padding: 20px;
             margin: 20px 0;
         }
+        .company-logo {
+    position: fixed;
+    top: 30px;
+    right: 120px;
+    width: 120px;
+    height: auto;
+    z-index: 2000;
+    transition: all 0.3s ease;
+    
+    background: rgba(255, 255, 255, 0.95);  
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 15px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        0 0 40px rgba(79, 195, 247, 0.1), 
+        inset 0 0 20px rgba(255, 255, 255, 0.1);
+}
 
+.company-logo:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 10px 40px rgba(0, 0, 0, 0.4),
+        0 0 60px rgba(79, 195, 247, 0.2),
+        inset 0 0 20px rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.98);
+}
     </style>
 </head>
-
 <body>
+    <img src="logo.svg" alt="Company Logo" class="company-logo">
     <div class="slide-container">
         <div class="progress-bar" id="progressBar"></div>
         <div class="slide-number" id="slideNumber">1 / 5</div>
         <div class="keyboard-hint">Use ← → arrow keys to navigate</div>
-
         <!-- SLIDE 1: The "Why" - LLMs vs. DSLs -->
         <div class="slide active">
-            <h2>The Challenge: Bridging Two Worlds</h2>
+            <h2>LLMs and DSLs (Pros and cons)</h2>
             <div class="code-comparison">
                 <div class="code-section">
                     <h4>Domain-Specific Languages (DSLs)</h4>
@@ -274,8 +275,7 @@
 ✓ Precise & Unambiguous
 ✓ Verifiably Correct
 ✓ Source of Truth for Business Logic
-
-<strong>⚠ Barrier to Entry:</strong> 
+<strong>⚠ Barrier to Entry:</strong>
 Requires learning a specific syntax</pre>
                 </div>
                 <div class="code-section">
@@ -284,31 +284,28 @@ Requires learning a specific syntax</pre>
 ✓ Intuitive & Conversational
 ✓ Flexible Natural Language Input
 ✓ Accessible to Everyone
-
-<strong>⚠ Barrier to Trust:</strong> 
+<strong>⚠ Barrier to Trust:</strong>
 Probabilistic and cannot guarantee correctness</pre>
                 </div>
             </div>
-             <h3>Our Approach: Make DSLs Conversational</h3>
-             <p>Instead of trying to "fix" LLMs, we enhance existing, reliable DSLs with a natural language interface.<br>
-             <strong style="color: #81c784;">The DSL remains the source of truth; the LLM acts only as a translator.</strong></p>
-             <div class="highlight-box" style="margin-top: 30px;">
-                 <p style="color: #4fc3f7; font-size: 1.2em;"> Process unstructured input like emails, documents, and conversations </p>
-             </div>
+            <h3>Our Approach: Make DSLs Conversational</h3>
+            <p>Instead of trying to "fix" LLMs, we enhance existing, reliable DSLs with a natural language interface.<br>
+                <strong style="color: #81c784;">The DSL remains the source of truth; the LLM acts only as a translator.</strong></p>
+            <div class="highlight-box" style="margin-top: 30px;">
+                <p style="color: #4fc3f7; font-size: 1.2em;"> Process unstructured input like emails, documents, and conversations </p>
+            </div>
         </div>
-
         <!-- NEW SLIDE: Unstructured Input Example -->
         <div class="slide">
-            <h2>Real-World Example: From Email to DSL</h2>
+            <h2>Example: From Email to DSL</h2>
             <p>Our system can extract multiple structured tasks from unstructured input:</p>
-            
             <div class="code-comparison">
                 <div class="code-section">
                     <h4>📧 Unstructured Input (Email)</h4>
                     <pre class="email-example">
 "Hi Team,
 
-I wanted to let you know that we've secured 
+I wanted to let you know that we've secured
 a new venue with four rooms:
 
 Zimmer X1 – 10 seats, no AV facilities
@@ -316,7 +313,7 @@ Zimmer X2 – 40 seats, fully equipped with AV
 Zimmer X3 – 20 seats, AV available
 Zimmer X4 – 60 seats, AV and stage setup
 
-This gives us a lot more flexibility for 
+This gives us a lot more flexibility for
 planning events...
 
 Best,
@@ -327,29 +324,26 @@ Sarah"</pre>
                     <pre class="extracted-tasks">
 <strong>System extracts 4 tasks:</strong>
 
-1. create_venue "Zimmer X1" { 
-     capacity: 10, av: false }
+1. create_venue "Zimmer X1" {
+   capacity: 10, av: false }
 
-2. create_venue "Zimmer X2" { 
-     capacity: 40, av: true }
+2. create_venue "Zimmer X2" {
+   capacity: 40, av: true }
 
-3. create_venue "Zimmer X3" { 
-     capacity: 20, av: true }
+3. create_venue "Zimmer X3" {
+   capacity: 20, av: true }
 
-4. create_venue "Zimmer X4" { 
-     capacity: 60, av: true, 
-     stage: true }</pre>
+4. create_venue "Zimmer X4" {
+   capacity: 60, av: true,
+   stage: true }</pre>
                 </div>
             </div>
-            
             <p>Each extracted instruction goes through the same validation and execution pipeline!</p>
         </div>
-
         <!-- SLIDE 2 (was 2): The "How" - High-Level Happy Path -->
         <div class="slide">
-            <h2>The System Blueprint & Processing Flow</h2>
+            <h2>The System Blueprint & Flow</h2>
             <p>From unstructured input to validated execution</p>
-            
             <div class="code-comparison" style="margin-top: 10px;">
                 <div class="code-section">
                     <h4>Processing Pipeline:</h4>
@@ -372,10 +366,9 @@ Sarah"</pre>
                 <p class="diagram-note">Zoom in with Ctrl/Cmd + mouse wheel if needed to read diagram details</p>
             </div>
         </div>
-
         <!-- SLIDE 3 (was 3): Handling Reality -->
         <div class="slide">
-            <h2>Intelligent Handling: Incomplete & Invalid Tasks</h2>
+            <h2>Handling Incomplete & Invalid Tasks</h2>
             <div class="diagram-container">
                 <img src="flow_clarification_invalid.svg" alt="Flowchart for incomplete and invalid queries" style="width: 100%; height: auto;">
                 <p class="diagram-note">Zoom in with Ctrl/Cmd + mouse wheel if needed to read diagram details</p>
@@ -384,8 +377,8 @@ Sarah"</pre>
                 <div class="code-section">
                     <h4>Example: Mixed Valid/Invalid Input</h4>
                     <pre style="text-align: left; font-size: 1.1em;">
-<strong>Unstructured Input:</strong> 
-"Set up the new conference room with 
+<strong>Unstructured Input:</strong>
+"Set up the new conference room with
 50 seats and schedule a talk there."
 
 <strong>System Extracts:</strong>
@@ -397,7 +390,7 @@ Task 2: schedule_talk [missing details] ❓
 • What's the room name?
 • Talk title, speaker, and time?"</pre>
                 </div>
-                 <div class="code-section">
+                <div class="code-section">
                     <h4>Smart Batch Processing</h4>
                     <pre style="text-align: left; font-size: 1.1em;">
 <strong>From our email example:</strong>
@@ -415,17 +408,16 @@ Venues >50 seats require admin role"</pre>
                 </div>
             </div>
         </div>
-
         <!-- SLIDE 4 (was 4): Execution Layer -->
         <div class="slide">
-            <h2>Execution Layer: The Final Gatekeeper</h2>
+            <h2>Execution Layer</h2>
             <p>Every extracted task - whether from email, document, or query - goes through strict validation.</p>
             <div class="diagram-container">
                 <img src="flow_execution.svg" alt="Flowchart of the execution layer" style="width: 100%; height: auto;">
                 <p class="diagram-note">Zoom in with Ctrl/Cmd + mouse wheel if needed to read diagram details</p>
             </div>
             <div class="code-comparison" style="margin-top: 10px;">
-                 <div class="code-section">
+                <div class="code-section">
                     <h4>Batch Execution Example</h4>
                     <pre style="text-align: left; font-size: 1.15em;">
 <strong>Input:</strong> 4 confirmed tasks from email
@@ -445,16 +437,13 @@ Venues >50 seats require admin role"</pre>
             </div>
         </div>
     </div>
-
     <!-- Navigation Controls -->
     <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">‹</button>
     <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">›</button>
-
     <script>
         let currentSlide = 0;
         const slides = document.querySelectorAll('.slide');
         const totalSlides = slides.length;
-
         function showSlide(n) {
             slides.forEach((slide, index) => {
                 slide.classList.remove('active', 'prev');
@@ -464,24 +453,20 @@ Venues >50 seats require admin role"</pre>
                     slide.classList.add('prev');
                 }
             });
-
             document.getElementById('prevBtn').disabled = n === 0;
             document.getElementById('nextBtn').disabled = n === totalSlides - 1;
             document.getElementById('slideNumber').textContent = `${n + 1} / ${totalSlides}`;
             const progress = ((n + 1) / totalSlides) * 100;
             document.getElementById('progressBar').style.width = `${progress}%`;
         }
-
         function changeSlide(direction) {
             currentSlide = Math.max(0, Math.min(totalSlides - 1, currentSlide + direction));
             showSlide(currentSlide);
         }
-
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft') changeSlide(-1);
             if (e.key === 'ArrowRight') changeSlide(1);
         });
-
         // Hide keyboard hint after first interaction
         let hintShown = true;
         document.addEventListener('keydown', () => {
@@ -493,8 +478,8 @@ Venues >50 seats require admin role"</pre>
                 hintShown = false;
             }
         });
-
         showSlide(0);
     </script>
 </body>
 </html>
+
