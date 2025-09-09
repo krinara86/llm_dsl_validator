@@ -8,14 +8,22 @@ class EventInterpreter(BaseInterpreter):
         self.state = deepcopy(state) # Work on a copy to avoid partial updates on error
         self.role = role
         self.actions_performed = []
+        self.search_results = None  # Store search results for read-only operations
 
     def _parse_boolean(self, cname):
         return str(cname).lower() == 'true'
 
     def event_command(self, children):
-        # This is the final step. If all commands within were successful,
-        # return the new state and a summary of actions.
+        # Check if this was a search operation
+        if self.search_results is not None:
+            return {
+                "operation_type": "read_only",
+                "results": self.search_results,
+                "message": "Search completed successfully."
+            }
+        # Otherwise it's a state-changing operation
         return {
+            "operation_type": "state_changing",
             "message": "Execution successful. " + ", ".join(self.actions_performed),
             "new_state": self.state
         }
@@ -90,7 +98,92 @@ class EventInterpreter(BaseInterpreter):
         self.state['sessions'].append({"name": session_name, **properties})
         self.actions_performed.append(f"Scheduled session '{session_name}'")
 
-    # --- Property Helpers ---
+    # --- NEW: Find operations ---
+    def find_venues(self, children):
+        """Search for venues based on criteria."""
+        if self.role not in ['admin', 'scheduler', 'viewer']:
+            raise ValueError(f"RoleMismatchError: Role '{self.role}' is not authorized to search venues.")
+        
+        criteria = dict(children)
+        results = []
+        
+        for venue_name, venue_props in self.state.get('venues', {}).items():
+            # Check each criterion
+            if 'min_capacity' in criteria:
+                if venue_props.get('capacity', 0) < criteria['min_capacity']:
+                    continue
+            
+            if 'has_av_system' in criteria:
+                if venue_props.get('has_av_system', False) != criteria['has_av_system']:
+                    continue
+            
+            if 'is_available' in criteria:
+                is_booked = venue_name in self.state.get('venue_bookings', {})
+                is_available = not is_booked
+                if is_available != criteria['is_available']:
+                    continue
+            
+            if 'name_contains' in criteria:
+                if criteria['name_contains'].lower() not in venue_name.lower():
+                    continue
+            
+            # Add availability status to results
+            is_booked = venue_name in self.state.get('venue_bookings', {})
+            results.append({
+                'name': venue_name,
+                'capacity': venue_props.get('capacity', 0),
+                'has_av_system': venue_props.get('has_av_system', False),
+                'is_available': not is_booked,
+                'booked_by': self.state.get('venue_bookings', {}).get(venue_name)
+            })
+        
+        self.search_results = {
+            'type': 'venues',
+            'criteria': criteria,
+            'items': results,
+            'count': len(results)
+        }
+
+    def find_sessions(self, children):
+        """Search for sessions based on criteria."""
+        if self.role not in ['admin', 'scheduler', 'viewer']:
+            raise ValueError(f"RoleMismatchError: Role '{self.role}' is not authorized to search sessions.")
+        
+        criteria = dict(children)
+        results = []
+        
+        for session in self.state.get('sessions', []):
+            # Check each criterion
+            if 'name_contains' in criteria:
+                if criteria['name_contains'].lower() not in session.get('name', '').lower():
+                    continue
+            
+            if 'hosted_by' in criteria:
+                if criteria['hosted_by'].lower() not in session.get('hosted_by', '').lower():
+                    continue
+            
+            if 'in_venue' in criteria:
+                if criteria['in_venue'].lower() not in session.get('in_venue', '').lower():
+                    continue
+            
+            if 'min_attendees' in criteria:
+                if session.get('expected_attendees', 0) < criteria['min_attendees']:
+                    continue
+            
+            if 'requires_av' in criteria:
+                if session.get('requires_av', False) != criteria['requires_av']:
+                    continue
+            
+            results.append(session)
+        
+        self.search_results = {
+            'type': 'sessions',
+            'criteria': criteria,
+            'items': results,
+            'count': len(results)
+        }
+
+    # --- Property Helpers for state-changing operations ---
     @v_args(inline=True)
     def venue_capacity(self, num): return ("capacity", num)
     
@@ -108,3 +201,31 @@ class EventInterpreter(BaseInterpreter):
     
     @v_args(inline=True)
     def session_requires_av(self, req_av): return ("requires_av", self._parse_boolean(req_av))
+    
+    # --- Property Helpers for find operations ---
+    @v_args(inline=True)
+    def find_venue_min_capacity(self, num): return ("min_capacity", num)
+    
+    @v_args(inline=True)
+    def find_venue_has_av(self, has_av): return ("has_av_system", self._parse_boolean(has_av))
+    
+    @v_args(inline=True)
+    def find_venue_available(self, is_available): return ("is_available", self._parse_boolean(is_available))
+    
+    @v_args(inline=True)
+    def find_venue_name_contains(self, text): return ("name_contains", text)
+    
+    @v_args(inline=True)
+    def find_session_name_contains(self, text): return ("name_contains", text)
+    
+    @v_args(inline=True)
+    def find_session_hosted_by(self, name): return ("hosted_by", name)
+    
+    @v_args(inline=True)
+    def find_session_in_venue(self, venue): return ("in_venue", venue)
+    
+    @v_args(inline=True)
+    def find_session_min_attendees(self, num): return ("min_attendees", num)
+    
+    @v_args(inline=True)
+    def find_session_requires_av(self, req_av): return ("requires_av", self._parse_boolean(req_av))

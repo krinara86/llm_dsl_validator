@@ -25,37 +25,63 @@ class DSLBuilder:
 
         dsl = [f'role "{self._normalize(role)}" {{']
         
-        main_param_name = None
-        for p_name, p_details in action_schema["param_types"].items():
-            if "dsl_keyword" not in p_details:
-                main_param_name = p_name
-                break
+        # Check if this is a find operation (no main parameter)
+        is_find_operation = action_name.startswith("find_")
         
-        if not main_param_name or main_param_name not in params:
-             raise ValueError(f"Main parameter '{main_param_name}' not found for action '{action_name}'.")
+        if is_find_operation:
+            # Find operations don't have a main parameter
+            dsl.append(f'  {action_syntax} {{')
+            
+            # Add all provided parameters
+            for param_name, param_value in params.items():
+                param_schema = action_schema["param_types"].get(param_name)
+                if not param_schema or "dsl_keyword" not in param_schema:
+                    continue
 
-        main_param_value = self._normalize(params[main_param_name])
-        dsl.append(f'  {action_syntax} "{main_param_value}" {{')
+                keyword = param_schema["dsl_keyword"]
+                param_type = param_schema.get("type", "string")
 
-        for param_name, param_value in params.items():
-            if param_name == main_param_name:
-                continue 
+                if param_type == "boolean":
+                    formatted_value = str(param_value).lower()
+                    dsl.append(f'    {keyword}: {formatted_value}')
+                elif param_type == "number":
+                    dsl.append(f'    {keyword}: {param_value}')
+                else: 
+                    formatted_value = self._normalize(param_value)
+                    dsl.append(f'    {keyword}: "{formatted_value}"')
+        else:
+            # State-changing operations have a main parameter
+            main_param_name = None
+            for p_name, p_details in action_schema["param_types"].items():
+                if "dsl_keyword" not in p_details:
+                    main_param_name = p_name
+                    break
+            
+            if not main_param_name or main_param_name not in params:
+                raise ValueError(f"Main parameter '{main_param_name}' not found for action '{action_name}'.")
 
-            param_schema = action_schema["param_types"].get(param_name)
-            if not param_schema or "dsl_keyword" not in param_schema:
-                continue
+            main_param_value = self._normalize(params[main_param_name])
+            dsl.append(f'  {action_syntax} "{main_param_value}" {{')
 
-            keyword = param_schema["dsl_keyword"]
-            param_type = param_schema.get("type", "string")
+            for param_name, param_value in params.items():
+                if param_name == main_param_name:
+                    continue 
 
-            if param_type == "boolean":
-                formatted_value = str(param_value).lower()
-                dsl.append(f'    {keyword}: {formatted_value}')
-            elif param_type == "number":
-                dsl.append(f'    {keyword}: {param_value}')
-            else: 
-                formatted_value = self._normalize(param_value)
-                dsl.append(f'    {keyword}: "{formatted_value}"')
+                param_schema = action_schema["param_types"].get(param_name)
+                if not param_schema or "dsl_keyword" not in param_schema:
+                    continue
+
+                keyword = param_schema["dsl_keyword"]
+                param_type = param_schema.get("type", "string")
+
+                if param_type == "boolean":
+                    formatted_value = str(param_value).lower()
+                    dsl.append(f'    {keyword}: {formatted_value}')
+                elif param_type == "number":
+                    dsl.append(f'    {keyword}: {param_value}')
+                else: 
+                    formatted_value = self._normalize(param_value)
+                    dsl.append(f'    {keyword}: "{formatted_value}"')
         
         dsl.append('  }')
         dsl.append('}')

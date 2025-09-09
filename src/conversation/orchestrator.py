@@ -56,11 +56,25 @@ class ConversationOrchestrator:
             conversation_state["task_details"], role
         )
         
+        # Check if this is a read-only operation
+        action = conversation_state["task_details"].get("action")
+        operation_type = DOMAIN_SCHEMA.get(action, {}).get("operation_type", "state_changing")
+        
+        # For read-only operations with no missing params, execute immediately
+        if operation_type == "read_only" and not understanding["missing_params"]:
+            conversation_state["status"] = "execute_immediately"
+            return {
+                "status": "execute_immediately",
+                "understanding_html": understanding["formatted_html"],
+                "new_state": conversation_state
+            }
+        
         if understanding["missing_params"]:
             return self._request_clarification(
                 understanding, conversation_state, role, model_name
             )
         
+        # For state-changing operations, need confirmation
         conversation_state["status"] = "awaiting_confirmation"
         conversation_state["missing_params"] = []
         
@@ -124,7 +138,8 @@ class ConversationOrchestrator:
             task_details["parameters"] = {}
             
         for param, raw_value in updated_params.items():
-            param_type = param_types.get(param, "text")
+            param_type_info = param_types.get(param, {})
+            param_type = param_type_info.get("type", "text")
             value = None
 
             if param_type == "boolean":
