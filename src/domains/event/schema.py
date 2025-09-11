@@ -105,10 +105,7 @@ DOMAIN_SCHEMA = {
                 "type": "string",
                 "dsl_keyword": "hosted_by_pattern"
             },
-            "in_venue": {
-                "type": "string",
-                "dsl_keyword": "in_venue"
-            },
+            "in_venue": {"type": "venue_selection", "dsl_keyword": "in_venue"},
             "min_attendees": {
                 "type": "number",
                 "dsl_keyword": "min_attendees"

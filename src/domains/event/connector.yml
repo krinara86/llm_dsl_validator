@@ -72,7 +72,7 @@ actions:
           description: "Pattern to match in host names."
           clarification_prompt: "What pattern should I search for in host names?"
         in_venue:
-          description: "Filter by venue name."
+          description: "The exact name of the venue where the session is taking place."
           clarification_prompt: "Which venue should I search in?"
         min_attendees:
           description: "Minimum number of expected attendees."
