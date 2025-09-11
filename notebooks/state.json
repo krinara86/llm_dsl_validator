@@ -325,6 +325,13 @@
       "expected_attendees": 100.0,
       "hosted_by": "Dr. Eva Smith",
       "requires_av": true
+    },
+    {
+      "name": "There are no pigeons",
+      "hosted_by": "Erkan",
+      "in_venue": "Zimmer Z2",
+      "expected_attendees": 32.0,
+      "requires_av": true
     }
   ],
   "venue_bookings": {
@@ -349,6 +356,7 @@
     "Room New": "Dsls in Finance",
     "Room X": "Why AI need DSLs for validation",
     "Zimmer Z4": "Why AI needs DSLS",
-    "Main Auditorium2": "AI Keynote"
+    "Main Auditorium2": "AI Keynote",
+    "Zimmer Z2": "There are no pigeons"
   }
 }
