@@ -1,0 +1,25 @@
+digraph G {
+    rankdir=TB; // Top to Bottom
+    node [shape=box, style=filled, fillcolor=lightblue, fontname="Helvetica"];
+    edge [fontname="Helvetica"];
+
+    UserConfirm [label="User Clicks 'Confirm'\n(UI Layer)", shape=Mdiamond, fillcolor=lightgoldenrodyellow];
+    EventSystemCall [label="EventSystem.execute_task\n(event_system.py)", fillcolor=powderblue];
+    ExecutorCall [label="Executor.execute\n(executor.py)", fillcolor=lightcoral];
+    BuildDSL [label="DSLBuilder.build_dsl\n(dsl_builder.py)", fillcolor=lightgreen];
+    DSLString [label="DSL Command String\n(e.g., create_venue)", shape=note, fillcolor=lightgray];
+    ParseDSL [label="Interpreter.parse\n(interpreter.py)", fillcolor=lightpink];
+    ExecuteParsed [label="Interpreter.execute\n(interpreter.py)", fillcolor=lightpink];
+    UpdateState [label="StateManager.update\n(state_manager.py)", shape=cylinder, fillcolor=wheat];
+    ReturnResult [label="Return Execution Result\n(UI Update)", shape=Mdiamond, fillcolor=lightgoldenrodyellow];
+
+    UserConfirm -> EventSystemCall [label="Confirmed Task Details"];
+    EventSystemCall -> ExecutorCall [label="Delegate to Executor"];
+    ExecutorCall -> BuildDSL [label="Structured Task"];
+    BuildDSL -> DSLString [label="Generates DSL"];
+    DSLString -> ParseDSL [label="DSL String"];
+    ParseDSL -> ExecuteParsed [label="Parsed Tree"];
+    ExecuteParsed -> UpdateState [label="Execute Action"];
+    UpdateState -> ReturnResult [label="Success/Error"];
+    ReturnResult -> UserConfirm [label="Updates UI"];
+}

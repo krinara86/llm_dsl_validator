@@ -1,0 +1,40 @@
+digraph G {
+    rankdir=TB; // Top to Bottom
+    node [shape=box, style=filled, fillcolor=lightblue, fontname="Helvetica"];
+    edge [fontname="Helvetica"];
+
+    Start [label="User Query Arrives\n(Orchestrator.process_request)", shape=Mdiamond, fillcolor=lightgoldenrodyellow];
+    InitState [label="Initialize Conversation State\n(if new convo)", fillcolor=powderblue];
+    CheckClarification [label="Status: 'awaiting_clarification'?", shape=diamond, fillcolor=lightcyan];
+    HandleClarification [label="Handle Clarification\n(Orchestrator._handle_clarification)", fillcolor=lightgreen];
+    ExtractTask [label="Extract Task Details\n(Extractor.extract_task_details)", fillcolor=lightgreen];
+    LLMCall [label="Call LLM Client", shape=cylinder, fillcolor=orange];
+    ValidateRequest [label="Validate Request\n(Orchestrator._validate_request)", fillcolor=powderblue];
+    FormatUnderstanding [label="Format Understanding\n(Formatter.format_understanding)", fillcolor=lightpink];
+    CheckMissingParams [label="Parameters Missing?", shape=diamond, fillcolor=lightcyan];
+    RequestClarification [label="Request Clarification\n(Orchestrator._request_clarification)", fillcolor=lightgray];
+    SetConfirmationState [label="Set Status: 'awaiting_confirmation'", fillcolor=gray];
+    ErrorResponse [label="Return Error Response", fillcolor=red, shape=box3d];
+    End [label="Return UI Response", shape=Mdiamond, fillcolor=lightgoldenrodyellow];
+
+    Start -> InitState;
+    InitState -> CheckClarification;
+
+    CheckClarification -> HandleClarification [label="Yes"];
+    HandleClarification -> End; // After handling, it prepares a new UI response
+
+    CheckClarification -> ExtractTask [label="No (New Request)"];
+    ExtractTask -> LLMCall [label="Build Prompt"];
+    LLMCall -> ExtractTask [label="LLM Response"];
+    ExtractTask -> ErrorResponse [label="Unknown/Error"];
+    ExtractTask -> ValidateRequest [label="Structured Intent"];
+    ValidateRequest -> ErrorResponse [label="Validation Error"];
+    ValidateRequest -> FormatUnderstanding [label="Valid"];
+    FormatUnderstanding -> CheckMissingParams;
+
+    CheckMissingParams -> RequestClarification [label="Yes"];
+    RequestClarification -> End; // Returns clarification message
+
+    CheckMissingParams -> SetConfirmationState [label="No"];
+    SetConfirmationState -> End; // Returns confirmation message
+}

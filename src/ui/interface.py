@@ -166,7 +166,6 @@ class ChatInterface:
         if not query:
             return
         
-        # Check if it's a document
         if len(query) > 300 and not self.conversation_state:
             self._process_document(query)
         else:
@@ -178,7 +177,6 @@ class ChatInterface:
              self._add_message(f"<b>You:</b> {query}", 'user')
         self.user_input.value = ''
         
-        # Process with system
         result = self.system.process_query(
             query,
             self.role_selector.value,
@@ -237,8 +235,6 @@ class ChatInterface:
         
         task_description = task_object.get("task_description", "Unnamed Task")
         
-        # *** FIX IS HERE ***
-        # Package the extracted action and details into the format the orchestrator expects.
         details_for_orchestrator = {
             "action": task_object.get("action", "unknown"),
             "parameters": task_object.get("details", {})

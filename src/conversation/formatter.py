@@ -27,15 +27,31 @@ class MessageFormatter:
         available_params = {}
         missing_params = []
         
+        # List of invalid placeholder values to check against
+        invalid_values = ["unknown", "N/A", "n/a", "Unknown", "TBD", "tbd", 
+                        "placeholder", "Placeholder", "UNKNOWN", "None", "none"]
+        
         for param in required:
-            if param in params and params[param] not in [None, ""]:
-                available_params[param] = params[param]
+            if param in params:
+                value = params[param]
+                # Check for invalid placeholder values
+                str_value = str(value).strip() if value not in [None, ""] else ""
+                
+                if str_value and str_value not in invalid_values:
+                    available_params[param] = value
+                else:
+                    missing_params.append(param)
             else:
                 missing_params.append(param)
         
         for param in optional:
-            if param in params and params[param] not in [None, ""]:
-                available_params[param] = params[param]
+            if param in params:
+                value = params[param]
+                # Check for invalid placeholder values
+                str_value = str(value).strip() if value not in [None, ""] else ""
+                
+                if str_value and str_value not in invalid_values:
+                    available_params[param] = value
         
         # Build HTML response
         html = f"""

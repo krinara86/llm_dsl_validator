@@ -7,6 +7,8 @@ from ..domains.event.schema import DOMAIN_SCHEMA
 from .extractor import TaskExtractor
 from .formatter import MessageFormatter
 from .clarification import ClarificationGenerator
+# --- NEW ---
+from ..core.connector_loader import load_connector
 
 class ConversationOrchestrator:
     """Orchestrates the conversation flow."""
@@ -16,6 +18,7 @@ class ConversationOrchestrator:
         self.extractor = TaskExtractor()
         self.formatter = MessageFormatter()
         self.clarifier = ClarificationGenerator(self.state_manager)
+        self.connector = load_connector('event')
     
     def process_request(self, query: str, role: str, model_name: str,
                        conversation_state: Dict = None, pre_filled_details: Dict = None) -> Dict:
@@ -26,17 +29,15 @@ class ConversationOrchestrator:
         
         conversation_state["history"].append({"role": "user", "content": query})
         
-        # Handle clarification responses
         if conversation_state.get("status") == "awaiting_clarification":
             conversation_state = self._handle_clarification(
                 query, conversation_state
             )
         else:
-            # New request - determine task details
             if pre_filled_details and pre_filled_details.get('action') != 'unknown':
                 extracted = pre_filled_details
             else:
-                extracted = self.extractor.extract_task_details(query, model_name)
+                extracted = self.extractor.extract_task_details(query, model_name, self.connector)
             
             if extracted.get("action") in [None, "unknown", "error"]:
                 return self._error_response(
@@ -45,25 +46,21 @@ class ConversationOrchestrator:
             conversation_state["task_details"] = extracted
             conversation_state["status"] = "processing"
         
-        # Validate permissions and requirements
         validation_result = self._validate_request(
             conversation_state["task_details"], role
         )
         if validation_result["status"] == "error":
             return validation_result
         
-        # Format understanding and check for missing parameters
         understanding = self.formatter.format_understanding(
             conversation_state["task_details"], role
         )
         
         if understanding["missing_params"]:
-            # Need clarification
             return self._request_clarification(
                 understanding, conversation_state, role, model_name
             )
         
-        # Ready for confirmation
         conversation_state["status"] = "awaiting_confirmation"
         conversation_state["missing_params"] = []
         
@@ -75,7 +72,6 @@ class ConversationOrchestrator:
         }
     
     def _validate_request(self, task_details: Dict, role: str) -> Dict:
-        """Validate the request against permissions and state."""
         action = task_details.get("action")
         
         if action in DOMAIN_SCHEMA:
@@ -95,7 +91,6 @@ class ConversationOrchestrator:
         return {"status": "ok"}
 
     def _handle_clarification(self, query: str, conversation_state: Dict) -> Dict:
-        """Handle a batch clarification response from the user."""
         missing_params = conversation_state.get("missing_params", [])
         if not missing_params:
             return conversation_state
@@ -106,7 +101,6 @@ class ConversationOrchestrator:
         
         updated_params = {}
         
-        # Try to parse key:value pairs
         lines = query.strip().split('\n')
         key_value_pattern = re.compile(r"([\w\s_]+)\s*:\s*(.+)")
         
@@ -122,13 +116,10 @@ class ConversationOrchestrator:
                         updated_params[param] = raw_value
                         break
         
-        # If no key:value pairs found AND only one thing was missing,
-        # assume the whole query is the value for that single parameter.
         if not found_key_value and len(missing_params) == 1:
             param = missing_params[0]
             updated_params[param] = query.strip()
         
-        # Update task details with parsed values
         if "parameters" not in task_details:
             task_details["parameters"] = {}
             
@@ -142,7 +133,6 @@ class ConversationOrchestrator:
                 value = TaskExtractor.parse_number(raw_value)
             elif param_type == "venue_selection":
                 state = self.state_manager.load()
-                # Prioritize exact match, then case-insensitive, then substring
                 exact_match = next((v for v in state.get("venues", {}) if v == raw_value), None)
                 case_match = next((v for v in state.get("venues", {}) if v.lower() == raw_value.lower()), None)
                 substring_match = next((v for v in state.get("venues", {}) if raw_value.lower() in v.lower()), None)
@@ -158,7 +148,6 @@ class ConversationOrchestrator:
     def _request_clarification(self, understanding: Dict,
                              conversation_state: Dict,
                              role: str, model_name: str) -> Dict:
-        """Request clarification for all missing parameters at once."""
         missing_params = understanding["missing_params"]
         conversation_state["status"] = "awaiting_clarification"
         conversation_state["missing_params"] = missing_params
@@ -167,7 +156,8 @@ class ConversationOrchestrator:
             missing_params,
             conversation_state["task_details"],
             role,
-            model_name
+            model_name,
+            self.connector
         )
         
         return {
@@ -178,7 +168,6 @@ class ConversationOrchestrator:
         }
     
     def _new_conversation_state(self) -> Dict:
-        """Create a new conversation state."""
         return {
             "status": "awaiting_query",
             "task_details": {},
@@ -187,7 +176,6 @@ class ConversationOrchestrator:
         }
     
     def _error_response(self, message: str) -> Dict:
-        """Create an error response."""
         return {
             "status": "error",
             "message": message,

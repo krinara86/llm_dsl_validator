@@ -1,44 +1,77 @@
 # src/conversation/extractor.py
 import json
 import re
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 from ..core.llm_client import LLMClient
 
 class TaskExtractor:
     """Extracts structured task information from natural language."""
     
     @staticmethod
-    def extract_task_details(query: str, model_name: str) -> Dict:
-        """Extract task details from user query."""
+    def extract_task_details(query: str, model_name: str, connector: Dict[str, Any]) -> Dict:
         
+        action_names = list(connector.get("actions", {}).keys())
+        
+        all_params = {}
+        for action_details in connector.get("actions", {}).values():
+            for param_name, param_details in action_details.get("parameters", {}).items():
+                if param_name not in all_params:
+                    all_params[param_name] = param_details.get("description", "No description.")
+        
+        param_guidance = []
+        for param_name, param_desc in all_params.items():
+            param_guidance.append(f'* `{param_name}`: {param_desc}')
+            
         prompt = f"""
-You are a highly accurate data extraction tool. Your only job is to extract specific parameters from a user's text and return them as a JSON object.
+    You are a highly accurate data extraction assistant. Your single purpose is to extract the user's intent and its associated parameters from the text provided.
+    You MUST respond with only a single, valid JSON object and nothing else. Do not provide any conversational text, explanations, or markdown.
 
-**Instructions:**
-1.  Analyze the user's text to determine the primary intent ("action"). It must be one of: `schedule_session`, `create_venue`, `modify_venue`, or `unknown`.
-2.  Extract parameters based on the action, using the guidance below.
-3.  Return a single JSON object with the keys "action" and "parameters". If a value is not present, DO NOT include its key in the JSON.
+    Your response must be a JSON object with two keys:
+    1.  `"action"`: The user's primary intent. This value MUST be one of the following strings: {action_names} or "unknown".
+    2.  `"parameters"`: A JSON object containing ONLY the parameters you can extract from the user's text.
 
-**Parameter Guidance:**
-* `name`: The official title of the session or venue. E.g., "Introduction to AI", "Main Auditorium".
-* `hosted_by`: The person or organization presenting the session. E.g., "Jane Doe", "AI Corp".
-* `in_venue`: The specific location or room for the session. E.g., "Room 5", "Conference Hall A".
-* `expected_attendees`: The number of people expected to attend.
-* `requires_av`: A boolean (true/false) indicating if the session needs audio/visual equipment.
-* `capacity`: The maximum number of people a venue can hold.
-* `has_av_system`: A boolean (true/false) indicating if a venue has audio/visual equipment.
+    **CRITICAL RULE:** If you cannot find a value for a parameter in the user text, you MUST NOT include its key in the `"parameters"` object. Do not guess or invent values. Do not use placeholders like "unknown" or "N/A". For numeric or boolean parameters, if a value is not explicitly mentioned, omit the key entirely.
 
-**Strictly adhere to the parameter names listed above.**
+    ## Parameter Guidance
+    {"\n".join(param_guidance)}
 
-**User Text:** "{query}"
-**JSON Output:**
-"""
+    ## User Text
+    "{query}"
+
+    ## JSON Output
+    """
         
         try:
             response_str = LLMClient.execute_request(
                 prompt, model_name, is_json_format=True
             )
-            return json.loads(response_str)
+            
+            json_match = re.search(r'\{.*\}', response_str, re.DOTALL)
+            
+            if not json_match:
+                raise json.JSONDecodeError("No JSON object found in the model's response.", response_str, 0)
+            
+            clean_json_str = json_match.group(0)
+            result = json.loads(clean_json_str)
+            
+            # NEW: Filter out parameters with placeholder values
+            if "parameters" in result:
+                filtered_params = {}
+                invalid_values = [None, "", "unknown", "N/A", "n/a", "Unknown", "TBD", "tbd", 
+                                "placeholder", "Placeholder", "UNKNOWN", "None", "none"]
+                
+                for key, value in result.get("parameters", {}).items():
+                    # Convert to string for comparison if needed
+                    str_value = str(value).strip() if value is not None else ""
+                    
+                    # Skip parameters with placeholder values
+                    if str_value and str_value not in invalid_values:
+                        filtered_params[key] = value
+                        
+                result["parameters"] = filtered_params
+            
+            return result
+            
         except (json.JSONDecodeError, ConnectionError) as e:
             return {"action": "error", "parameters": {"details": str(e)}}
     
