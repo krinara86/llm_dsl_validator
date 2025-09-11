@@ -21,26 +21,25 @@ class TaskExtractor:
         param_guidance = []
         for param_name, param_desc in all_params.items():
             param_guidance.append(f'* `{param_name}`: {param_desc}')
-
-        # --- MODIFIED: Added a critical rule to prevent hallucinating placeholders ---
+            
         prompt = f"""
-You are a highly accurate data extraction assistant. Your single purpose is to extract the user's intent and its associated parameters from the text provided.
-You MUST respond with only a single, valid JSON object and nothing else. Do not provide any conversational text, explanations, or markdown.
+    You are a highly accurate data extraction assistant. Your single purpose is to extract the user's intent and its associated parameters from the text provided.
+    You MUST respond with only a single, valid JSON object and nothing else. Do not provide any conversational text, explanations, or markdown.
 
-Your response must be a JSON object with two keys:
-1.  `"action"`: The user's primary intent. This value MUST be one of the following strings: {action_names} or "unknown".
-2.  `"parameters"`: A JSON object containing ONLY the parameters you can extract from the user's text.
+    Your response must be a JSON object with two keys:
+    1.  `"action"`: The user's primary intent. This value MUST be one of the following strings: {action_names} or "unknown".
+    2.  `"parameters"`: A JSON object containing ONLY the parameters you can extract from the user's text.
 
-**CRITICAL RULE:** If you cannot find a value for a parameter in the user text, you MUST NOT include its key in the `"parameters"` object. Do not guess or invent values. Do not use placeholders like "unknown" or "N/A". For numeric or boolean parameters, if a value is not explicitly mentioned, omit the key entirely.
+    **CRITICAL RULE:** If you cannot find a value for a parameter in the user text, you MUST NOT include its key in the `"parameters"` object. Do not guess or invent values. Do not use placeholders like "unknown" or "N/A". For numeric or boolean parameters, if a value is not explicitly mentioned, omit the key entirely.
 
-## Parameter Guidance
-{"\n".join(param_guidance)}
+    ## Parameter Guidance
+    {"\n".join(param_guidance)}
 
-## User Text
-"{query}"
+    ## User Text
+    "{query}"
 
-## JSON Output
-"""
+    ## JSON Output
+    """
         
         try:
             response_str = LLMClient.execute_request(
@@ -53,7 +52,25 @@ Your response must be a JSON object with two keys:
                 raise json.JSONDecodeError("No JSON object found in the model's response.", response_str, 0)
             
             clean_json_str = json_match.group(0)
-            return json.loads(clean_json_str)
+            result = json.loads(clean_json_str)
+            
+            # NEW: Filter out parameters with placeholder values
+            if "parameters" in result:
+                filtered_params = {}
+                invalid_values = [None, "", "unknown", "N/A", "n/a", "Unknown", "TBD", "tbd", 
+                                "placeholder", "Placeholder", "UNKNOWN", "None", "none"]
+                
+                for key, value in result.get("parameters", {}).items():
+                    # Convert to string for comparison if needed
+                    str_value = str(value).strip() if value is not None else ""
+                    
+                    # Skip parameters with placeholder values
+                    if str_value and str_value not in invalid_values:
+                        filtered_params[key] = value
+                        
+                result["parameters"] = filtered_params
+            
+            return result
             
         except (json.JSONDecodeError, ConnectionError) as e:
             return {"action": "error", "parameters": {"details": str(e)}}
