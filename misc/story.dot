@@ -1,0 +1,76 @@
+digraph SystemFlow {
+    graph [rankdir=TD, nodesep=1.0, ranksep=1.0, pad="1.0,0.5", 
+           label="System Architecture & Flow", fontname="Arial", fontsize=14];
+    node [shape=box, style="rounded,filled", fontname="Arial", fontsize=10];
+    edge [fontname="Arial", fontsize=9];
+
+    // Setup Phase
+    subgraph cluster_Setup {
+        label = "Setup Phase (One-Time)";
+        bgcolor = "#FAFAFA";
+        
+        SME [label="Subject Matter Expert", fillcolor="#F5F5F5"];
+        LE [label="Language Engineer", fillcolor="#FFF8E1"];
+        
+        subgraph cluster_Blueprint {
+            label = "System Blueprint (Source of Truth)";
+            bgcolor = "#FFFFFF";
+            
+            CoreDSL [label="Core DSL & Interpreter", fillcolor="#EDE7F6"];
+            Schema [label="Schema", fillcolor="#EDE7F6"];
+            Connector [label="Language Connector", fillcolor="#EDE7F6"];
+        }
+    }
+
+    // Runtime Phase
+    subgraph cluster_Runtime {
+        label = "Runtime Phase (Per Query)";
+        bgcolor = "#FFFFFF";
+
+        User_Query [label="End User provides\nNatural Language Query", shape=ellipse, fillcolor="#E3F2FD"];
+
+        subgraph cluster_Conversation {
+            label = "Conversation Layer";
+            bgcolor="#F0F4FF";
+            
+            UI [label="UI Interface", fillcolor="#E3F2FD"];
+            Orchestrator [label="Orchestrator", fillcolor="#E3F2FD"];
+            Extractor [label="Extractor (LLM Call)", fillcolor="#E3F2FD"];
+        }
+
+        subgraph cluster_Execution {
+            label = "Execution Layer";
+            bgcolor="#FCE4EC";
+            
+            Executor [label="Executor", fillcolor="#F3E5F5"];
+            DSL_Builder [label="DSL Builder", fillcolor="#F3E5F5"];
+            Interpreter [label="Interpreter", fillcolor="#F3E5F5"];
+        }
+
+        State [label="System State", shape=cylinder, fillcolor="#E8F5E9"];
+    }
+
+    // Setup Phase Connections
+    SME -> CoreDSL [label="Defines Business Rules"];
+    LE -> CoreDSL [label="Implements"];
+    LE -> Schema [label="Creates"];
+    LE -> Connector [label="Creates"];
+
+    // Runtime Flow Connections  
+    User_Query -> UI;
+    UI -> Orchestrator;
+    Orchestrator -> Extractor;
+    Extractor -> Orchestrator [label="Returns structured task"];
+    Orchestrator -> Executor [label="Sends confirmed task"];
+    Executor -> DSL_Builder [label="Generates DSL code"];
+    DSL_Builder -> Interpreter;
+    Interpreter -> State [label="Validates & Updates"];
+    State -> UI [label="Returns success"];
+
+    // Governance Connections
+    edge [style=dotted, arrowhead=odot, color=gray, constraint=false];
+    Connector -> Extractor [label="Informs LLM Prompt"];
+    Schema -> Orchestrator [label="Guides Clarification"];
+    CoreDSL -> Interpreter [label="Enforces Validation"];
+}
+

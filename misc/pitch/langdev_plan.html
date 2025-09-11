@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Making DSLs Conversational: A Framework for Reliable, LLM-Powered Interfaces</title>
+    <style>
+        /* Basic Reset & Typography */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            overflow: hidden;
+            line-height: 1.6;
+        }
+
+        /* Slide Container */
+        .slide-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Individual Slides */
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 40px 3vw;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s ease-in-out;
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        h1 {
+            font-size: 3.5em;
+            font-weight: 700;
+            color: #4fc3f7;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            font-size: 2.8em;
+            font-weight: 600;
+            color: #81c784;
+            margin-bottom: 25px;
+            text-align: center;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        h3 {
+            font-size: 2em;
+            font-weight: 500;
+            color: #ffb74d;
+            margin-bottom: 20px;
+            margin-top: 20px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        p {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            max-width: 95%;
+            text-align: center;
+            line-height: 1.8;
+            color: #e0e0e0;
+        }
+
+        pre {
+            background: rgba(13, 13, 26, 0.95);
+            border: 2px solid #444;
+            border-radius: 8px;
+            padding: 25px 30px;
+            margin: 20px 0;
+            overflow-x: auto;
+            max-width: 95%;
+            width: 100%;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+            font-size: 1.2em;
+            line-height: 1.7;
+            color: #f0f0f0;
+        }
+
+        code {
+            font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+        }
+
+        pre strong {
+            color: #4fc3f7;
+            font-weight: 600;
+        }
+        
+        .code-comparison {
+            display: flex;
+            gap: 40px;
+            margin-top: 30px;
+            width: 100%;
+            max-width: 1400px;
+        }
+
+        .code-section {
+            flex: 1;
+            position: relative;
+        }
+        
+        .code-section h4 {
+             color: #ffb74d;
+             margin-bottom: 15px;
+             font-size: 1.5em;
+             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Navigation */
+        .nav-btn {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.5);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 2.5em;
+            font-weight: 300;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.8);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        #prevBtn { left: 30px; }
+        #nextBtn { right: 30px; }
+
+        .slide-number {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            font-size: 1.4em;
+            color: #888;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #4fc3f7, #81c784);
+            transition: width 0.6s ease;
+            z-index: 1000;
+        }
+        
+        .title-slide h1 { font-size: 3em; }
+        .title-slide p { font-size: 1.5em; color: #aaa; }
+
+    </style>
+</head>
+
+<body>
+    <div class="slide-container">
+        <div class="progress-bar" id="progressBar"></div>
+        <div class="slide-number" id="slideNumber">1 / 9</div>
+
+        <!-- SLIDE 1: Title -->
+        <div class="slide active title-slide">
+            <h1>Making DSLs Conversational</h1>
+            <p>A Framework for Reliable, LLM-Powered Interfaces</p>
+            <p style="margin-top: 50px; font-size: 1.2em; color: #888;">Krishna, F1RE<br>LangDev 2025</p>
+        </div>
+
+        <!-- SLIDE 2: The Premise -->
+        <div class="slide">
+            <h2>The Premise: DSLs vs. LLMs</h2>
+            <div class="code-comparison">
+                <div class="code-section">
+                    <h4>Domain-Specific Languages (DSLs)</h4>
+                    <pre style="border-color: #81c784;">
+✓ Precise & Unambiguous
+✓ Verifiably Correct
+✓ Source of Truth for Business Logic
+
+<strong>⚠ Barrier to Entry:</strong> 
+Requires learning a specific syntax</pre>
+                </div>
+                <div class="code-section">
+                    <h4>Large Language Models (LLMs)</h4>
+                    <pre style="border-color: #4fc3f7;">
+✓ Intuitive & Conversational
+✓ Flexible Natural Language Input
+✓ Accessible to Everyone
+
+<strong>⚠ Barrier to Trust:</strong> 
+Probabilistic and cannot guarantee correctness</pre>
+                </div>
+            </div>
+            <h3>Our Approach: Make DSLs Conversational</h3>
+            <p>We enhance existing, reliable DSLs with a natural language interface.<br>
+            <strong style="color: #81c784;">The DSL remains the source of truth; the LLM acts only as a translator.</strong></p>
+        </div>
+        
+        <!-- SLIDE 3: Architecture -->
+        <div class="slide">
+            <h2>Architecture: The DSL as the Source of Truth</h2>
+            <p>The framework is built on a set of formal artifacts that govern the system's behavior.</p>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 50px; margin-top: 40px;">
+                <img src="blueprint.jpg" alt="Blueprint Icon" style="width: 250px; height: auto; border-radius: 10px;">
+                <div style="text-align: left;">
+                    <h3>Key Artifacts:</h3>
+                    <ul style="font-size: 1.2em;">
+                        <li><strong>Core DSL & Interpreter:</strong> The executable source of truth for all business logic and validation.</li>
+                        <li><strong>Schema:</strong> A "checklist" that defines the required data for each action, enabling guided conversations.</li>
+                        <li><strong>Linguistic Connector:</strong> A declarative mapping that bridges the formal DSL to natural language concepts.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: Demo Part 1 -->
+        <div class="slide">
+            <h2>Demo Part 1 (Depth): Handling Unstructured Input</h2>
+            <p>The system can parse complex, real-world text and extract multiple, distinct DSL tasks.</p>
+            <img src="unstructured.png" alt="Screenshot of the application processing an email" style="width: 90%; max-width: 1200px; margin-top: 20px; border-radius: 8px; border: 2px solid #444;">
+        </div>
+
+        <!-- SLIDE 5: Demo Part 2 -->
+        <div class="slide">
+            <h2>Demo Part 2 (Intelligence): Guided Clarification</h2>
+            <p>When a query is incomplete, the system uses the <strong>Schema</strong> to ask precise, helpful questions.</p>
+            <img src="scheduletalk.png" alt="Screenshot of the application asking for more information" style="width: 90%; max-width: 1200px; margin-top: 20px; border-radius: 8px; border: 2px solid #444;">
+        </div>
+
+        <!-- SLIDE 6: Demo Part 3 -->
+        <div class="slide">
+            <h2>Demo Part 3 (Reliability): Enforcing Validation</h2>
+            <p>The <strong>Core DSL & Interpreter</strong> act as the final gatekeeper, preventing invalid operations.</p>
+            <img src="invalidoperation.png" alt="Screenshot of a permission denied error" style="width: 90%; max-width: 1200px; margin-top: 20px; border-radius: 8px; border: 2px solid #444;">
+        </div>
+
+        <!-- SLIDE 7: The Extensibility Promise -->
+        <div class="slide">
+            <h2>The Extensibility Promise: The Linguistic Connector</h2>
+            <p>Adding a new DSL is primarily a configuration task, not a complex coding one.</p>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 50px; margin-top: 40px;">
+                <div style="text-align: left;">
+                    <h3>The Process:</h3>
+                    <ul style="font-size: 1.2em;">
+                        <li>A <strong>Language Engineer</strong> defines the new domain's grammar, schema, and interpreter.</li>
+                        <li>They then write a simple <strong>Linguistic Connector</strong> file (e.g., in YAML) to map the new DSL to language.</li>
+                        <li>Our framework can even use a <strong>Template Generator</strong> to create a starter connector file automatically.</li>
+                    </ul>
+                </div>
+                <img src="gears.png" alt="Gears Icon" style="width: 250px; height: auto;">
+            </div>
+        </div>
+        
+        <!-- SLIDE 8: Demo Part 4 -->
+        <div class="slide">
+            <h2>Demo Part 4 (Adaptability): Live Extensibility</h2>
+            <p>Here, we've added a new, tiny "IT Support" DSL to the framework.</p>
+            <div class="code-comparison">
+                <div class="code-section">
+                    <h4>New DSL Grammar (`it_support.dsl`)</h4>
+                    <pre><code>start: create_ticket
+
+create_ticket: "create_ticket" STRING "{"
+    "user": STRING,
+    "priority": INT
+"}"
+                    </code></pre>
+                </div>
+                <div class="code-section">
+                    <h4>New Linguistic Connector (`connector.yml`)</h4>
+                    <pre><code>domain_name: IT Support
+actions:
+  create_ticket:
+    description: "Creates a new IT support ticket."
+    parameters:
+      user_name:
+        description: "The name of the user reporting the issue."
+        clarification_prompt: "Who is this ticket for?"
+      issue_description:
+        description: "A summary of the technical problem."
+        clarification_prompt: "What is the issue?"
+      priority:
+        description: "The urgency of the ticket (1-5)."
+        clarification_prompt: "What is the priority (1-5)?"
+                    </code></pre>
+                </div>
+            </div>
+             <p style="margin-top: 20px;"><strong>Resulting Interaction:</strong></p>
+            <img src="https://storage.googleapis.com/gemini-prod/images/it_support_demo.png" alt="Fictional screenshot of the IT support demo" style="width: 90%; max-width: 1000px; margin-top: 10px; border-radius: 8px; border: 2px solid #444;">
+        </div>
+        
+        <!-- SLIDE 9: Conclusion -->
+        <div class="slide">
+            <h2>Conclusion & Contributions</h2>
+            <div class="code-comparison">
+                <div class="code-section">
+                    <h3>Our Contribution</h3>
+                    <ul style="font-size: 1.2em;">
+                        <li>A framework to create reliable conversational interfaces for formal DSLs.</li>
+                        <li>Decoupling of domain semantics (the DSL) from conversational mechanics (the LLM).</li>
+                        <li>The concept of a "Linguistic Connector" to reduce manual prompt engineering and simplify extensibility.</li>
+                    </ul>
+                </div>
+                <div class="code-section">
+                    <h3>Key Takeaway</h3>
+                    <p style="font-size: 1.5em; text-align: left; border-left: 4px solid #81c784; padding-left: 20px;">
+                        This approach allows us to leverage the curated knowledge and reliability of DSLs while providing the accessibility of a modern, natural language interface.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+         <div class="slide">
+            <h2>Example: From Email to DSL</h2>
+            <p>Our system can extract multiple structured tasks from unstructured input:</p>
+            <div class="code-comparison">
+                <div class="code-section">
+                    <h4>📧 Unstructured Input (Email)</h4>
+                    <pre class="email-example">
+"Hi Team,
+
+I wanted to let you know that we've secured
+a new venue with four rooms:
+
+Zimmer X1 – 10 seats, no AV facilities
+Zimmer X2 – 40 seats, fully equipped with AV
+Zimmer X3 – 20 seats, AV available
+Zimmer X4 – 60 seats, AV and stage setup
+
+This gives us a lot more flexibility for
+planning events...
+
+Best,
+Sarah"</pre>
+                </div>
+                <div class="code-section">
+                    <h4>✨ Extracted DSL Instructions</h4>
+                    <pre class="extracted-tasks">
+<strong>System extracts 4 tasks:</strong>
+
+1. create_venue "Zimmer X1" {
+   capacity: 10, av: false }
+
+2. create_venue "Zimmer X2" {
+   capacity: 40, av: true }
+
+3. create_venue "Zimmer X3" {
+   capacity: 20, av: true }
+
+4. create_venue "Zimmer X4" {
+   capacity: 60, av: true,
+   stage: true }</pre>
+                </div>
+            </div>
+            <p>Each extracted instruction goes through the same validation and execution pipeline!</p>
+        </div>
+        <!-- SLIDE 2 (was 2): The "How" - High-Level Happy Path -->
+        <div class="slide">
+            <h2>The System Blueprint & Flow</h2>
+            <p>From unstructured input to validated execution</p>
+            <div class="code-comparison" style="margin-top: 10px;">
+                <div class="code-section">
+                    <h4>Processing Pipeline:</h4>
+                    <pre style="text-align: left; font-size: 1.15em;">
+<strong>Unstructured Input:</strong> Email, document, or conversation
+
+<strong>1. Conversation Layer:</strong>
+   • Extracts ALL actionable tasks from input
+   • Structures each task independently
+   • Confirms batch with user if needed
+
+<strong>2. Execution Layer (per task):</strong>
+   • Converts each to formal DSL
+   • Validates against business rules
+   • Executes approved actions only</pre>
+                </div>
+            </div>
+            <div class="diagram-container">
+                <img src="flow_happy_path.svg" alt="High-level system flowchart" style="width: 100%; height: auto;">
+                <p class="diagram-note">Zoom in with Ctrl/Cmd + mouse wheel if needed to read diagram details</p>
+            </div>
+        </div>
+        <!-- SLIDE 3 (was 3): Handling Reality -->
+        <div class="slide">
+            <h2>Handling Incomplete & Invalid Tasks</h2>
+            <div class="diagram-container">
+                <img src="flow_clarification_invalid.svg" alt="Flowchart for incomplete and invalid queries" style="width: 100%; height: auto;">
+                <p class="diagram-note">Zoom in with Ctrl/Cmd + mouse wheel if needed to read diagram details</p>
+            </div>
+            <div class="code-comparison" style="margin-top: 10px;">
+                <div class="code-section">
+                    <h4>Example: Mixed Valid/Invalid Input</h4>
+                    <pre style="text-align: left; font-size: 1.1em;">
+<strong>Unstructured Input:</strong>
+"Set up the new conference room with
+50 seats and schedule a talk there."
+
+<strong>System Extracts:</strong>
+Task 1: create_venue [missing name] ❓
+Task 2: schedule_talk [missing details] ❓
+
+<strong>Conversation Manager:</strong>
+"I found 2 tasks. I need more info:
+• What's the room name?
+• Talk title, speaker, and time?"</pre>
+                </div>
+                <div class="code-section">
+                    <h4>Smart Batch Processing</h4>
+                    <pre style="text-align: left; font-size: 1.1em;">
+<strong>From our email example:</strong>
+✅ Tasks 1-3: Valid → Execute
+❌ Task 4: User lacks permission
+
+<strong>System Response:</strong>
+"Successfully created:
+• Zimmer X1 (10 seats)
+• Zimmer X2 (40 seats, AV)
+• Zimmer X3 (20 seats, AV)
+
+⚠ Cannot create Zimmer X4:
+Venues >50 seats require admin role"</pre>
+                </div>
+            </div>
+        </div>
+        <!-- SLIDE 4 (was 4): Execution Layer -->
+        <div class="slide">
+            <h2>Execution Layer</h2>
+            <p>Every extracted task - whether from email, document, or query - goes through strict validation.</p>
+            <div class="diagram-container">
+                <img src="flow_execution.svg" alt="Flowchart of the execution layer" style="width: 100%; height: auto;">
+                <p class="diagram-note">Zoom in with Ctrl/Cmd + mouse wheel if needed to read diagram details</p>
+            </div>
+            <div class="code-comparison" style="margin-top: 10px;">
+                <div class="code-section">
+                    <h4>Batch Execution Example</h4>
+                    <pre style="text-align: left; font-size: 1.15em;">
+<strong>Input:</strong> 4 confirmed tasks from email
+
+<strong>DSL Builder (per task):</strong>
+• Task 1 → DSL instruction 1
+• Task 2 → DSL instruction 2
+• Task 3 → DSL instruction 3
+• Task 4 → DSL instruction 4
+
+<strong>Interpreter (validates each):</strong>
+• ✅ Instructions 1-3: Execute
+• ❌ Instruction 4: Reject (permissions)
+
+<strong>Result:</strong> 3 venues created, 1 error returned</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- Navigation Controls -->
+    <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">‹</button>
+    <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">›</button>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'prev');
+                if (index === n) {
+                    slide.classList.add('active');
+                } else if (index < n) {
+                    slide.classList.add('prev');
+                }
+            });
+
+            document.getElementById('prevBtn').disabled = n === 0;
+            document.getElementById('nextBtn').disabled = n === totalSlides - 1;
+            document.getElementById('slideNumber').textContent = `${n + 1} / ${totalSlides}`;
+            const progress = ((n + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        }
+
+        function changeSlide(direction) {
+            currentSlide = Math.max(0, Math.min(totalSlides - 1, currentSlide + direction));
+            showSlide(currentSlide);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>
+
