@@ -296,68 +296,10 @@ Probabilistic and cannot guarantee correctness</pre>
                 <img src="gears.png" alt="Gears Icon" style="width: 250px; height: auto;">
             </div>
         </div>
-        
-        <!-- SLIDE 8: Demo Part 4 -->
-        <div class="slide">
-            <h2>Demo Part 4 (Adaptability): Live Extensibility</h2>
-            <p>Here, we've added a new, tiny "IT Support" DSL to the framework.</p>
-            <div class="code-comparison">
-                <div class="code-section">
-                    <h4>New DSL Grammar (`it_support.dsl`)</h4>
-                    <pre><code>start: create_ticket
-
-create_ticket: "create_ticket" STRING "{"
-    "user": STRING,
-    "priority": INT
-"}"
-                    </code></pre>
-                </div>
-                <div class="code-section">
-                    <h4>New Linguistic Connector (`connector.yml`)</h4>
-                    <pre><code>domain_name: IT Support
-actions:
-  create_ticket:
-    description: "Creates a new IT support ticket."
-    parameters:
-      user_name:
-        description: "The name of the user reporting the issue."
-        clarification_prompt: "Who is this ticket for?"
-      issue_description:
-        description: "A summary of the technical problem."
-        clarification_prompt: "What is the issue?"
-      priority:
-        description: "The urgency of the ticket (1-5)."
-        clarification_prompt: "What is the priority (1-5)?"
-                    </code></pre>
-                </div>
-            </div>
-             <p style="margin-top: 20px;"><strong>Resulting Interaction:</strong></p>
-            <img src="https://storage.googleapis.com/gemini-prod/images/it_support_demo.png" alt="Fictional screenshot of the IT support demo" style="width: 90%; max-width: 1000px; margin-top: 10px; border-radius: 8px; border: 2px solid #444;">
-        </div>
-        
-        <!-- SLIDE 9: Conclusion -->
-        <div class="slide">
-            <h2>Conclusion & Contributions</h2>
-            <div class="code-comparison">
-                <div class="code-section">
-                    <h3>Our Contribution</h3>
-                    <ul style="font-size: 1.2em;">
-                        <li>A framework to create reliable conversational interfaces for formal DSLs.</li>
-                        <li>Decoupling of domain semantics (the DSL) from conversational mechanics (the LLM).</li>
-                        <li>The concept of a "Linguistic Connector" to reduce manual prompt engineering and simplify extensibility.</li>
-                    </ul>
-                </div>
-                <div class="code-section">
-                    <h3>Key Takeaway</h3>
-                    <p style="font-size: 1.5em; text-align: left; border-left: 4px solid #81c784; padding-left: 20px;">
-                        This approach allows us to leverage the curated knowledge and reliability of DSLs while providing the accessibility of a modern, natural language interface.
-                    </p>
-                </div>
-            </div>
-        </div>
+       
 
          <div class="slide">
-            <h2>Example: From Email to DSL</h2>
+            <h2>From Email to DSL. How?</h2>
             <p>Our system can extract multiple structured tasks from unstructured input:</p>
             <div class="code-comparison">
                 <div class="code-section">
@@ -493,6 +435,66 @@ Venues >50 seats require admin role"</pre>
 • ❌ Instruction 4: Reject (permissions)
 
 <strong>Result:</strong> 3 venues created, 1 error returned</pre>
+                </div>
+            </div>
+        </div>
+
+         
+        <!-- SLIDE 8: Demo Part 4 -->
+        <div class="slide">
+            <h2>Demo Part 4 (Adaptability): Live Extensibility</h2>
+            <p>Here, we've added a new, tiny "IT Support" DSL to the framework.</p>
+            <div class="code-comparison">
+                <div class="code-section">
+                    <h4>New DSL Grammar (`it_support.dsl`)</h4>
+                    <pre><code>start: create_ticket
+
+create_ticket: "create_ticket" STRING "{"
+    "user": STRING,
+    "priority": INT
+"}"
+                    </code></pre>
+                </div>
+                <div class="code-section">
+                    <h4>New Linguistic Connector (`connector.yml`)</h4>
+                    <pre><code>domain_name: IT Support
+actions:
+  create_ticket:
+    description: "Creates a new IT support ticket."
+    parameters:
+      user_name:
+        description: "The name of the user reporting the issue."
+        clarification_prompt: "Who is this ticket for?"
+      issue_description:
+        description: "A summary of the technical problem."
+        clarification_prompt: "What is the issue?"
+      priority:
+        description: "The urgency of the ticket (1-5)."
+        clarification_prompt: "What is the priority (1-5)?"
+                    </code></pre>
+                </div>
+            </div>
+             <p style="margin-top: 20px;"><strong>Resulting Interaction:</strong></p>
+            <img src="https://storage.googleapis.com/gemini-prod/images/it_support_demo.png" alt="Fictional screenshot of the IT support demo" style="width: 90%; max-width: 1000px; margin-top: 10px; border-radius: 8px; border: 2px solid #444;">
+        </div>
+        
+        <!-- SLIDE 9: Conclusion -->
+        <div class="slide">
+            <h2>Conclusion & Contributions</h2>
+            <div class="code-comparison">
+                <div class="code-section">
+                    <h3>Our Contribution</h3>
+                    <ul style="font-size: 1.2em;">
+                        <li>A framework to create reliable conversational interfaces for formal DSLs.</li>
+                        <li>Decoupling of domain semantics (the DSL) from conversational mechanics (the LLM).</li>
+                        <li>The concept of a "Linguistic Connector" to reduce manual prompt engineering and simplify extensibility.</li>
+                    </ul>
+                </div>
+                <div class="code-section">
+                    <h3>Key Takeaway</h3>
+                    <p style="font-size: 1.5em; text-align: left; border-left: 4px solid #81c784; padding-left: 20px;">
+                        This approach allows us to leverage the curated knowledge and reliability of DSLs while providing the accessibility of a modern, natural language interface.
+                    </p>
                 </div>
             </div>
         </div>
