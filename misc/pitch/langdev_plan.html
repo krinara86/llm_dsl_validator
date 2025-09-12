@@ -197,24 +197,97 @@
         .title-slide h1 { font-size: 3em; }
         .title-slide p { font-size: 1.5em; color: #aaa; }
 
+        .agenda-list {
+            text-align: left;
+            font-size: 1.5em;
+            line-height: 2;
+            margin-top: 30px;
+        }
+
+        .agenda-list li {
+            margin-bottom: 20px;
+            color: #e0e0e0;
+        }
+
+        .agenda-list strong {
+            color: #4fc3f7;
+        }
+
+        .problem-slide {
+            text-align: center;
+        }
+
+        .problem-slide .highlight {
+            color: #ff6b6b;
+            font-weight: 600;
+        }
+
+        .solution-question {
+            font-size: 1.8em;
+            color: #4fc3f7;
+            margin-top: 40px;
+            font-style: italic;
+        }
+
     </style>
 </head>
 
 <body>
     <div class="slide-container">
         <div class="progress-bar" id="progressBar"></div>
-        <div class="slide-number" id="slideNumber">1 / 9</div>
+        <div class="slide-number" id="slideNumber">1 / 14</div>
 
-        <!-- SLIDE 1: Title -->
+        <!-- SLIDE 1: Title & Introduction -->
         <div class="slide active title-slide">
             <h1>Making DSLs Conversational</h1>
             <p>A Framework for Reliable, LLM-Powered Interfaces</p>
-            <p style="margin-top: 50px; font-size: 1.2em; color: #888;">Krishna, F1RE<br>LangDev 2025</p>
+            <p style="margin-top: 50px; font-size: 1.2em; color: #888;">Krishna Nadiminti<br>F1RE<br>LangDev 2025</p>
         </div>
 
-        <!-- SLIDE 2: The Premise -->
+        <!-- SLIDE 2: Agenda -->
         <div class="slide">
-            <h2>The Premise: DSLs vs. LLMs</h2>
+            <h2>Agenda</h2>
+            <ul class="agenda-list">
+                <li><strong>Why?</strong> The problem with DSL adoption and how LLMs can help</li>
+                <li><strong>What?</strong> Live demo of our conversational DSL framework</li>
+                <li><strong>How?</strong> System architecture and implementation details</li>
+            </ul>
+            <p style="margin-top: 50px; font-size: 1.4em; color: #81c784;">Let's make formal languages accessible to everyone!</p>
+        </div>
+
+        <!-- SLIDE 3: The DSL Problem -->
+        <div class="slide problem-slide">
+            <h2>DSLs: Powerful but Inaccessible</h2>
+            <pre style="border-color: #81c784; margin-top: 40px;">
+<strong>✓ Domain-Specific Languages provide:</strong>
+
+• Correctness guarantees
+• Safety validation
+• Formal verification
+• Precise semantics
+
+<span class="highlight">✗ BUT: They require specialized knowledge!</span></pre>
+            <p style="margin-top: 40px; font-size: 1.5em;">New users face a steep learning curve.<br>
+            <span style="color: #ff6b6b;">This limits adoption and creates friction.</span></p>
+        </div>
+
+        <!-- SLIDE 4: The Natural Language Question -->
+        <div class="slide">
+            <h2>Can We Talk to DSLs in Natural Language?</h2>
+            <div style="margin-top: 50px;">
+                <p style="font-size: 1.6em; color: #4fc3f7;">LLMs already claim to understand code...</p>
+                <pre style="margin-top: 30px; border-color: #4fc3f7;">
+"Generate SQL for top customers"
+"Write Python to analyze this data"
+"Create a regex for email validation"</pre>
+                <p class="solution-question">But can we trust them with critical business logic?</p>
+                <p style="margin-top: 30px; font-size: 1.4em; color: #ffb74d;">What if we could combine LLM accessibility<br>with DSL reliability?</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: DSLs vs LLMs (renamed from slide 2) -->
+        <div class="slide">
+            <h2>The Best of Both Worlds</h2>
             <div class="code-comparison">
                 <div class="code-section">
                     <h4>Domain-Specific Languages (DSLs)</h4>
@@ -242,7 +315,7 @@ Probabilistic and cannot guarantee correctness</pre>
             <strong style="color: #81c784;">The DSL remains the source of truth; the LLM acts only as a translator.</strong></p>
         </div>
         
-        <!-- SLIDE 3: Architecture -->
+        <!-- SLIDE 6: Architecture (was 3) -->
         <div class="slide">
             <h2>Architecture: The DSL as the Source of Truth</h2>
             <p>The framework is built on a set of formal artifacts that govern the system's behavior.</p>
@@ -259,28 +332,28 @@ Probabilistic and cannot guarantee correctness</pre>
             </div>
         </div>
 
-        <!-- SLIDE 4: Demo Part 1 -->
+        <!-- SLIDE 7: Demo Part 1 (was 4) -->
         <div class="slide">
             <h2>Demo Part 1 (Depth): Handling Unstructured Input</h2>
             <p>The system can parse complex, real-world text and extract multiple, distinct DSL tasks.</p>
             <img src="unstructured.png" alt="Screenshot of the application processing an email" style="width: 90%; max-width: 1200px; margin-top: 20px; border-radius: 8px; border: 2px solid #444;">
         </div>
 
-        <!-- SLIDE 5: Demo Part 2 -->
+        <!-- SLIDE 8: Demo Part 2 (was 5) -->
         <div class="slide">
             <h2>Demo Part 2 (Intelligence): Guided Clarification</h2>
             <p>When a query is incomplete, the system uses the <strong>Schema</strong> to ask precise, helpful questions.</p>
             <img src="scheduletalk.png" alt="Screenshot of the application asking for more information" style="width: 90%; max-width: 1200px; margin-top: 20px; border-radius: 8px; border: 2px solid #444;">
         </div>
 
-        <!-- SLIDE 6: Demo Part 3 -->
+        <!-- SLIDE 9: Demo Part 3 (was 6) -->
         <div class="slide">
             <h2>Demo Part 3 (Reliability): Enforcing Validation</h2>
             <p>The <strong>Core DSL & Interpreter</strong> act as the final gatekeeper, preventing invalid operations.</p>
             <img src="invalidoperation.png" alt="Screenshot of a permission denied error" style="width: 90%; max-width: 1200px; margin-top: 20px; border-radius: 8px; border: 2px solid #444;">
         </div>
 
-        <!-- SLIDE 7: The Extensibility Promise -->
+        <!-- SLIDE 10: The Extensibility Promise (was 7) -->
         <div class="slide">
             <h2>The Extensibility Promise: The Linguistic Connector</h2>
             <p>Adding a new DSL is primarily a configuration task, not a complex coding one.</p>
@@ -296,68 +369,10 @@ Probabilistic and cannot guarantee correctness</pre>
                 <img src="gears.png" alt="Gears Icon" style="width: 250px; height: auto;">
             </div>
         </div>
-        
-        <!-- SLIDE 8: Demo Part 4 -->
+       
+        <!-- SLIDE 11: From Email to DSL (was 8) -->
         <div class="slide">
-            <h2>Demo Part 4 (Adaptability): Live Extensibility</h2>
-            <p>Here, we've added a new, tiny "IT Support" DSL to the framework.</p>
-            <div class="code-comparison">
-                <div class="code-section">
-                    <h4>New DSL Grammar (`it_support.dsl`)</h4>
-                    <pre><code>start: create_ticket
-
-create_ticket: "create_ticket" STRING "{"
-    "user": STRING,
-    "priority": INT
-"}"
-                    </code></pre>
-                </div>
-                <div class="code-section">
-                    <h4>New Linguistic Connector (`connector.yml`)</h4>
-                    <pre><code>domain_name: IT Support
-actions:
-  create_ticket:
-    description: "Creates a new IT support ticket."
-    parameters:
-      user_name:
-        description: "The name of the user reporting the issue."
-        clarification_prompt: "Who is this ticket for?"
-      issue_description:
-        description: "A summary of the technical problem."
-        clarification_prompt: "What is the issue?"
-      priority:
-        description: "The urgency of the ticket (1-5)."
-        clarification_prompt: "What is the priority (1-5)?"
-                    </code></pre>
-                </div>
-            </div>
-             <p style="margin-top: 20px;"><strong>Resulting Interaction:</strong></p>
-            <img src="https://storage.googleapis.com/gemini-prod/images/it_support_demo.png" alt="Fictional screenshot of the IT support demo" style="width: 90%; max-width: 1000px; margin-top: 10px; border-radius: 8px; border: 2px solid #444;">
-        </div>
-        
-        <!-- SLIDE 9: Conclusion -->
-        <div class="slide">
-            <h2>Conclusion & Contributions</h2>
-            <div class="code-comparison">
-                <div class="code-section">
-                    <h3>Our Contribution</h3>
-                    <ul style="font-size: 1.2em;">
-                        <li>A framework to create reliable conversational interfaces for formal DSLs.</li>
-                        <li>Decoupling of domain semantics (the DSL) from conversational mechanics (the LLM).</li>
-                        <li>The concept of a "Linguistic Connector" to reduce manual prompt engineering and simplify extensibility.</li>
-                    </ul>
-                </div>
-                <div class="code-section">
-                    <h3>Key Takeaway</h3>
-                    <p style="font-size: 1.5em; text-align: left; border-left: 4px solid #81c784; padding-left: 20px;">
-                        This approach allows us to leverage the curated knowledge and reliability of DSLs while providing the accessibility of a modern, natural language interface.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-         <div class="slide">
-            <h2>Example: From Email to DSL</h2>
+            <h2>From Email to DSL. How?</h2>
             <p>Our system can extract multiple structured tasks from unstructured input:</p>
             <div class="code-comparison">
                 <div class="code-section">
@@ -400,7 +415,8 @@ Sarah"</pre>
             </div>
             <p>Each extracted instruction goes through the same validation and execution pipeline!</p>
         </div>
-        <!-- SLIDE 2 (was 2): The "How" - High-Level Happy Path -->
+
+        <!-- SLIDE 12: System Blueprint (was 9) -->
         <div class="slide">
             <h2>The System Blueprint & Flow</h2>
             <p>From unstructured input to validated execution</p>
@@ -426,7 +442,8 @@ Sarah"</pre>
                 <p class="diagram-note">Zoom in with Ctrl/Cmd + mouse wheel if needed to read diagram details</p>
             </div>
         </div>
-        <!-- SLIDE 3 (was 3): Handling Reality -->
+
+        <!-- SLIDE 13: Handling Reality (was 10) -->
         <div class="slide">
             <h2>Handling Incomplete & Invalid Tasks</h2>
             <div class="diagram-container">
@@ -468,37 +485,29 @@ Venues >50 seats require admin role"</pre>
                 </div>
             </div>
         </div>
-        <!-- SLIDE 4 (was 4): Execution Layer -->
+
+        <!-- SLIDE 14: Conclusion (was last) -->
         <div class="slide">
-            <h2>Execution Layer</h2>
-            <p>Every extracted task - whether from email, document, or query - goes through strict validation.</p>
-            <div class="diagram-container">
-                <img src="flow_execution.svg" alt="Flowchart of the execution layer" style="width: 100%; height: auto;">
-                <p class="diagram-note">Zoom in with Ctrl/Cmd + mouse wheel if needed to read diagram details</p>
-            </div>
-            <div class="code-comparison" style="margin-top: 10px;">
+            <h2>Conclusion & Contributions</h2>
+            <div class="code-comparison">
                 <div class="code-section">
-                    <h4>Batch Execution Example</h4>
-                    <pre style="text-align: left; font-size: 1.15em;">
-<strong>Input:</strong> 4 confirmed tasks from email
-
-<strong>DSL Builder (per task):</strong>
-• Task 1 → DSL instruction 1
-• Task 2 → DSL instruction 2
-• Task 3 → DSL instruction 3
-• Task 4 → DSL instruction 4
-
-<strong>Interpreter (validates each):</strong>
-• ✅ Instructions 1-3: Execute
-• ❌ Instruction 4: Reject (permissions)
-
-<strong>Result:</strong> 3 venues created, 1 error returned</pre>
+                    <h3>Our Contribution</h3>
+                    <ul style="font-size: 1.2em;">
+                        <li>A framework to create reliable conversational interfaces for formal DSLs.</li>
+                        <li>Decoupling of domain semantics (the DSL) from conversational mechanics (the LLM).</li>
+                        <li>The concept of a "Linguistic Connector" to reduce manual prompt engineering and simplify extensibility.</li>
+                    </ul>
+                </div>
+                <div class="code-section">
+                    <h3>Key Takeaway</h3>
+                    <p style="font-size: 1.5em; text-align: left; border-left: 4px solid #81c784; padding-left: 20px;">
+                        This approach allows us to leverage the curated knowledge and reliability of DSLs while providing the accessibility of a modern, natural language interface.
+                    </p>
                 </div>
             </div>
         </div>
     </div>
     
-
     <!-- Navigation Controls -->
     <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">‹</button>
     <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">›</button>
@@ -539,4 +548,3 @@ Venues >50 seats require admin role"</pre>
     </script>
 </body>
 </html>
-
