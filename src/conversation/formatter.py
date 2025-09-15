@@ -1,40 +1,53 @@
 # src/conversation/formatter.py
 from typing import Dict, List
-from ..domains.event.schema import DOMAIN_SCHEMA
+from ..core.config import AppConfig
 
 class MessageFormatter:
     """Formats messages and UI elements for the conversation."""
     
-    @staticmethod
-    def format_understanding(task_details: Dict, role: str) -> Dict:
+    def __init__(self, schema_provider=None):
+        """Initialize with optional schema provider (handler)."""
+        self.schema_provider = schema_provider
+    
+    def get_schema(self) -> Dict:
+        """Get schema from provider or fall back to domain imports."""
+        if self.schema_provider:
+            return self.schema_provider.get_schema()
+        
+        if AppConfig.DOMAIN == 'event':
+            from ..domains.event.schema import DOMAIN_SCHEMA
+            return DOMAIN_SCHEMA
+        
+        return {}
+    
+    def format_understanding(self, task_details: Dict, role: str) -> Dict:
         """Format the extracted task details into a structured response."""
         action = task_details.get("action", "unknown")
         params = task_details.get("parameters", {})
         
-        if action not in DOMAIN_SCHEMA:
+        schema = self.get_schema()
+        
+        if action not in schema:
             return {
                 "formatted_html": "<b>Error:</b> Unable to understand the request.",
                 "missing_params": [],
                 "available_params": {}
             }
         
-        schema = DOMAIN_SCHEMA[action]
-        required = schema["required"]
-        optional = schema.get("optional", [])
-        param_types = schema.get("param_types", {})
+        action_schema = schema[action]
+        required = action_schema.get("required", [])
+        optional = action_schema.get("optional", [])
+        param_types = action_schema.get("param_types", {})
         
-        # Categorize parameters
         available_params = {}
         missing_params = []
         
-        # List of invalid placeholder values to check against
         invalid_values = ["unknown", "N/A", "n/a", "Unknown", "TBD", "tbd", 
                         "placeholder", "Placeholder", "UNKNOWN", "None", "none"]
         
         for param in required:
             if param in params:
                 value = params[param]
-                # Check for invalid placeholder values
                 str_value = str(value).strip() if value not in [None, ""] else ""
                 
                 if str_value and str_value not in invalid_values:
@@ -47,13 +60,11 @@ class MessageFormatter:
         for param in optional:
             if param in params:
                 value = params[param]
-                # Check for invalid placeholder values
                 str_value = str(value).strip() if value not in [None, ""] else ""
                 
                 if str_value and str_value not in invalid_values:
                     available_params[param] = value
         
-        # Build HTML response
         html = f"""
         <div style='background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;'>
             <h4 style='margin-top: 0;'>Here is what I understood:</h4>
@@ -82,12 +93,12 @@ class MessageFormatter:
             """
             for param in missing_params:
                 display_param = param.replace('_', ' ').title()
-                param_type = param_types.get(param, "text")
+                param_info = param_types.get(param, {})
+                param_type = param_info.get("type", "text") if isinstance(param_info, dict) else "text"
                 
-                # Add guidance based on parameter type
                 if param_type == "boolean":
                     guidance = "(Please answer: yes/no)"
-                elif param_type == "number":
+                elif param_type in ["number", "Integer", "integer"]:
                     guidance = "(Please provide a number)"
                 elif param_type == "venue_selection":
                     guidance = "(I'll show you available options)"

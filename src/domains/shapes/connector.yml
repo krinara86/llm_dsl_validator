@@ -1,0 +1,44 @@
+domain_name: "Shapes"
+
+actions:
+  create_circle:
+    description: "Creates a circular shape"
+    parameters:
+      name:
+        description: "Name for the circle"
+        clarification_prompt: "What would you like to name this circle?"
+      radius:
+        description: "Radius of the circle"
+        clarification_prompt: "What radius should the circle have?"
+      x:
+        description: "X coordinate of center"
+        clarification_prompt: "What is the X coordinate of the center?"
+      y:
+        description: "Y coordinate of center"
+        clarification_prompt: "What is the Y coordinate of the center?"
+        
+  create_line:
+    description: "Creates a line between two points"
+    parameters:
+      name:
+        description: "Name for the line"
+        clarification_prompt: "What would you like to name this line?"
+      start_x:
+        description: "X coordinate of start point"
+        clarification_prompt: "What is the X coordinate of the start point?"
+      start_y:
+        description: "Y coordinate of start point"
+        clarification_prompt: "What is the Y coordinate of the start point?"
+      end_x:
+        description: "X coordinate of end point"
+        clarification_prompt: "What is the X coordinate of the end point?"
+      end_y:
+        description: "Y coordinate of end point"
+        clarification_prompt: "What is the Y coordinate of the end point?"
+        
+  find_shapes:
+    description: "Search for shapes"
+    parameters:
+      shape_type:
+        description: "Type of shape to find (circle, line, etc.)"
+        clarification_prompt: "What type of shape are you looking for?"

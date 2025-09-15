@@ -1,4 +1,4 @@
-# src/domains/event/schema.py
+
 """Schema definitions for the event management domain."""
 
 DOMAIN_SCHEMA = {
@@ -66,5 +66,60 @@ DOMAIN_SCHEMA = {
             }
         },
         "permissions": ["admin", "scheduler"]
+    },
+    "find_venue": {
+        "dsl_syntax": "find_venue",
+        "required": [],
+        "optional": ["name_pattern", "min_capacity", "max_capacity", "has_av_system"],
+        "param_types": {
+            "name_pattern": {
+                "type": "string",
+                "dsl_keyword": "name_pattern"
+            },
+            "min_capacity": {
+                "type": "number",
+                "dsl_keyword": "min_capacity"
+            },
+            "max_capacity": {
+                "type": "number",
+                "dsl_keyword": "max_capacity"
+            },
+            "has_av_system": {
+                "type": "boolean",
+                "dsl_keyword": "has_av"
+            }
+        },
+        "permissions": ["admin", "scheduler"],
+        "is_read_only": True
+    },
+    "find_session": {
+        "dsl_syntax": "find_session",
+        "required": [],
+        "optional": ["name_pattern", "hosted_by_pattern", "in_venue", "min_attendees", "max_attendees", "requires_av"],
+        "param_types": {
+            "name_pattern": {
+                "type": "string",
+                "dsl_keyword": "name_pattern"
+            },
+            "hosted_by_pattern": {
+                "type": "string",
+                "dsl_keyword": "hosted_by_pattern"
+            },
+            "in_venue": {"type": "venue_selection", "dsl_keyword": "in_venue"},
+            "min_attendees": {
+                "type": "number",
+                "dsl_keyword": "min_attendees"
+            },
+            "max_attendees": {
+                "type": "number",
+                "dsl_keyword": "max_attendees"
+            },
+            "requires_av": {
+                "type": "boolean",
+                "dsl_keyword": "requires_av"
+            }
+        },
+        "permissions": ["admin", "scheduler"],
+        "is_read_only": True
     }
 }

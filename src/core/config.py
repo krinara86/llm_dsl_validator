@@ -5,6 +5,10 @@ from pathlib import Path
 class AppConfig:
     """Central configuration for the application."""
     
+    # Framework Configuration (NEW)
+    FRAMEWORK = os.getenv("FRAMEWORK", "lark")  # "lark" or "lionweb"
+    DOMAIN = os.getenv("DOMAIN", "event")       # "event" for Lark, "shapes" for LionWeb
+    
     # API Configuration
     LLM_API_URL = "http://localhost:11434/api/generate"
     DEFAULT_MODEL = "llama3:8b"
@@ -23,6 +27,16 @@ class AppConfig:
         return AppConfig.PROJECT_ROOT / "src" / "domains" / domain / "grammar.dsl"
     
     @staticmethod
+    def get_lionweb_m2_path(domain: str) -> Path:
+        """Get the path to a domain's LionWeb M2 file."""
+        return AppConfig.PROJECT_ROOT / "src" / "lionweb" / "languages" / f"{domain}_m2.json"
+    
+    @staticmethod
+    def get_lionweb_mappings_path(domain: str) -> Path:
+        """Get the path to a domain's LionWeb NL mappings."""
+        return AppConfig.PROJECT_ROOT / "src" / "lionweb" / "mappings" / f"{domain}_nl.json"
+    
+    @staticmethod
     def load_api_key():
         """Load API keys from .env file."""
         try:
@@ -39,5 +53,4 @@ class AppConfig:
         except Exception:
             pass
 
-# Load API keys on module import
 AppConfig.load_api_key()

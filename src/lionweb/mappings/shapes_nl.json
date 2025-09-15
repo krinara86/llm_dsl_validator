@@ -1,0 +1,170 @@
+{
+  "serializationFormatVersion": "2025.1",
+  "nodes": [
+    {
+      "id": "map-circle",
+      "classifier": {
+        "language": "NLMapping",
+        "version": "1",
+        "key": "ConceptMapping"
+      },
+      "properties": [
+        {
+          "property": "targetConceptKey",
+          "value": "key-Circle"
+        },
+        {
+          "property": "nlPhrases",
+          "value": "[\"circle\", \"circular shape\", \"round shape\"]"
+        },
+        {
+          "property": "description",
+          "value": "Creates a circular shape with a center point and radius"
+        }
+      ],
+      "containments": [
+        {
+          "containment": "propertyMappings",
+          "children": [
+            {
+              "id": "map-circle-name",
+              "classifier": {"key": "PropertyMapping"},
+              "properties": [
+                {"property": "targetPropertyKey", "value": "LionCore-builtins-INamed-name"},
+                {"property": "nlPrompt", "value": "What would you like to name this circle?"},
+                {"property": "required", "value": "false"},
+                {"property": "defaultValue", "value": "Circle"}
+              ]
+            },
+            {
+              "id": "map-circle-radius",
+              "classifier": {"key": "PropertyMapping"},
+              "properties": [
+                {"property": "targetPropertyKey", "value": "key-r"},
+                {"property": "nlPrompt", "value": "What is the radius of the circle?"},
+                {"property": "required", "value": "true"},
+                {"property": "propertyType", "value": "Integer"}
+              ]
+            },
+            {
+              "id": "map-circle-x",
+              "classifier": {"key": "PropertyMapping"},
+              "properties": [
+                {"property": "targetPropertyKey", "value": "key-x"},
+                {"property": "nlPrompt", "value": "What is the X coordinate of the center?"},
+                {"property": "required", "value": "false"},
+                {"property": "defaultValue", "value": "0"},
+                {"property": "propertyType", "value": "Integer"}
+              ]
+            },
+            {
+              "id": "map-circle-y",
+              "classifier": {"key": "PropertyMapping"},
+              "properties": [
+                {"property": "targetPropertyKey", "value": "key-y"},
+                {"property": "nlPrompt", "value": "What is the Y coordinate of the center?"},
+                {"property": "required", "value": "false"},
+                {"property": "defaultValue", "value": "0"},
+                {"property": "propertyType", "value": "Integer"}
+              ]
+            },
+            {
+              "id": "map-circle-z",
+              "classifier": {"key": "PropertyMapping"},
+              "properties": [
+                {"property": "targetPropertyKey", "value": "key-z"},
+                {"property": "nlPrompt", "value": "What is the Z coordinate of the center?"},
+                {"property": "required", "value": "false"},
+                {"property": "defaultValue", "value": "0"},
+                {"property": "propertyType", "value": "Integer"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "map-line",
+      "classifier": {
+        "language": "NLMapping",
+        "version": "1",
+        "key": "ConceptMapping"
+      },
+      "properties": [
+        {
+          "property": "targetConceptKey",
+          "value": "key-Line"
+        },
+        {
+          "property": "nlPhrases",
+          "value": "[\"line\", \"straight line\", \"segment\"]"
+        },
+        {
+          "property": "description",
+          "value": "Creates a line between two points"
+        }
+      ],
+      "containments": [
+        {
+          "containment": "propertyMappings",
+          "children": [
+            {
+              "id": "map-line-name",
+              "classifier": {"key": "PropertyMapping"},
+              "properties": [
+                {"property": "targetPropertyKey", "value": "LionCore-builtins-INamed-name"},
+                {"property": "nlPrompt", "value": "What would you like to name this line?"},
+                {"property": "required", "value": "false"},
+                {"property": "defaultValue", "value": "Line"}
+              ]
+            },
+            {
+              "id": "map-line-start-x",
+              "classifier": {"key": "PropertyMapping"},
+              "properties": [
+                {"property": "targetPropertyKey", "value": "key-start-x"},
+                {"property": "nlPrompt", "value": "What is the X coordinate of the start point?"},
+                {"property": "required", "value": "false"},
+                {"property": "defaultValue", "value": "0"},
+                {"property": "propertyType", "value": "Integer"}
+              ]
+            },
+            {
+              "id": "map-line-start-y",
+              "classifier": {"key": "PropertyMapping"},
+              "properties": [
+                {"property": "targetPropertyKey", "value": "key-start-y"},
+                {"property": "nlPrompt", "value": "What is the Y coordinate of the start point?"},
+                {"property": "required", "value": "false"},
+                {"property": "defaultValue", "value": "0"},
+                {"property": "propertyType", "value": "Integer"}
+              ]
+            },
+            {
+              "id": "map-line-end-x",
+              "classifier": {"key": "PropertyMapping"},
+              "properties": [
+                {"property": "targetPropertyKey", "value": "key-end-x"},
+                {"property": "nlPrompt", "value": "What is the X coordinate of the end point?"},
+                {"property": "required", "value": "false"},
+                {"property": "defaultValue", "value": "10"},
+                {"property": "propertyType", "value": "Integer"}
+              ]
+            },
+            {
+              "id": "map-line-end-y",
+              "classifier": {"key": "PropertyMapping"},
+              "properties": [
+                {"property": "targetPropertyKey", "value": "key-end-y"},
+                {"property": "nlPrompt", "value": "What is the Y coordinate of the end point?"},
+                {"property": "required", "value": "false"},
+                {"property": "defaultValue", "value": "10"},
+                {"property": "propertyType", "value": "Integer"}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

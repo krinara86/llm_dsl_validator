@@ -7,23 +7,52 @@ from ..domains.event.schema import DOMAIN_SCHEMA
 from .extractor import TaskExtractor
 from .formatter import MessageFormatter
 from .clarification import ClarificationGenerator
-# --- NEW ---
 from ..core.connector_loader import load_connector
+from ..frameworks.lark_handler import LarkDomainHandler
+from ..frameworks.lionweb_handler import LionWebHandler
 
 class ConversationOrchestrator:
     """Orchestrates the conversation flow."""
     
     def __init__(self):
-        self.state_manager = StateManager(AppConfig.STATE_FILE)
+        if AppConfig.FRAMEWORK == "lark":
+            self.handler = LarkDomainHandler(AppConfig.DOMAIN)
+        elif AppConfig.FRAMEWORK == "lionweb":
+            self.handler = LionWebHandler(AppConfig.DOMAIN)
+        else:
+            raise ValueError(f"Unknown framework: {AppConfig.FRAMEWORK}")
+        
+        self.state_manager = self.handler.get_state_manager()
+        self.connector = self.handler.load_mappings()
+        
         self.extractor = TaskExtractor()
-        self.formatter = MessageFormatter()
-        self.clarifier = ClarificationGenerator(self.state_manager)
-        self.connector = load_connector('event')
+        self.formatter = MessageFormatter(schema_provider=self.handler)
+        self.clarifier = ClarificationGenerator(self.state_manager, schema_provider=self.handler)
     
+    def _request_clarification(self, understanding: Dict,
+                             conversation_state: Dict,
+                             role: str, model_name: str) -> Dict:
+        missing_params = understanding["missing_params"]
+        conversation_state["status"] = "awaiting_clarification"
+        conversation_state["missing_params"] = missing_params
+        
+        clarification_data = self.clarifier.generate_message(
+            missing_params,
+            conversation_state["task_details"],
+            role,
+            model_name,
+            self.connector
+        )
+        
+        return {
+            "status": "clarification_needed",
+            "understanding_html": understanding["formatted_html"],
+            "clarification_data": clarification_data, 
+            "new_state": conversation_state
+        }
+        
     def process_request(self, query: str, role: str, model_name: str,
                        conversation_state: Dict = None, pre_filled_details: Dict = None) -> Dict:
-        """Process a user request through the conversation flow."""
-        
         if not conversation_state:
             conversation_state = self._new_conversation_state()
         
@@ -61,6 +90,17 @@ class ConversationOrchestrator:
                 understanding, conversation_state, role, model_name
             )
         
+        schema = self.handler.get_schema()
+        action = conversation_state["task_details"].get("action")
+        if schema.get(action, {}).get("is_read_only"):
+            conversation_state["status"] = "awaiting_execution"
+            return {
+                "status": "direct_execute",
+                "understanding_html": understanding["formatted_html"],
+                "message": "This is a read-only query. Executing directly...",
+                "new_state": conversation_state
+            }
+
         conversation_state["status"] = "awaiting_confirmation"
         conversation_state["missing_params"] = []
         
@@ -73,20 +113,29 @@ class ConversationOrchestrator:
     
     def _validate_request(self, task_details: Dict, role: str) -> Dict:
         action = task_details.get("action")
+        params = task_details.get("parameters", {})
         
-        if action in DOMAIN_SCHEMA:
-            allowed_roles = DOMAIN_SCHEMA[action].get("permissions", [])
-            if role not in allowed_roles:
-                return {
-                    "status": "error",
-                    "message": self.formatter.format_error(
-                        "Permission Denied",
-                        f"The action '{action.replace('_', ' ').title()}' "
-                        f"requires one of these roles: {', '.join(allowed_roles)}",
-                        f"Your current role is: {role}"
-                    ),
-                    "new_state": {}
-                }
+        validation = self.handler.validate_params(action, params, role)
+        
+        if not validation['valid']:
+            if validation['errors']:
+                error_msg = validation['errors'][0]
+                if "not authorized" in error_msg:
+                    return {
+                        "status": "error",
+                        "message": self.formatter.format_error(
+                            "Permission Denied",
+                            error_msg,
+                            f"Your current role is: {role}"
+                        ),
+                        "new_state": {}
+                    }
+                else:
+                    return {
+                        "status": "error",
+                        "message": self.formatter.format_error("Validation Error", error_msg),
+                        "new_state": {}
+                    }
         
         return {"status": "ok"}
 
@@ -97,7 +146,9 @@ class ConversationOrchestrator:
 
         task_details = conversation_state.get("task_details", {})
         action = task_details.get("action")
-        param_types = DOMAIN_SCHEMA.get(action, {}).get("param_types", {})
+        
+        schema = self.handler.get_schema()
+        param_types = schema.get(action, {}).get("param_types", {})
         
         updated_params = {}
         
@@ -124,7 +175,7 @@ class ConversationOrchestrator:
             task_details["parameters"] = {}
             
         for param, raw_value in updated_params.items():
-            param_type = param_types.get(param, "text")
+            param_type = param_types.get(param, {}).get("type", "text")
             value = None
 
             if param_type == "boolean":
@@ -132,7 +183,7 @@ class ConversationOrchestrator:
             elif param_type == "number":
                 value = TaskExtractor.parse_number(raw_value)
             elif param_type == "venue_selection":
-                state = self.state_manager.load()
+                state = self.handler.get_state()
                 exact_match = next((v for v in state.get("venues", {}) if v == raw_value), None)
                 case_match = next((v for v in state.get("venues", {}) if v.lower() == raw_value.lower()), None)
                 substring_match = next((v for v in state.get("venues", {}) if raw_value.lower() in v.lower()), None)
@@ -144,28 +195,6 @@ class ConversationOrchestrator:
 
         conversation_state["task_details"] = task_details
         return conversation_state
-
-    def _request_clarification(self, understanding: Dict,
-                             conversation_state: Dict,
-                             role: str, model_name: str) -> Dict:
-        missing_params = understanding["missing_params"]
-        conversation_state["status"] = "awaiting_clarification"
-        conversation_state["missing_params"] = missing_params
-        
-        clarification_msg = self.clarifier.generate_message(
-            missing_params,
-            conversation_state["task_details"],
-            role,
-            model_name,
-            self.connector
-        )
-        
-        return {
-            "status": "clarification_needed",
-            "understanding_html": understanding["formatted_html"],
-            "message": clarification_msg,
-            "new_state": conversation_state
-        }
     
     def _new_conversation_state(self) -> Dict:
         return {
