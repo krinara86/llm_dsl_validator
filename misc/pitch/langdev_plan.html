@@ -248,16 +248,16 @@
         <div class="slide">
             <h2>Agenda</h2>
             <ul class="agenda-list">
-                <li><strong>Why?</strong> The problem with DSL adoption and how LLMs can help</li>
-                <li><strong>What?</strong> Live demo of our conversational DSL framework</li>
-                <li><strong>How?</strong> System architecture and implementation details</li>
+                <li><strong>Why?</strong> DSLs are powerful but inaccesible to end users. Can we make them conversible?</li>
+                <li><strong>What?</strong> Explanation of our approach with a live demo</li>
+                <li><strong>How?</strong> (Optional) System architecture and implementation details</li>
             </ul>
             <p style="margin-top: 50px; font-size: 1.4em; color: #81c784;">Let's make formal languages accessible to everyone!</p>
         </div>
 
         <!-- SLIDE 3: The DSL Problem -->
         <div class="slide problem-slide">
-            <h2>DSLs: Powerful but Inaccessible</h2>
+            <h2>DSLs: Powerful but Inaccessible to end users</h2>
             <pre style="border-color: #81c784; margin-top: 40px;">
 <strong>✓ Domain-Specific Languages provide:</strong>
 
@@ -313,6 +313,77 @@ Probabilistic and cannot guarantee correctness</pre>
             <h3>Our Approach: Make DSLs Conversational</h3>
             <p>We enhance existing, reliable DSLs with a natural language interface.<br>
             <strong style="color: #81c784;">The DSL remains the source of truth; the LLM acts only as a translator.</strong></p>
+        </div>
+
+        <div class="slide">
+            <h2>Example: From Email to DSL</h2>
+            <p>Our system can extract multiple structured tasks from unstructured input:</p>
+            <div class="code-comparison">
+                <div class="code-section">
+                    <h4>📧 Unstructured Input (Email)</h4>
+                    <pre class="email-example">
+"Hi Team,
+
+I wanted to let you know that we've secured
+a new venue with four rooms:
+
+Zimmer X1 – 10 seats, no AV facilities
+Zimmer X2 – 40 seats, fully equipped with AV
+Zimmer X3 – 20 seats, AV available
+Zimmer X4 – 60 seats, AV and stage setup
+
+This gives us a lot more flexibility for
+planning events...
+
+Best,
+Sarah"</pre>
+                </div>
+                <div class="code-section">
+                    <h4>✨ Extracted DSL Instructions</h4>
+                    <pre class="extracted-tasks">
+<strong>System extracts 4 tasks:</strong>
+
+1. create_venue "Zimmer X1" {
+   capacity: 10, av: false }
+
+2. create_venue "Zimmer X2" {
+   capacity: 40, av: true }
+
+3. create_venue "Zimmer X3" {
+   capacity: 20, av: true }
+
+4. create_venue "Zimmer X4" {
+   capacity: 60, av: true,
+   stage: true }</pre>
+                </div>
+            </div>
+            <p>Each extracted instruction goes through the same validation and execution pipeline!</p>
+        </div>
+        <!-- SLIDE 2 (was 2): The "How" - High-Level Happy Path -->
+        <div class="slide">
+            <h2>The System Blueprint & Flow</h2>
+            <p>From unstructured input to validated execution</p>
+            <div class="code-comparison" style="margin-top: 10px;">
+                <div class="code-section">
+                    <h4>Processing Pipeline:</h4>
+                    <pre style="text-align: left; font-size: 1.15em;">
+<strong>Unstructured Input:</strong> Email, document, or conversation
+
+<strong>1. Conversation Layer:</strong>
+   • Extracts ALL actionable tasks from input
+   • Structures each task independently
+   • Confirms batch with user if needed
+
+<strong>2. Execution Layer (per task):</strong>
+   • Converts each to formal DSL
+   • Validates against business rules
+   • Executes approved actions only</pre>
+                </div>
+            </div>
+            <div class="diagram-container">
+                <img src="flow_happy_path.svg" alt="High-level system flowchart" style="width: 100%; height: auto;">
+                <p class="diagram-note">Zoom in with Ctrl/Cmd + mouse wheel if needed to read diagram details</p>
+            </div>
         </div>
         
         <!-- SLIDE 6: Architecture (was 3) -->
