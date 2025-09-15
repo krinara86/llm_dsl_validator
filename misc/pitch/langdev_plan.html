@@ -314,7 +314,65 @@ Probabilistic and cannot guarantee correctness</pre>
             <p>We enhance existing, reliable DSLs with a natural language interface.<br>
             <strong style="color: #81c784;">The DSL remains the source of truth; the LLM acts only as a translator.</strong></p>
         </div>
+        
+        <!-- SLIDE 3: Architecture -->
+        <div class="slide">
+            <h2>Architecture: The DSL as the Source of Truth</h2>
+            <p>The framework is built on a set of formal artifacts that govern the system's behavior.</p>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 50px; margin-top: 40px;">
+                <img src="blueprint.jpg" alt="Blueprint Icon" style="width: 250px; height: auto; border-radius: 10px;">
+                <div style="text-align: left;">
+                    <h3>Key Artifacts:</h3>
+                    <ul style="font-size: 1.2em;">
+                        <li><strong>Core DSL & Interpreter:</strong> The executable source of truth for all business logic and validation.</li>
+                        <li><strong>Schema:</strong> A "checklist" that defines the required data for each action, enabling guided conversations.</li>
+                        <li><strong>Linguistic Connector:</strong> A declarative mapping that bridges the formal DSL to natural language concepts.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
 
+        <!-- SLIDE 4: Demo Part 1 -->
+        <div class="slide">
+            <h2>Demo Part 1 (Depth): Handling Unstructured Input</h2>
+            <p>The system can parse complex, real-world text and extract multiple, distinct DSL tasks.</p>
+            <img src="unstructured.png" alt="Screenshot of the application processing an email" style="width: 90%; max-width: 1200px; margin-top: 20px; border-radius: 8px; border: 2px solid #444;">
+        </div>
+
+        <!-- SLIDE 5: Demo Part 2 -->
+        <div class="slide">
+            <h2>Demo Part 2 (Intelligence): Guided Clarification</h2>
+            <p>When a query is incomplete, the system uses the <strong>Schema</strong> to ask precise, helpful questions.</p>
+            <img src="scheduletalk.png" alt="Screenshot of the application asking for more information" style="width: 90%; max-width: 1200px; margin-top: 20px; border-radius: 8px; border: 2px solid #444;">
+        </div>
+
+        <!-- SLIDE 6: Demo Part 3 -->
+        <div class="slide">
+            <h2>Demo Part 3 (Reliability): Enforcing Validation</h2>
+            <p>The <strong>Core DSL & Interpreter</strong> act as the final gatekeeper, preventing invalid operations.</p>
+            <img src="invalidoperation.png" alt="Screenshot of a permission denied error" style="width: 90%; max-width: 1200px; margin-top: 20px; border-radius: 8px; border: 2px solid #444;">
+        </div>
+
+        <!-- SLIDE 7: The Extensibility Promise -->
+        <div class="slide">
+            <h2>The Extensibility Promise: The Linguistic Connector</h2>
+            <p>Adding a new DSL is primarily a configuration task, not a complex coding one.</p>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 50px; margin-top: 40px;">
+                <div style="text-align: left;">
+                    <h3>The Process:</h3>
+                    <ul style="font-size: 1.2em;">
+                        <li>A <strong>Language Engineer</strong> defines the new domain's grammar, schema, and interpreter.</li>
+                        <li>They then write a simple <strong>Linguistic Connector</strong> file (e.g., in YAML) to map the new DSL to language.</li>
+                        <li>Our framework can even use a <strong>Template Generator</strong> to create a starter connector file automatically.</li>
+                    </ul>
+                </div>
+                <img src="gears.png" alt="Gears Icon" style="width: 250px; height: auto;">
+            </div>
+        </div>
+       
+
+         <div class="slide">
+            <h2>From Email to DSL. How?</h2>
         <div class="slide">
             <h2>Example: From Email to DSL</h2>
             <p>Our system can extract multiple structured tasks from unstructured input:</p>
@@ -558,6 +616,66 @@ Venues >50 seats require admin role"</pre>
         </div>
 
         <!-- SLIDE 14: Conclusion (was last) -->
+        <div class="slide">
+            <h2>Conclusion & Contributions</h2>
+            <div class="code-comparison">
+                <div class="code-section">
+                    <h3>Our Contribution</h3>
+                    <ul style="font-size: 1.2em;">
+                        <li>A framework to create reliable conversational interfaces for formal DSLs.</li>
+                        <li>Decoupling of domain semantics (the DSL) from conversational mechanics (the LLM).</li>
+                        <li>The concept of a "Linguistic Connector" to reduce manual prompt engineering and simplify extensibility.</li>
+                    </ul>
+                </div>
+                <div class="code-section">
+                    <h3>Key Takeaway</h3>
+                    <p style="font-size: 1.5em; text-align: left; border-left: 4px solid #81c784; padding-left: 20px;">
+                        This approach allows us to leverage the curated knowledge and reliability of DSLs while providing the accessibility of a modern, natural language interface.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+         
+        <!-- SLIDE 8: Demo Part 4 -->
+        <div class="slide">
+            <h2>Demo Part 4 (Adaptability): Live Extensibility</h2>
+            <p>Here, we've added a new, tiny "IT Support" DSL to the framework.</p>
+            <div class="code-comparison">
+                <div class="code-section">
+                    <h4>New DSL Grammar (`it_support.dsl`)</h4>
+                    <pre><code>start: create_ticket
+
+create_ticket: "create_ticket" STRING "{"
+    "user": STRING,
+    "priority": INT
+"}"
+                    </code></pre>
+                </div>
+                <div class="code-section">
+                    <h4>New Linguistic Connector (`connector.yml`)</h4>
+                    <pre><code>domain_name: IT Support
+actions:
+  create_ticket:
+    description: "Creates a new IT support ticket."
+    parameters:
+      user_name:
+        description: "The name of the user reporting the issue."
+        clarification_prompt: "Who is this ticket for?"
+      issue_description:
+        description: "A summary of the technical problem."
+        clarification_prompt: "What is the issue?"
+      priority:
+        description: "The urgency of the ticket (1-5)."
+        clarification_prompt: "What is the priority (1-5)?"
+                    </code></pre>
+                </div>
+            </div>
+             <p style="margin-top: 20px;"><strong>Resulting Interaction:</strong></p>
+            <img src="https://storage.googleapis.com/gemini-prod/images/it_support_demo.png" alt="Fictional screenshot of the IT support demo" style="width: 90%; max-width: 1000px; margin-top: 10px; border-radius: 8px; border: 2px solid #444;">
+        </div>
+        
+        <!-- SLIDE 9: Conclusion -->
         <div class="slide">
             <h2>Conclusion & Contributions</h2>
             <div class="code-comparison">
