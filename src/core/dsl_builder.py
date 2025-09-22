@@ -2,8 +2,7 @@
 """Generic DSL building logic for converting task details to DSL code."""
 
 from typing import Dict
-from ..domains.event.schema import DOMAIN_SCHEMA 
-
+from ..domains.cycling.schema import DOMAIN_SCHEMA
 class DSLBuilder:
     """Builds DSL code from structured task details using schema metadata."""
     
@@ -25,6 +24,7 @@ class DSLBuilder:
 
         dsl = [f'role "{self._normalize(role)}" {{']
         
+        # Check if this action needs a main parameter
         main_param_name = None
         for p_name, p_details in action_schema["param_types"].items():
             if "dsl_keyword" not in p_details:
@@ -33,13 +33,13 @@ class DSLBuilder:
         
         if main_param_name:
             if main_param_name not in params:
-                 raise ValueError(f"Main parameter '{main_param_name}' not found for action '{action_name}'.")
-
+                raise ValueError(f"Main parameter '{main_param_name}' not found for action '{action_name}'.")
             main_param_value = self._normalize(params[main_param_name])
             dsl.append(f'  {action_syntax} "{main_param_value}" {{')
         else:
             dsl.append(f'  {action_syntax} {{')
 
+        # Add all keyword parameters
         for param_name, param_value in params.items():
             if param_name == main_param_name:
                 continue 

@@ -1,0 +1,241 @@
+domain_name: "Cycling Management"
+
+actions:
+  find_rider:
+    description: "Search for riders based on various criteria like name, country, team, or ranking."
+    parameters:
+      name_pattern:
+        description: "Pattern to match in rider names (searches both first and last names)."
+        clarification_prompt: "What name pattern should I search for?"
+      country:
+        description: "Two-letter country code (e.g., FR, US, NL)."
+        clarification_prompt: "Which country's riders are you looking for?"
+      team_id:
+        description: "The ID of the team to filter by."
+        clarification_prompt: "What is the team ID?"
+      min_rank:
+        description: "Minimum ranking position."
+        clarification_prompt: "What's the minimum rank (lower number = better)?"
+      max_rank:
+        description: "Maximum ranking position."
+        clarification_prompt: "What's the maximum rank?"
+      min_points:
+        description: "Minimum UCI points."
+        clarification_prompt: "What's the minimum number of points?"
+      max_points:
+        description: "Maximum UCI points."
+        clarification_prompt: "What's the maximum number of points?"
+      documented:
+        description: "Whether to search documented (true) or undocumented (false) riders."
+        clarification_prompt: "Search documented riders? (yes/no)"
+
+  find_team:
+    description: "Search for teams based on name, country, or bike brand."
+    parameters:
+      name_pattern:
+        description: "Pattern to match in team names."
+        clarification_prompt: "What team name pattern should I search for?"
+      country:
+        description: "Two-letter country code of the team."
+        clarification_prompt: "Which country's teams?"
+      bike:
+        description: "Bike brand used by the team."
+        clarification_prompt: "Which bike brand?"
+      has_rider:
+        description: "ID of a rider that must be on the team."
+        clarification_prompt: "Which rider ID should be on the team?"
+
+  find_race:
+    description: "Search for races based on name, country, class, or dates."
+    parameters:
+      name_pattern:
+        description: "Pattern to match in race names."
+        clarification_prompt: "What race name pattern should I search for?"
+      country:
+        description: "Two-letter country code where the race takes place."
+        clarification_prompt: "Which country?"
+      class:
+        description: "Race classification (e.g., ME, WT, 2.1)."
+        clarification_prompt: "What race class/category?"
+      start_date:
+        description: "Race start date (YYYY-MM-DD format)."
+        clarification_prompt: "What start date? (YYYY-MM-DD)"
+      end_date:
+        description: "Race end date (YYYY-MM-DD format)."
+        clarification_prompt: "What end date? (YYYY-MM-DD)"
+      year:
+        description: "Year of the race."
+        clarification_prompt: "Which year?"
+
+  add_rider:
+    description: "Add a new rider to the database."
+    parameters:
+      name:
+        description: "Display name for internal reference (not stored in data)."
+        clarification_prompt: "What should we call this rider?"
+      first_name:
+        description: "Rider's first name."
+        clarification_prompt: "What is the rider's first name?"
+      last_name:
+        description: "Rider's last name."
+        clarification_prompt: "What is the rider's last name?"
+      country:
+        description: "Two-letter country code."
+        clarification_prompt: "What is the rider's country? (e.g., FR, US)"
+      birth_date:
+        description: "Birth date in ISO format (YYYY-MM-DD)."
+        clarification_prompt: "What is the birth date? (YYYY-MM-DD)"
+      team_id:
+        description: "ID of the team the rider belongs to."
+        clarification_prompt: "What is the team ID?"
+      rank:
+        description: "Current UCI ranking."
+        clarification_prompt: "What is the rider's current rank?"
+      points:
+        description: "Current UCI points."
+        clarification_prompt: "How many UCI points?"
+      documented:
+        description: "Whether this is a documented rider (true) or undocumented (false)."
+        clarification_prompt: "Is this a documented rider? (yes/no)"
+
+  modify_rider:
+    description: "Modify an existing rider's information."
+    parameters:
+      rider_id:
+        description: "The ID of the rider to modify."
+        clarification_prompt: "What is the rider's ID?"
+      first_name:
+        description: "New first name."
+        clarification_prompt: "What is the new first name?"
+      last_name:
+        description: "New last name."
+        clarification_prompt: "What is the new last name?"
+      country:
+        description: "New country code."
+        clarification_prompt: "What is the new country?"
+      birth_date:
+        description: "New birth date."
+        clarification_prompt: "What is the new birth date?"
+      team_id:
+        description: "New team ID."
+        clarification_prompt: "What is the new team ID?"
+      rank:
+        description: "New ranking."
+        clarification_prompt: "What is the new rank?"
+      points:
+        description: "New points total."
+        clarification_prompt: "What is the new points total?"
+
+  add_team:
+    description: "Add a new team to the database."
+    parameters:
+      name:
+        description: "Full team name."
+        clarification_prompt: "What is the team's full name?"
+      country:
+        description: "Two-letter country code."
+        clarification_prompt: "What is the team's country?"
+      bike:
+        description: "Bike brand used by the team."
+        clarification_prompt: "What bike brand does the team use?"
+      website:
+        description: "Team's official website URL."
+        clarification_prompt: "What is the team's website?"
+
+  modify_team:
+    description: "Modify an existing team's information or roster."
+    parameters:
+      team_id:
+        description: "The ID of the team to modify."
+        clarification_prompt: "What is the team's ID?"
+      name:
+        description: "New team name."
+        clarification_prompt: "What is the new team name?"
+      country:
+        description: "New country code."
+        clarification_prompt: "What is the new country?"
+      bike:
+        description: "New bike brand."
+        clarification_prompt: "What is the new bike brand?"
+      website:
+        description: "New website URL."
+        clarification_prompt: "What is the new website?"
+      add_rider:
+        description: "ID of a rider to add to the team."
+        clarification_prompt: "Which rider ID to add?"
+      remove_rider:
+        description: "ID of a rider to remove from the team."
+        clarification_prompt: "Which rider ID to remove?"
+
+  add_race:
+    description: "Add a new race to the database."
+    parameters:
+      name:
+        description: "Full race name."
+        clarification_prompt: "What is the race name?"
+      country:
+        description: "Two-letter country code."
+        clarification_prompt: "What country is the race in?"
+      class:
+        description: "Race classification."
+        clarification_prompt: "What is the race class?"
+      start_date:
+        description: "Start date (YYYY-MM-DD)."
+        clarification_prompt: "What is the start date?"
+      end_date:
+        description: "End date (YYYY-MM-DD)."
+        clarification_prompt: "What is the end date?"
+      distance:
+        description: "Total distance in kilometers."
+        clarification_prompt: "What is the total distance in km?"
+
+  modify_race:
+    description: "Modify an existing race's information."
+    parameters:
+      race_id:
+        description: "The ID of the race to modify."
+        clarification_prompt: "What is the race ID?"
+      name:
+        description: "New race name."
+        clarification_prompt: "What is the new race name?"
+      country:
+        description: "New country code."
+        clarification_prompt: "What is the new country?"
+      class:
+        description: "New race class."
+        clarification_prompt: "What is the new race class?"
+      start_date:
+        description: "New start date."
+        clarification_prompt: "What is the new start date?"
+      end_date:
+        description: "New end date."
+        clarification_prompt: "What is the new end date?"
+      distance:
+        description: "New distance."
+        clarification_prompt: "What is the new distance?"
+
+  document_entity:
+    description: "Move an entity from undocumented to documented status."
+    parameters:
+      description:
+        description: "Description of what we're documenting."
+        clarification_prompt: "What are we documenting?"
+      entity_type:
+        description: "Type of entity (rider, team, or race)."
+        clarification_prompt: "What type of entity? (rider/team/race)"
+      entity_id:
+        description: "ID of the entity to document."
+        clarification_prompt: "What is the entity's ID?"
+
+  link_entities:
+    description: "Create relationships between riders, teams, and races."
+    parameters:
+      rider_id:
+        description: "ID of the rider."
+        clarification_prompt: "What is the rider's ID?"
+      team_id:
+        description: "ID of the team."
+        clarification_prompt: "What is the team's ID?"
+      race_id:
+        description: "ID of the race."
+        clarification_prompt: "What is the race's ID?"
