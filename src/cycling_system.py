@@ -68,7 +68,57 @@ class CyclingSystem:
             if pre_filled_details and pre_filled_details.get('action') != 'unknown':
                 extracted = pre_filled_details
             else:
+                # Debug: Check connector is loaded
+                if not self.connector or 'actions' not in self.connector:
+                    print(f"Warning: Connector not properly loaded. Reloading...")
+                    self.connector = load_connector('cycling')
+                
                 extracted = self.extractor.extract_task_details(query, model_name, self.connector)
+                
+                # Clean up extracted parameters for cycling domain
+                if extracted.get("action") == "find_rider" and extracted.get("parameters"):
+                    params = extracted["parameters"]
+                    
+                    # Remove nonsensical name_patterns that are really about location
+                    if "name_pattern" in params:
+                        pattern = params["name_pattern"].lower()
+                        # If the pattern mentions countries or locations, remove it
+                        if any(word in pattern for word in ["from", "in", "riders", "all", "french", "france", 
+                                                        "american", "usa", "italian", "italy", "spanish"]):
+                            del params["name_pattern"]
+                    
+                    # Convert country names to codes if needed
+                    if "country" in params:
+                        country_map = {
+                            "france": "FR", "french": "FR",
+                            "usa": "US", "america": "US", "american": "US", 
+                            "italy": "IT", "italian": "IT",
+                            "spain": "ES", "spanish": "ES",
+                            "netherlands": "NL", "dutch": "NL",
+                            "belgium": "BE", "belgian": "BE",
+                            "germany": "DE", "german": "DE",
+                            "uk": "GB", "british": "GB",
+                        }
+                        country = params["country"].lower()
+                        if country in country_map:
+                            params["country"] = country_map[country]
+                        elif len(country) > 2:
+                            # If it's not a code and not in map, try to extract from context
+                            for key, code in country_map.items():
+                                if key in country:
+                                    params["country"] = code
+                                    break
+                
+                # For add_rider, if we got a name_pattern, split it into first/last names
+                if extracted.get("action") == "add_rider" and extracted.get("parameters"):
+                    params = extracted["parameters"]
+                    if "name_pattern" in params and "first_name" not in params:
+                        # Split the name pattern into first and last
+                        name_parts = params["name_pattern"].split()
+                        if len(name_parts) >= 2:
+                            params["first_name"] = name_parts[0]
+                            params["last_name"] = " ".join(name_parts[1:])
+                        del params["name_pattern"]
             
             if extracted.get("action") in [None, "unknown", "error"]:
                 return {
@@ -82,6 +132,12 @@ class CyclingSystem:
         # Check for missing parameters
         task_details = conversation_state["task_details"]
         action = task_details.get("action")
+        
+        # IMPORTANT: Set the name parameter for add_rider BEFORE checking for missing params
+        if action == "add_rider":
+            params = task_details.get("parameters", {})
+            if "first_name" in params and "last_name" in params:
+                task_details["name"] = f"{params['first_name']} {params['last_name']}"
         
         if action in DOMAIN_SCHEMA:
             schema = DOMAIN_SCHEMA[action]
@@ -156,34 +212,28 @@ class CyclingSystem:
         try:
             # Build DSL code
             task_details = self.conversation_state.get("task_details", {})
-            
-            # Handle special cases for primary parameters
             action = task_details.get("action", "")
             params = task_details.get("parameters", {})
             
-            # For modify operations, we need the ID as the primary parameter
-            if action.startswith("modify_"):
-                if action == "modify_rider" and "rider_id" not in task_details:
-                    task_details["rider_id"] = params.get("rider_id", 0)
-                elif action == "modify_team" and "team_id" not in task_details:
-                    task_details["team_id"] = params.get("team_id", 0)
-                elif action == "modify_race" and "race_id" not in task_details:
-                    task_details["race_id"] = params.get("race_id", 0)
-            
-            # For add operations, we need a name
-            elif action.startswith("add_"):
-                if "name" not in task_details:
-                    if action == "add_rider":
-                        first = params.get("first_name", "")
-                        last = params.get("last_name", "")
-                        task_details["name"] = f"{first} {last}".strip()
-                    elif action == "add_team":
-                        task_details["name"] = params.get("name", "New Team")
-                    elif action == "add_race":
-                        task_details["name"] = params.get("name", "New Race")
-            
-            # For document_entity, we need a description
-            elif action == "document_entity" and "description" not in task_details:
+            # ALWAYS set the name/id parameters right before building DSL
+            if action == "add_rider":
+                # Always build name from first_name and last_name
+                first = params.get("first_name", "")
+                last = params.get("last_name", "")
+                task_details["name"] = f"{first} {last}".strip()
+            elif action == "add_team":
+                # For add_team, use the name from parameters
+                task_details["name"] = params.get("name", "New Team")
+            elif action == "add_race":
+                # For add_race, use the name from parameters
+                task_details["name"] = params.get("name", "New Race")
+            elif action == "modify_rider":
+                task_details["rider_id"] = params.get("rider_id", 0)
+            elif action == "modify_team":
+                task_details["team_id"] = params.get("team_id", 0)
+            elif action == "modify_race":
+                task_details["race_id"] = params.get("race_id", 0)
+            elif action == "document_entity":
                 entity_type = params.get("entity_type", "entity")
                 entity_id = params.get("entity_id", 0)
                 task_details["description"] = f"Document {entity_type} {entity_id}"
@@ -240,7 +290,7 @@ class CyclingSystem:
                 "status": "error",
                 "message": f"❌ Unexpected Error: {e}"
             }
-    
+            
     def process_document(self, document: str, role: str, model_name: str) -> dict:
         """Process a document containing multiple tasks."""
         return self.document_processor.extract_tasks(document, model_name)
