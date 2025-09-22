@@ -31,14 +31,12 @@ class DSLBuilder:
                 main_param_name = p_name
                 break
         
-        # If there's a main parameter, use it
         if main_param_name:
             if main_param_name not in params:
                 raise ValueError(f"Main parameter '{main_param_name}' not found for action '{action_name}'.")
             main_param_value = self._normalize(params[main_param_name])
             dsl.append(f'  {action_syntax} "{main_param_value}" {{')
         else:
-            # No main parameter - just open the block (for searches)
             dsl.append(f'  {action_syntax} {{')
 
         # Add all keyword parameters

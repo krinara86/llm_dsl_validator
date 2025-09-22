@@ -7,7 +7,6 @@ from ..domains.event.schema import DOMAIN_SCHEMA
 from .extractor import TaskExtractor
 from .formatter import MessageFormatter
 from .clarification import ClarificationGenerator
-# --- NEW ---
 from ..core.connector_loader import load_connector
 
 class ConversationOrchestrator:
@@ -20,10 +19,30 @@ class ConversationOrchestrator:
         self.clarifier = ClarificationGenerator(self.state_manager)
         self.connector = load_connector('event')
     
+    def _request_clarification(self, understanding: Dict,
+                             conversation_state: Dict,
+                             role: str, model_name: str) -> Dict:
+        missing_params = understanding["missing_params"]
+        conversation_state["status"] = "awaiting_clarification"
+        conversation_state["missing_params"] = missing_params
+        
+        clarification_data = self.clarifier.generate_message(
+            missing_params,
+            conversation_state["task_details"],
+            role,
+            model_name,
+            self.connector
+        )
+        
+        return {
+            "status": "clarification_needed",
+            "understanding_html": understanding["formatted_html"],
+            "clarification_data": clarification_data, 
+            "new_state": conversation_state
+        }
+        
     def process_request(self, query: str, role: str, model_name: str,
                        conversation_state: Dict = None, pre_filled_details: Dict = None) -> Dict:
-        """Process a user request through the conversation flow."""
-        
         if not conversation_state:
             conversation_state = self._new_conversation_state()
         
@@ -61,6 +80,16 @@ class ConversationOrchestrator:
                 understanding, conversation_state, role, model_name
             )
         
+        action = conversation_state["task_details"].get("action")
+        if DOMAIN_SCHEMA.get(action, {}).get("is_read_only"):
+            conversation_state["status"] = "awaiting_execution"
+            return {
+                "status": "direct_execute",
+                "understanding_html": understanding["formatted_html"],
+                "message": "This is a read-only query. Executing directly...",
+                "new_state": conversation_state
+            }
+
         conversation_state["status"] = "awaiting_confirmation"
         conversation_state["missing_params"] = []
         
@@ -144,28 +173,6 @@ class ConversationOrchestrator:
 
         conversation_state["task_details"] = task_details
         return conversation_state
-
-    def _request_clarification(self, understanding: Dict,
-                             conversation_state: Dict,
-                             role: str, model_name: str) -> Dict:
-        missing_params = understanding["missing_params"]
-        conversation_state["status"] = "awaiting_clarification"
-        conversation_state["missing_params"] = missing_params
-        
-        clarification_msg = self.clarifier.generate_message(
-            missing_params,
-            conversation_state["task_details"],
-            role,
-            model_name,
-            self.connector
-        )
-        
-        return {
-            "status": "clarification_needed",
-            "understanding_html": understanding["formatted_html"],
-            "message": clarification_msg,
-            "new_state": conversation_state
-        }
     
     def _new_conversation_state(self) -> Dict:
         return {
