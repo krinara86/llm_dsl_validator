@@ -1,0 +1,104 @@
+{
+  "serializationFormatVersion": "2025.1",
+  "nodes": [
+    {
+      "id": "id-shapes-mapping-model",
+      "classifier": { "language": "key-NLMapping", "version": "1", "key": "key-MappingModel" },
+      "containments": [
+        {
+          "containment": { "key": "key-conceptMappings" },
+          "children": ["id-circle-concept-map", "id-line-concept-map"]
+        }
+      ]
+    },
+    {
+      "id": "id-circle-concept-map",
+      "classifier": { "language": "key-NLMapping", "version": "1", "key": "key-ConceptMapping" },
+      "parent": "id-shapes-mapping-model",
+      "properties": [
+        {
+          "property": { "key": "key-nlActionPhrases" },
+          "value": "create circle, make a circle, add a circle"
+        }
+      ],
+      "references": [
+        {
+          "reference": { "key": "key-targetConcept" },
+          "targets": [{ "resolveInfo": "Circle", "reference": "id-Circle" }]
+        }
+      ],
+      "containments": [
+        {
+          "containment": { "key": "key-propertyMappings" },
+          "children": ["id-circle-radius-prop-map"]
+        }
+      ]
+    },
+    {
+      "id": "id-circle-radius-prop-map",
+      "classifier": { "language": "key-NLMapping", "version": "1", "key": "key-PropertyMapping" },
+      "parent": "id-circle-concept-map",
+      "properties": [
+        {
+          "property": { "key": "key-nlClarificationPrompt" },
+          "value": "What is the radius of the circle?"
+        }
+      ],
+      "references": [
+        {
+          "reference": { "key": "key-targetProperty" },
+          "targets": [{ "resolveInfo": "Circle.r", "reference": "id-r" }]
+        }
+      ]
+    },
+    {
+      "id": "id-line-concept-map",
+      "classifier": { "language": "key-NLMapping", "version": "1", "key": "key-ConceptMapping" },
+      "parent": "id-shapes-mapping-model",
+      "properties": [
+        {
+          "property": { "key": "key-nlActionPhrases" },
+          "value": "create line, make a line, draw a line"
+        }
+      ],
+      "references": [
+        {
+          "reference": { "key": "key-targetConcept" },
+          "targets": [{ "resolveInfo": "Line", "reference": "id-Line" }]
+        }
+      ],
+      "containments": [
+        {
+          "containment": { "key": "key-propertyMappings" },
+          "children": ["id-line-name-prop-map"]
+        }
+      ]
+    },
+    {
+      "id": "id-line-name-prop-map",
+      "classifier": { "language": "key-NLMapping", "version": "1", "key": "key-PropertyMapping" },
+      "parent": "id-line-concept-map",
+      "properties": [
+        {
+          "property": { "key": "key-nlClarificationPrompt" },
+          "value": "What is the name of the line?"
+        }
+      ],
+      "references": [
+        {
+          "reference": { "key": "key-targetProperty" },
+          "targets": [
+            {
+              "resolveInfo": "INamed.name",
+              "reference": "LionCore-builtins-INamed-name"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "languages": [
+    { "key": "key-NLMapping", "version": "1" },
+    { "key": "key-Shapes", "version": "1" }
+  ]
+}

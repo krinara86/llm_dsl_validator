@@ -1,0 +1,158 @@
+{
+  "serializationFormatVersion": "2025.1",
+  "nodes": [
+    {
+      "id": "id-NLMapping",
+      "classifier": { "language": "LionCore-M3", "version": "2025.1", "key": "Language" },
+      "properties": [
+        { "property": { "key": "LionCore-builtins-INamed-name" }, "value": "NLMapping" },
+        { "property": { "key": "IKeyed-key" }, "value": "key-NLMapping" },
+        { "property": { "key": "Language-version" }, "value": "1" }
+      ],
+      "containments": [
+        {
+          "containment": { "key": "Language-entities" },
+          "children": ["id-MappingModel", "id-ConceptMapping", "id-PropertyMapping"]
+        }
+      ]
+    },
+    {
+      "id": "id-MappingModel",
+      "classifier": { "language": "LionCore-M3", "version": "2025.1", "key": "Concept" },
+      "parent": "id-NLMapping",
+      "properties": [
+        { "property": { "key": "LionCore-builtins-INamed-name" }, "value": "MappingModel" },
+        { "property": { "key": "IKeyed-key" }, "value": "key-MappingModel" }
+      ],
+      "containments": [
+        {
+          "containment": { "key": "Classifier-features" },
+          "children": ["id-conceptMappings"]
+        }
+      ]
+    },
+    {
+      "id": "id-conceptMappings",
+      "classifier": { "language": "LionCore-M3", "version": "2025.1", "key": "Containment" },
+      "parent": "id-MappingModel",
+      "properties": [
+        { "property": { "key": "LionCore-builtins-INamed-name" }, "value": "conceptMappings" },
+        { "property": { "key": "IKeyed-key" }, "value": "key-conceptMappings" },
+        { "property": { "key": "Link-multiple" }, "value": "true" }
+      ],
+      "references": [
+        {
+          "reference": { "key": "Link-type" },
+          "targets": [{ "reference": "id-ConceptMapping" }]
+        }
+      ]
+    },
+    {
+      "id": "id-ConceptMapping",
+      "classifier": { "language": "LionCore-M3", "version": "2025.1", "key": "Concept" },
+      "parent": "id-NLMapping",
+      "properties": [
+        { "property": { "key": "LionCore-builtins-INamed-name" }, "value": "ConceptMapping" },
+        { "property": { "key": "IKeyed-key" }, "value": "key-ConceptMapping" }
+      ],
+      "containments": [
+        {
+          "containment": { "key": "Classifier-features" },
+          "children": ["id-targetConcept", "id-nlActionPhrases", "id-propertyMappings"]
+        }
+      ]
+    },
+    {
+      "id": "id-targetConcept",
+      "classifier": { "language": "LionCore-M3", "version": "2025.1", "key": "Reference" },
+      "parent": "id-ConceptMapping",
+      "properties": [
+        { "property": { "key": "LionCore-builtins-INamed-name" }, "value": "targetConcept" },
+        { "property": { "key": "IKeyed-key" }, "value": "key-targetConcept" }
+      ],
+      "references": [
+        {
+          "reference": { "key": "Link-type" },
+          "targets": [{ "reference": "LionCore-M3-Concept" }]
+        }
+      ]
+    },
+    {
+      "id": "id-nlActionPhrases",
+      "classifier": { "language": "LionCore-M3", "version": "2025.1", "key": "Property" },
+      "parent": "id-ConceptMapping",
+      "properties": [
+        { "property": { "key": "LionCore-builtins-INamed-name" }, "value": "nlActionPhrases" },
+        { "property": { "key": "IKeyed-key" }, "value": "key-nlActionPhrases" }
+      ],
+      "references": [
+        {
+          "reference": { "key": "Property-type" },
+          "targets": [{ "reference": "LionCore-builtins-String" }]
+        }
+      ]
+    },
+    {
+      "id": "id-propertyMappings",
+      "classifier": { "language": "LionCore-M3", "version": "2025.1", "key": "Containment" },
+      "parent": "id-ConceptMapping",
+      "properties": [
+        { "property": { "key": "LionCore-builtins-INamed-name" }, "value": "propertyMappings" },
+        { "property": { "key": "IKeyed-key" }, "value": "key-propertyMappings" },
+        { "property": { "key": "Link-multiple" }, "value": "true" }
+      ],
+      "references": [
+        {
+          "reference": { "key": "Link-type" },
+          "targets": [{ "reference": "id-PropertyMapping" }]
+        }
+      ]
+    },
+    {
+      "id": "id-PropertyMapping",
+      "classifier": { "language": "LionCore-M3", "version": "2025.1", "key": "Concept" },
+      "parent": "id-NLMapping",
+      "properties": [
+        { "property": { "key": "LionCore-builtins-INamed-name" }, "value": "PropertyMapping" },
+        { "property": { "key": "IKeyed-key" }, "value": "key-PropertyMapping" }
+      ],
+      "containments": [
+        {
+          "containment": { "key": "Classifier-features" },
+          "children": ["id-targetProperty", "id-nlClarificationPrompt"]
+        }
+      ]
+    },
+    {
+      "id": "id-targetProperty",
+      "classifier": { "language": "LionCore-M3", "version": "2025.1", "key": "Reference" },
+      "parent": "id-PropertyMapping",
+      "properties": [
+        { "property": { "key": "LionCore-builtins-INamed-name" }, "value": "targetProperty" },
+        { "property": { "key": "IKeyed-key" }, "value": "key-targetProperty" }
+      ],
+      "references": [
+        {
+          "reference": { "key": "Link-type" },
+          "targets": [{ "reference": "LionCore-M3-Property" }]
+        }
+      ]
+    },
+    {
+      "id": "id-nlClarificationPrompt",
+      "classifier": { "language": "LionCore-M3", "version": "2025.1", "key": "Property" },
+      "parent": "id-PropertyMapping",
+      "properties": [
+        { "property": { "key": "LionCore-builtins-INamed-name" }, "value": "nlClarificationPrompt" },
+        { "property": { "key": "IKeyed-key" }, "value": "key-nlClarificationPrompt" }
+      ],
+      "references": [
+        {
+          "reference": { "key": "Property-type" },
+          "targets": [{ "reference": "LionCore-builtins-String" }]
+        }
+      ]
+    }
+  ],
+  "languages": [{ "key": "LionCore-M3", "version": "2025.1" }]
+}

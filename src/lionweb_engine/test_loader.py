@@ -21,18 +21,15 @@ class LionWebConnectorLoader:
         """
         lang_deserializer = Deserializer()
         all_languages = []
-        
-        # Load each language definition M2 file
+
         for lang_file in ["shapes.2025.1.json", "nl_mappings.json", "findings.json"]:
             path = self.languages_dir / lang_file
             with open(path, "r", encoding="utf-8") as f:
                 language_nodes = lang_deserializer.deserialize(f.read())
                 all_languages.append(language_nodes[0])
 
-        # Create a new Deserializer primed with our language definitions
         model_deserializer = Deserializer(all_languages)
 
-        # Deserialize the M1 connector model
         with open(self.connector_path, "r", encoding="utf-8") as f:
             model_nodes = model_deserializer.deserialize(f.read())
         
