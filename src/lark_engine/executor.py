@@ -1,15 +1,15 @@
-#
-# Changes to: src/execution/executor.py
-#
+# src/lark_engine/executor.py
+
+import importlib # --- NEW: Add this import
 from typing import Dict
 from ..core.config import AppConfig
 from ..core.state_manager import StateManager
-from ..core.dsl_builder import DSLBuilder
+from .dsl_builder import DSLBuilder 
 from ..framework.base_interpreter import execute_dsl
-from ..domains.event.interpreter import EventInterpreter
 
-class TaskExecutor:
-    def __init__(self):
+class LarkTaskExecutor:
+    def __init__(self, domain: str):
+        self.domain = domain
         self.state_manager = StateManager(AppConfig.STATE_FILE)
         self.dsl_builder = DSLBuilder()
     
@@ -22,13 +22,23 @@ class TaskExecutor:
             )
             
             state = self.state_manager.load()
-            interpreter = EventInterpreter(state, role)
+            
+            try:
+                interpreter_module = importlib.import_module(f"src.domains.{self.domain}.interpreter")
+                
+                interpreter_class_name = f"{self.domain.capitalize()}Interpreter"
+                InterpreterClass = getattr(interpreter_module, interpreter_class_name)
+                
+                interpreter = InterpreterClass(state, role)
+            except (ModuleNotFoundError, AttributeError) as e:
+                raise NotImplementedError(f"Could not find a valid interpreter for domain '{self.domain}': {e}")
             
             result = execute_dsl(
                 dsl_code,
-                AppConfig.get_grammar_path('event'),
+                AppConfig.get_grammar_path(self.domain),
                 interpreter
             )
+            
             
             if "results" in result: 
                 return {
@@ -62,7 +72,7 @@ class TaskExecutor:
                 "message": f"❌ Unexpected Error: {e}",
                 "dsl_code": dsl_code
             }
-    
+            
     def _handle_validation_error(self, error_msg: str, dsl_code: str) -> Dict:
         if "RoleMismatchError" in error_msg:
             return {"status": "error", "message": f"❌ Permission Error: {error_msg.split(':', 1)[1] if ':' in error_msg else error_msg}", "dsl_code": dsl_code}

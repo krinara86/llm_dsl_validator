@@ -12,12 +12,21 @@ from ..core.connector_loader import load_connector
 class ConversationOrchestrator:
     """Orchestrates the conversation flow."""
     
-    def __init__(self):
+    def __init__(self, engine: str, domain: str):
+        self.engine = engine
+        self.domain = domain
         self.state_manager = StateManager(AppConfig.STATE_FILE)
         self.extractor = TaskExtractor()
         self.formatter = MessageFormatter()
         self.clarifier = ClarificationGenerator(self.state_manager)
-        self.connector = load_connector('event')
+
+        if self.engine == 'lark':
+            self.connector = load_connector(self.domain)
+        elif self.engine == 'lionweb':
+            self.connector = {} 
+            pass
+        else:
+            raise ValueError(f"Unknown engine '{self.engine}' for connector loading.")
     
     def _request_clarification(self, understanding: Dict,
                              conversation_state: Dict,
