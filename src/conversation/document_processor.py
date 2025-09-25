@@ -1,9 +1,13 @@
 # src/conversation/document_processor.py
 import json
-# --- NEW ---
 import re
 from typing import Dict, List
-from ..core.llm_client import LLMClient
+
+# Handle both relative and absolute imports
+try:
+    from ..core.llm_client import LLMClient
+except (ImportError, ValueError):
+    from core.llm_client import LLMClient
 
 class DocumentProcessor:
     """Processes documents containing multiple tasks."""
@@ -50,8 +54,7 @@ You are an expert event management assistant. Your task is to analyze the docume
                 prompt, model_name, is_json_format=True
             )
             
-            # --- NEW: Robust JSON extraction ---
-            # Find the JSON block within the potentially noisy response string
+            # Robust JSON extraction
             json_match = re.search(r'\{.*\}', response_str, re.DOTALL)
             
             if not json_match:
@@ -60,7 +63,6 @@ You are an expert event management assistant. Your task is to analyze the docume
             
             clean_json_str = json_match.group(0)
             result = json.loads(clean_json_str)
-            # --- END NEW ---
 
             tasks = result.get("tasks", [])
 

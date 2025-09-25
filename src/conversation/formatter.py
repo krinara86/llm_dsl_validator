@@ -1,6 +1,12 @@
 # src/conversation/formatter.py
 from typing import Dict, List
-from ..domains.event.schema import DOMAIN_SCHEMA
+
+# Handle both relative and absolute imports
+try:
+    from ..domains.event.schema import DOMAIN_SCHEMA
+except (ImportError, ValueError):
+    # When used with LionWeb, schema is passed dynamically
+    DOMAIN_SCHEMA = {}
 
 class MessageFormatter:
     """Formats messages and UI elements for the conversation."""
