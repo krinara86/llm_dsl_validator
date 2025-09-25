@@ -332,6 +332,13 @@
       "in_venue": "Zimmer Z2",
       "expected_attendees": 32.0,
       "requires_av": true
+    },
+    {
+      "name": "Why AI needs DSLs and Lionweb",
+      "hosted_by": "Maarten Fekkers",
+      "in_venue": "Zimmer Q1",
+      "expected_attendees": 5.0,
+      "requires_av": false
     }
   ],
   "venue_bookings": {
@@ -357,6 +364,7 @@
     "Room X": "Why AI need DSLs for validation",
     "Zimmer Z4": "Why AI needs DSLS",
     "Main Auditorium2": "AI Keynote",
-    "Zimmer Z2": "There are no pigeons"
+    "Zimmer Z2": "There are no pigeons",
+    "Zimmer Q1": "Why AI needs DSLs and Lionweb"
   }
 }

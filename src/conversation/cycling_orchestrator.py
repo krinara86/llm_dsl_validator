@@ -1,24 +1,29 @@
-# src/conversation/orchestrator.py
+# src/lionweb_app/conversation/cycling_orchestrator.py
+# This is a new, separate orchestrator for the cycling domain.
 import re
-from typing import Dict, List
-from ..core.state_manager import StateManager
-from ..core.config import AppConfig
-from ..domains.event.schema import DOMAIN_SCHEMA
-from .extractor import TaskExtractor
-from .formatter import MessageFormatter
-from .clarification import ClarificationGenerator
-from ..core.connector_loader import load_connector
+from typing import Dict, List, Any
 
-class ConversationOrchestrator:
-    """Orchestrates the conversation flow."""
+# It uses the generic conversation components from the core app
+from src.conversation.extractor import TaskExtractor
+from src.conversation.formatter import MessageFormatter
+from src.conversation.clarification import ClarificationGenerator
+from src.core.state_manager import StateManager
+from src.core.config import AppConfig
+
+class CyclingOrchestrator:
+    """Orchestrates the conversation flow for the Cycling domain."""
     
-    def __init__(self):
+    def __init__(self, connector: Dict[str, Any], schema: Dict[str, Any]):
         self.state_manager = StateManager(AppConfig.STATE_FILE)
         self.extractor = TaskExtractor()
+        # NOTE: We are reusing the original Formatter and Clarifier.
+        # This works because we will feed them the schema they need.
         self.formatter = MessageFormatter()
         self.clarifier = ClarificationGenerator(self.state_manager)
-        self.connector = load_connector('event')
+        self.connector = connector
+        self.schema = schema
     
+    # ... (The rest of this class is identical to the generic orchestrator from our previous step)
     def _request_clarification(self, understanding: Dict,
                              conversation_state: Dict,
                              role: str, model_name: str) -> Dict:
@@ -26,12 +31,14 @@ class ConversationOrchestrator:
         conversation_state["status"] = "awaiting_clarification"
         conversation_state["missing_params"] = missing_params
         
+        # We must pass the schema to the original clarifier
         clarification_data = self.clarifier.generate_message(
             missing_params,
             conversation_state["task_details"],
             role,
             model_name,
-            self.connector
+            self.connector,
+            self.schema
         )
         
         return {
@@ -71,8 +78,9 @@ class ConversationOrchestrator:
         if validation_result["status"] == "error":
             return validation_result
         
+        # We must pass the schema to the original formatter
         understanding = self.formatter.format_understanding(
-            conversation_state["task_details"], role
+            conversation_state["task_details"], role, self.schema
         )
         
         if understanding["missing_params"]:
@@ -81,7 +89,7 @@ class ConversationOrchestrator:
             )
         
         action = conversation_state["task_details"].get("action")
-        if DOMAIN_SCHEMA.get(action, {}).get("is_read_only"):
+        if self.schema.get(action, {}).get("is_read_only"):
             conversation_state["status"] = "awaiting_execution"
             return {
                 "status": "direct_execute",
@@ -103,8 +111,8 @@ class ConversationOrchestrator:
     def _validate_request(self, task_details: Dict, role: str) -> Dict:
         action = task_details.get("action")
         
-        if action in DOMAIN_SCHEMA:
-            allowed_roles = DOMAIN_SCHEMA[action].get("permissions", [])
+        if action in self.schema:
+            allowed_roles = self.schema[action].get("permissions", [])
             if role not in allowed_roles:
                 return {
                     "status": "error",
@@ -126,7 +134,7 @@ class ConversationOrchestrator:
 
         task_details = conversation_state.get("task_details", {})
         action = task_details.get("action")
-        param_types = DOMAIN_SCHEMA.get(action, {}).get("param_types", {})
+        param_types = self.schema.get(action, {}).get("param_types", {})
         
         updated_params = {}
         
@@ -160,12 +168,6 @@ class ConversationOrchestrator:
                 value = TaskExtractor.parse_boolean(raw_value)
             elif param_type == "number":
                 value = TaskExtractor.parse_number(raw_value)
-            elif param_type == "venue_selection":
-                state = self.state_manager.load()
-                exact_match = next((v for v in state.get("venues", {}) if v == raw_value), None)
-                case_match = next((v for v in state.get("venues", {}) if v.lower() == raw_value.lower()), None)
-                substring_match = next((v for v in state.get("venues", {}) if raw_value.lower() in v.lower()), None)
-                value = exact_match or case_match or substring_match or raw_value
             else:
                 value = raw_value
                 
@@ -175,16 +177,7 @@ class ConversationOrchestrator:
         return conversation_state
     
     def _new_conversation_state(self) -> Dict:
-        return {
-            "status": "awaiting_query",
-            "task_details": {},
-            "history": [],
-            "missing_params": []
-        }
+        return { "status": "awaiting_query", "task_details": {}, "history": [], "missing_params": [] }
     
     def _error_response(self, message: str) -> Dict:
-        return {
-            "status": "error",
-            "message": message,
-            "new_state": {}
-        }
+        return { "status": "error", "message": message, "new_state": {} }
