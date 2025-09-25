@@ -216,3 +216,99 @@ class LionWebConnectorLoader:
                 for feature in root_node.get_classifier().features:
                     if isinstance(feature, Containment):
                         self.m1_models[domain].extend(root_node.get_children(feature))
+
+    def get_connector_as_dict(self, domain: str) -> Dict[str, Any]:
+        """Builds a Python dictionary from the loaded M1 Connector DynamicNode."""
+        if domain not in self.m1_connectors:
+            self.load_all(domain) # Ensure it's loaded
+        
+        connector_node = self.m1_connectors.get(domain)
+        if not connector_node:
+            return {}
+
+        output = {
+            "domain_name": self._get_property_from_instance(connector_node, "domainName"),
+            "actions": {}
+        }
+        
+        action_maps = connector_node.get_children(connector_node.get_classifier().get_feature_by_name("actions"))
+        for action in action_maps:
+            action_name = self._get_property_from_instance(action, "actionName")
+            if action_name:
+                output["actions"][action_name] = {
+                    "description": self._get_property_from_instance(action, "description"),
+                    "parameters": {}
+                }
+                param_maps = action.get_children(action.get_classifier().get_feature_by_name("parameters"))
+                for param in param_maps:
+                    param_name = self._get_property_from_instance(param, "parameterName")
+                    if param_name:
+                        output["actions"][action_name]["parameters"][param_name] = {
+                            "description": self._get_property_from_instance(param, "description"),
+                            "clarification_prompt": self._get_property_from_instance(param, "clarificationPrompt")
+                        }
+        return output
+
+    def get_schema_as_dict(self, domain: str) -> Dict[str, Any]:
+        """Dynamically builds a DOMAIN_SCHEMA-like dictionary from the M2 Language."""
+        if domain not in self.languages:
+            return {}
+
+        lang = self.languages[domain]
+        schema = {}
+        
+        # This mapping is based on our knowledge of the cycling/nl_mappings languages
+        # A more advanced version could inspect types more deeply
+        type_mapping = {
+            "String": "string",
+            "Integer": "number",
+            "Boolean": "boolean"
+        }
+
+        # Find all ActionMapping concepts from the nl_mappings language
+        action_mapping_concept = self.concepts.get("ActionMapping")
+        if not action_mapping_concept: return {}
+
+        # The connector holds the action instances
+        connector_node = self.m1_connectors.get(domain)
+        if not connector_node: return {}
+        
+        action_nodes = connector_node.get_children(connector_node.get_classifier().get_feature_by_name("actions"))
+
+        for action_node in action_nodes:
+            action_name = self._get_property_from_instance(action_node, "actionName")
+            target_concept_name = self._get_property_from_instance(action_node, "targetConcept")
+            target_concept = self.concepts.get(target_concept_name)
+            
+            if not action_name or not target_concept: continue
+
+            schema[action_name] = {
+                "permissions": ["admin", "scheduler"], # Default permissions for now
+                "is_read_only": action_name.startswith("find_"),
+                "required": [],
+                "optional": [],
+                "param_types": {}
+            }
+
+            param_nodes = action_node.get_children(action_node.get_classifier().get_feature_by_name("parameters"))
+            for param_node in param_nodes:
+                param_name = self._get_property_from_instance(param_node, "parameterName")
+                target_feature_name = self._get_property_from_instance(param_node, "targetFeature")
+                is_required = self._get_property_from_instance(param_node, "required")
+
+                if not param_name or not target_feature_name: continue
+                
+                if is_required:
+                    schema[action_name]["required"].append(param_name)
+                else:
+                    schema[action_name]["optional"].append(param_name)
+                
+                # Find the feature in the target concept to determine its type
+                feature = target_concept.get_feature_by_name(target_feature_name)
+                param_type = "string" # Default
+                if feature and isinstance(feature, Property):
+                    param_type = type_mapping.get(feature.type.name, "string")
+                
+                schema[action_name]["param_types"][param_name] = {"type": param_type}
+        
+        return schema
