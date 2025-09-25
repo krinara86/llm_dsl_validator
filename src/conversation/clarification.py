@@ -1,6 +1,12 @@
 # src/conversation/clarification.py
 from typing import Dict, List, Any
-from ..domains.event.schema import DOMAIN_SCHEMA
+
+# Handle both relative and absolute imports
+try:
+    from ..domains.event.schema import DOMAIN_SCHEMA
+except (ImportError, ValueError):
+    # When used with LionWeb, schema is passed dynamically
+    DOMAIN_SCHEMA = {}
 
 class ClarificationGenerator:
     """Generates clarification messages for missing parameters."""
@@ -16,8 +22,12 @@ class ClarificationGenerator:
         if not missing_params:
             return {}
 
-        state = self.state_manager.load()
+        # Get state only if state_manager exists
+        state = self.state_manager.load() if self.state_manager else {}
         action = task_details.get("action", "")
+        
+        # Try to get schema from DOMAIN_SCHEMA first (for event domain)
+        # For LionWeb domains, this will be empty and we rely on the connector
         action_schema = DOMAIN_SCHEMA.get(action, {})
         action_connector = connector.get("actions", {}).get(action, {})
         
@@ -35,6 +45,8 @@ class ClarificationGenerator:
             
             if field["type"] == "venue_selection":
                 field["options"] = self._get_suitable_venues(task_details, state)
+            elif field["type"] == "team_selection":
+                field["options"] = self._get_available_teams(state)
             
             form_fields.append(field)
         
@@ -59,3 +71,9 @@ class ClarificationGenerator:
                     suitable_venues.append(name)
         
         return suitable_venues if suitable_venues else ["No suitable venues available"]
+    
+    def _get_available_teams(self, state: Dict) -> List[str]:
+        """Get a list of available teams (for cycling domain)."""
+        # This would be populated by the cycling system
+        # For now, return a placeholder
+        return ["No teams available"]

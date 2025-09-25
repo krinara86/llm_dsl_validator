@@ -151,16 +151,34 @@ class LionWebConnectorLoader:
         results = []
         
         for instance in instances:
-            if not isinstance(instance, DynamicNode): continue
+            if not isinstance(instance, DynamicNode): 
+                continue
             
-            if concept_name and instance.get_classifier().name != concept_name: continue
+            if concept_name and instance.get_classifier().name != concept_name:
+                continue
             
             if filters:
-                match = all(
-                    self._get_property_from_instance(instance, prop_name) == expected_value
-                    for prop_name, expected_value in filters.items()
-                )
-                if not match: continue
+                match = True
+                for prop_name, expected_value in filters.items():
+                    actual_value = self._get_property_from_instance(instance, prop_name)
+                    
+                    # Handle pattern matching for string properties
+                    if prop_name.endswith("_pattern") or prop_name == "name_pattern":
+                        base_prop = prop_name.replace("_pattern", "")
+                        if base_prop == "name":
+                            base_prop = "name"
+                        actual_value = self._get_property_from_instance(instance, base_prop)
+                        if actual_value and expected_value:
+                            if expected_value.lower() not in str(actual_value).lower():
+                                match = False
+                                break
+                    # Handle exact match
+                    elif actual_value != expected_value:
+                        match = False
+                        break
+                        
+                if not match:
+                    continue
             
             results.append(instance)
         
@@ -168,13 +186,15 @@ class LionWebConnectorLoader:
     
     def save_models(self, domain: str):
         """Save current M1 models using LionWeb serialization."""
-        if domain not in self.m1_models: return
+        if domain not in self.m1_models: 
+            return
         
         domain_store = self.model_store_dir / domain
         domain_store.mkdir(parents=True, exist_ok=True)
         
         model_concept = self.concepts.get("Model")
-        if not model_concept: return
+        if not model_concept: 
+            return
 
         model = DynamicNode(str(uuid.uuid4()), model_concept)
         riders_containment = model_concept.get_feature_by_name("riders")
@@ -220,7 +240,7 @@ class LionWebConnectorLoader:
     def get_connector_as_dict(self, domain: str) -> Dict[str, Any]:
         """Builds a Python dictionary from the loaded M1 Connector DynamicNode."""
         if domain not in self.m1_connectors:
-            self.load_all(domain) # Ensure it's loaded
+            self.load_all(domain)  # Ensure it's loaded
         
         connector_node = self.m1_connectors.get(domain)
         if not connector_node:
@@ -250,29 +270,23 @@ class LionWebConnectorLoader:
         return output
 
     def get_schema_as_dict(self, domain: str) -> Dict[str, Any]:
-        """Dynamically builds a DOMAIN_SCHEMA-like dictionary from the M2 Language."""
-        if domain not in self.languages:
+        """Dynamically builds a DOMAIN_SCHEMA-like dictionary from the M2 Language and M1 Connector."""
+        if domain not in self.m1_connectors:
+            self.load_all(domain)  # Ensure connector is loaded
+            
+        connector_node = self.m1_connectors.get(domain)
+        if not connector_node:
             return {}
 
-        lang = self.languages[domain]
         schema = {}
         
-        # This mapping is based on our knowledge of the cycling/nl_mappings languages
-        # A more advanced version could inspect types more deeply
+        # Type mapping from LionWeb to schema format
         type_mapping = {
             "String": "string",
             "Integer": "number",
             "Boolean": "boolean"
         }
 
-        # Find all ActionMapping concepts from the nl_mappings language
-        action_mapping_concept = self.concepts.get("ActionMapping")
-        if not action_mapping_concept: return {}
-
-        # The connector holds the action instances
-        connector_node = self.m1_connectors.get(domain)
-        if not connector_node: return {}
-        
         action_nodes = connector_node.get_children(connector_node.get_classifier().get_feature_by_name("actions"))
 
         for action_node in action_nodes:
@@ -280,14 +294,20 @@ class LionWebConnectorLoader:
             target_concept_name = self._get_property_from_instance(action_node, "targetConcept")
             target_concept = self.concepts.get(target_concept_name)
             
-            if not action_name or not target_concept: continue
+            if not action_name or not target_concept:
+                continue
 
+            # Determine permissions based on action type
+            # For cycling domain, all actions are available to both roles
+            permissions = ["admin", "scheduler"]
+            
             schema[action_name] = {
-                "permissions": ["admin", "scheduler"], # Default permissions for now
+                "permissions": permissions,
                 "is_read_only": action_name.startswith("find_"),
                 "required": [],
                 "optional": [],
-                "param_types": {}
+                "param_types": {},
+                "dsl_syntax": action_name  # Placeholder for DSL compatibility
             }
 
             param_nodes = action_node.get_children(action_node.get_classifier().get_feature_by_name("parameters"))
@@ -296,19 +316,41 @@ class LionWebConnectorLoader:
                 target_feature_name = self._get_property_from_instance(param_node, "targetFeature")
                 is_required = self._get_property_from_instance(param_node, "required")
 
-                if not param_name or not target_feature_name: continue
+                if not param_name:
+                    continue
                 
-                if is_required:
+                # Special handling for modify actions
+                if action_name.startswith("modify_"):
+                    # Name is required for identifying what to modify
+                    # Everything else becomes optional (user chooses what to change)
+                    if param_name == "name":
+                        schema[action_name]["required"].append(param_name)
+                    else:
+                        schema[action_name]["optional"].append(param_name)
+                # For create actions, mark all parameters as required for better UX
+                elif action_name.startswith("create_"):
                     schema[action_name]["required"].append(param_name)
                 else:
-                    schema[action_name]["optional"].append(param_name)
+                    # For other actions, use the original required/optional setting
+                    if is_required:
+                        schema[action_name]["required"].append(param_name)
+                    else:
+                        schema[action_name]["optional"].append(param_name)
                 
                 # Find the feature in the target concept to determine its type
-                feature = target_concept.get_feature_by_name(target_feature_name)
-                param_type = "string" # Default
-                if feature and isinstance(feature, Property):
-                    param_type = type_mapping.get(feature.type.name, "string")
+                param_type = "string"  # Default
+                if target_feature_name and target_concept:
+                    feature = target_concept.get_feature_by_name(target_feature_name)
+                    if feature and isinstance(feature, Property):
+                        param_type = type_mapping.get(feature.type.name, "string")
                 
-                schema[action_name]["param_types"][param_name] = {"type": param_type}
+                # Special handling for team selection (like venue_selection in event domain)
+                if param_name == "team" and action_name in ["assign_rider_to_team", "modify_rider"]:
+                    param_type = "team_selection"
+                
+                schema[action_name]["param_types"][param_name] = {
+                    "type": param_type,
+                    "dsl_keyword": param_name  # For compatibility, though not used in LionWeb
+                }
         
         return schema
