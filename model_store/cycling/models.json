@@ -12,7 +12,118 @@
   ],
   "nodes": [
     {
-      "id": "d2c68f6f-b1e1-427c-9cd8-96d6a3913443",
+      "id": "2627460d-5d81-47aa-bdc0-a8fab6fada0f",
+      "classifier": {
+        "language": "cycling",
+        "version": "1.0",
+        "key": "Rider"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Rider-name"
+          },
+          "value": "Chris Froome"
+        },
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Rider-age"
+          },
+          "value": "38"
+        },
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Rider-country"
+          },
+          "value": "UK"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "annotations": [],
+      "parent": "8a04b934-5079-4741-8a6f-7448f747b35a"
+    },
+    {
+      "id": "4b41f8ee-a860-41f0-af0d-01f26f6b30fb",
+      "classifier": {
+        "language": "cycling",
+        "version": "1.0",
+        "key": "Rider"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Rider-name"
+          },
+          "value": "Peter Sagan"
+        },
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Rider-age"
+          },
+          "value": "34"
+        },
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Rider-country"
+          },
+          "value": "Slovakia"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "annotations": [],
+      "parent": "8a04b934-5079-4741-8a6f-7448f747b35a"
+    },
+    {
+      "id": "8a04b934-5079-4741-8a6f-7448f747b35a",
+      "classifier": {
+        "language": "cycling",
+        "version": "1.0",
+        "key": "Model"
+      },
+      "properties": [],
+      "containments": [
+        {
+          "containment": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Model-riders"
+          },
+          "children": [
+            "4b41f8ee-a860-41f0-af0d-01f26f6b30fb",
+            "2627460d-5d81-47aa-bdc0-a8fab6fada0f"
+          ]
+        },
+        {
+          "containment": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Model-teams"
+          },
+          "children": [
+            "91a185e0-a107-4244-953b-51206256aa34"
+          ]
+        }
+      ],
+      "references": [],
+      "annotations": [],
+      "parent": null
+    },
+    {
+      "id": "91a185e0-a107-4244-953b-51206256aa34",
       "classifier": {
         "language": "cycling",
         "version": "1.0",
@@ -55,118 +166,7 @@
       "containments": [],
       "references": [],
       "annotations": [],
-      "parent": "6f701870-8068-4126-9f11-d43b48bffec4"
-    },
-    {
-      "id": "186290d0-7ec6-458e-b021-3e4ee7989e79",
-      "classifier": {
-        "language": "cycling",
-        "version": "1.0",
-        "key": "Rider"
-      },
-      "properties": [
-        {
-          "property": {
-            "language": "cycling",
-            "version": "1.0",
-            "key": "Rider-name"
-          },
-          "value": "Peter Sagan"
-        },
-        {
-          "property": {
-            "language": "cycling",
-            "version": "1.0",
-            "key": "Rider-age"
-          },
-          "value": "34"
-        },
-        {
-          "property": {
-            "language": "cycling",
-            "version": "1.0",
-            "key": "Rider-country"
-          },
-          "value": "Slovakia"
-        }
-      ],
-      "containments": [],
-      "references": [],
-      "annotations": [],
-      "parent": "6f701870-8068-4126-9f11-d43b48bffec4"
-    },
-    {
-      "id": "ed8964d0-f8c6-4a0c-b085-4e8f986b7656",
-      "classifier": {
-        "language": "cycling",
-        "version": "1.0",
-        "key": "Rider"
-      },
-      "properties": [
-        {
-          "property": {
-            "language": "cycling",
-            "version": "1.0",
-            "key": "Rider-name"
-          },
-          "value": "Chris Froome"
-        },
-        {
-          "property": {
-            "language": "cycling",
-            "version": "1.0",
-            "key": "Rider-age"
-          },
-          "value": "38"
-        },
-        {
-          "property": {
-            "language": "cycling",
-            "version": "1.0",
-            "key": "Rider-country"
-          },
-          "value": "UK"
-        }
-      ],
-      "containments": [],
-      "references": [],
-      "annotations": [],
-      "parent": "6f701870-8068-4126-9f11-d43b48bffec4"
-    },
-    {
-      "id": "6f701870-8068-4126-9f11-d43b48bffec4",
-      "classifier": {
-        "language": "cycling",
-        "version": "1.0",
-        "key": "Model"
-      },
-      "properties": [],
-      "containments": [
-        {
-          "containment": {
-            "language": "cycling",
-            "version": "1.0",
-            "key": "Model-riders"
-          },
-          "children": [
-            "186290d0-7ec6-458e-b021-3e4ee7989e79",
-            "ed8964d0-f8c6-4a0c-b085-4e8f986b7656"
-          ]
-        },
-        {
-          "containment": {
-            "language": "cycling",
-            "version": "1.0",
-            "key": "Model-teams"
-          },
-          "children": [
-            "d2c68f6f-b1e1-427c-9cd8-96d6a3913443"
-          ]
-        }
-      ],
-      "references": [],
-      "annotations": [],
-      "parent": null
+      "parent": "8a04b934-5079-4741-8a6f-7448f747b35a"
     }
   ]
 }

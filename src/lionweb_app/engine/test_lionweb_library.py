@@ -1,21 +1,18 @@
-# src/lionweb_app/engine/test_lionweb_library.py
 """
-Test script for LionWeb connector loader using lionweb-python library.
+Test script for the refactored LionWeb connector loader.
 """
 
-import json
 import sys
 from pathlib import Path
 
-# This import now works because we renamed our package and are no longer shadowing the library
 from lionweb.language import Concept
 
-# --- CHANGE: Add the 'src' directory to the Python path ---
+# Add the 'src' directory to the Python path
 src_path = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(src_path))
 
-# --- CHANGE: Update the import path for the loader ---
-from lionweb_app.engine.connector_loader_lionweb import LionWebConnectorLoader
+# Update the import path for the refactored loader
+from lionweb_app.engine.connector_loader import LionWebConnectorLoader
 
 
 def test_lionweb_operations():
@@ -27,7 +24,6 @@ def test_lionweb_operations():
     project_root = src_path.parent
     
     print("\n0. Preparing for test by deleting old files...")
-    # --- CHANGE: Update path to new package name ---
     languages_dir = project_root / "src" / "lionweb_app" / "languages"
     cycling_m2_path = languages_dir / "cycling_m2.json"
     if cycling_m2_path.exists():
@@ -52,9 +48,8 @@ def test_lionweb_operations():
     loader = LionWebConnectorLoader(project_root)
     
     print("\n1. Generating M1 Connector...")
-    loader.generate_and_save_connector_m1("cycling", connector_m1_path)
-    if connector_m1_path.exists():
-        print(f"   ✅ '{connector_m1_path.name}' was generated successfully.")
+    # The loader now handles the generation internally
+    loader.generate_connector_m1("cycling")
 
     print("\n2. Loading all languages and models...")
     if cycling_m2_path.exists():
@@ -63,7 +58,7 @@ def test_lionweb_operations():
         print(f"   ✅ 'nl_mappings_m2.json' was created successfully.")
     
     results = loader.load_all("cycling")
-    print(f"   Language Info: {results['language']}")
+    print(f"   Language Info: Loaded languages: {list(loader.languages.keys())}")
     if results['connector']: print(f"   Connector: {results['connector']}")
     if results['models']: print(f"   Models: {results['models']}")
     if results['errors']: 
@@ -71,6 +66,7 @@ def test_lionweb_operations():
     else:
         print(f"   ✅ No validation errors.")
 
+    # ... The rest of the test script remains the same ...
     print("\n3. Creating riders with DynamicNode...")
     loader.create_m1_instance("cycling", "Rider", {"name": "Peter Sagan", "age": 33, "country": "Slovakia"})
     print(f"   ✅ Created: Peter Sagan")
@@ -130,7 +126,6 @@ if __name__ == "__main__":
 
         (project_root / "model_store" / "cycling").mkdir(parents=True, exist_ok=True)
         (project_root / "src" / "domains" / "cycling").mkdir(parents=True, exist_ok=True)
-        # --- CHANGE: Update path to new package name ---
         (project_root / "src" / "lionweb_app" / "languages").mkdir(parents=True, exist_ok=True)
         
         test_lionweb_operations()
