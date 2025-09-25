@@ -1,0 +1,117 @@
+{
+  "serializationFormatVersion": "2024.1",
+  "languages": [
+    {
+      "key": "nl_mappings",
+      "version": "1"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "cycling-connector",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "Connector"
+      },
+      "properties": [
+        {
+          "property": {
+            "key": "Connector-domainName"
+          },
+          "value": "Cycling Management"
+        },
+        {
+          "property": {
+            "key": "Connector-targetLanguage"
+          },
+          "value": "cycling"
+        }
+      ],
+      "containments": [
+        {
+          "containment": {
+            "key": "Connector-actions"
+          },
+          "children": [
+            "create-rider-action"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create-rider-action",
+      "classifier": {
+        "key": "ActionMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "key": "ActionMapping-actionName"
+          },
+          "value": "create_rider"
+        },
+        {
+          "property": {
+            "key": "ActionMapping-targetConcept"
+          },
+          "value": "Rider"
+        },
+        {
+          "property": {
+            "key": "ActionMapping-description"
+          },
+          "value": "Creates a new rider"
+        }
+      ],
+      "containments": [
+        {
+          "containment": {
+            "key": "ActionMapping-parameters"
+          },
+          "children": [
+            "param-name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "param-name",
+      "classifier": {
+        "key": "ParameterMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "key": "ParameterMapping-parameterName"
+          },
+          "value": "name"
+        },
+        {
+          "property": {
+            "key": "ParameterMapping-targetFeature"
+          },
+          "value": "Rider-name"
+        },
+        {
+          "property": {
+            "key": "ParameterMapping-description"
+          },
+          "value": "Rider name"
+        },
+        {
+          "property": {
+            "key": "ParameterMapping-clarificationPrompt"
+          },
+          "value": "What is the rider's name?"
+        },
+        {
+          "property": {
+            "key": "ParameterMapping-required"
+          },
+          "value": true
+        }
+      ]
+    }
+  ]
+}

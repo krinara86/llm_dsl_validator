@@ -1,0 +1,201 @@
+{
+  "serializationFormatVersion": "2024.1",
+  "languages": [
+    {
+      "key": "cycling",
+      "version": "1"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "5c9a1c56-5542-46e0-a632-9702c76cc619",
+      "classifier": {
+        "language": "cycling",
+        "version": "1",
+        "key": "Rider"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1",
+            "key": "Rider-name"
+          },
+          "value": "Test Rider"
+        },
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1",
+            "key": "Rider-age"
+          },
+          "value": 26
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "parent": null
+    },
+    {
+      "id": "c4bd9971-9e63-47bd-a8d4-069d5cb92eca",
+      "classifier": {
+        "language": "cycling",
+        "version": "1",
+        "key": "Rider"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1",
+            "key": "Rider-name"
+          },
+          "value": "Tadej Poga\u010dar"
+        },
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1",
+            "key": "Rider-age"
+          },
+          "value": 25
+        },
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1",
+            "key": "Rider-country"
+          },
+          "value": "Slovenia"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "parent": null
+    },
+    {
+      "id": "56d7ed88-0799-4252-add1-a6b7f93ce9f7",
+      "classifier": {
+        "language": "cycling",
+        "version": "1",
+        "key": "Rider"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1",
+            "key": "Rider-name"
+          },
+          "value": "Jonas Vingegaard"
+        },
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1",
+            "key": "Rider-age"
+          },
+          "value": 27
+        },
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1",
+            "key": "Rider-country"
+          },
+          "value": "Denmark"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "parent": null
+    },
+    {
+      "id": "eb308541-5fa1-478c-9d53-5e92afc6f508",
+      "classifier": {
+        "language": "cycling",
+        "version": "1",
+        "key": "Team"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1",
+            "key": "Team-name"
+          },
+          "value": "UAE Team Emirates"
+        },
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1",
+            "key": "Team-country"
+          },
+          "value": "UAE"
+        },
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1",
+            "key": "Team-budget"
+          },
+          "value": 50
+        },
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1",
+            "key": "Team-founded"
+          },
+          "value": 2017
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "parent": null
+    },
+    {
+      "id": "5e9ba0c9-0018-41a0-9b14-496a20821b8d",
+      "classifier": {
+        "language": "cycling",
+        "version": "1",
+        "key": "Rider"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1",
+            "key": "Rider-name"
+          },
+          "value": "Krishna"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "parent": null
+    },
+    {
+      "id": "6be459f3-018a-42dc-bccc-dc290f577a70",
+      "classifier": {
+        "language": "cycling",
+        "version": "1",
+        "key": "Rider"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1",
+            "key": "Rider-name"
+          },
+          "value": "Jumbo-Visma"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "parent": null
+    }
+  ]
+}

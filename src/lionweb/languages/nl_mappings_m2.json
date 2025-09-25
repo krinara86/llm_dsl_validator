@@ -1,0 +1,866 @@
+{
+  "serializationFormatVersion": "2024.1",
+  "languages": [
+    {
+      "key": "nl_mappings",
+      "version": "1"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "nlmapping-lang",
+      "classifier": {
+        "language": "LionCore-M3",
+        "version": "2024.1",
+        "key": "Language"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "IKeyed-key"
+          },
+          "value": "nl_mappings"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "INamed-name"
+          },
+          "value": "NLMappings"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Language-version"
+          },
+          "value": "1"
+        }
+      ],
+      "containments": [
+        {
+          "containment": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Language-entities"
+          },
+          "children": [
+            "nlmapping-Connector",
+            "nlmapping-ActionMapping",
+            "nlmapping-ParameterMapping"
+          ]
+        }
+      ],
+      "references": [],
+      "parent": null
+    },
+    {
+      "id": "nlmapping-Connector",
+      "classifier": {
+        "language": "LionCore-M3",
+        "version": "2024.1",
+        "key": "Concept"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "IKeyed-key"
+          },
+          "value": "Connector"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "INamed-name"
+          },
+          "value": "Connector"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Concept-abstract"
+          },
+          "value": false
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Concept-partition"
+          },
+          "value": true
+        }
+      ],
+      "containments": [
+        {
+          "containment": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Concept-features"
+          },
+          "children": [
+            "nlmapping-Connector-domainName",
+            "nlmapping-Connector-targetLanguage",
+            "nlmapping-Connector-actions"
+          ]
+        }
+      ],
+      "references": [],
+      "parent": "nlmapping-lang"
+    },
+    {
+      "id": "nlmapping-Connector-domainName",
+      "classifier": {
+        "language": "LionCore-M3",
+        "version": "2024.1",
+        "key": "Property"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "IKeyed-key"
+          },
+          "value": "Connector-domainName"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "INamed-name"
+          },
+          "value": "domainName"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Feature-optional"
+          },
+          "value": false
+        }
+      ],
+      "containments": [],
+      "references": [
+        {
+          "reference": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Property-type"
+          },
+          "targets": [
+            {
+              "resolveInfo": "String",
+              "reference": "LionCore-builtins-String"
+            }
+          ]
+        }
+      ],
+      "parent": "nlmapping-Connector"
+    },
+    {
+      "id": "nlmapping-Connector-targetLanguage",
+      "classifier": {
+        "language": "LionCore-M3",
+        "version": "2024.1",
+        "key": "Property"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "IKeyed-key"
+          },
+          "value": "Connector-targetLanguage"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "INamed-name"
+          },
+          "value": "targetLanguage"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Feature-optional"
+          },
+          "value": false
+        }
+      ],
+      "containments": [],
+      "references": [
+        {
+          "reference": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Property-type"
+          },
+          "targets": [
+            {
+              "resolveInfo": "String",
+              "reference": "LionCore-builtins-String"
+            }
+          ]
+        }
+      ],
+      "parent": "nlmapping-Connector"
+    },
+    {
+      "id": "nlmapping-Connector-actions",
+      "classifier": {
+        "language": "LionCore-M3",
+        "version": "2024.1",
+        "key": "Containment"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "IKeyed-key"
+          },
+          "value": "Connector-actions"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "INamed-name"
+          },
+          "value": "actions"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Link-multiple"
+          },
+          "value": true
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Feature-optional"
+          },
+          "value": true
+        }
+      ],
+      "containments": [],
+      "references": [
+        {
+          "reference": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Link-type"
+          },
+          "targets": [
+            {
+              "resolveInfo": "ActionMapping",
+              "reference": "nlmapping-ActionMapping"
+            }
+          ]
+        }
+      ],
+      "parent": "nlmapping-Connector"
+    },
+    {
+      "id": "nlmapping-ActionMapping",
+      "classifier": {
+        "language": "LionCore-M3",
+        "version": "2024.1",
+        "key": "Concept"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "IKeyed-key"
+          },
+          "value": "ActionMapping"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "INamed-name"
+          },
+          "value": "ActionMapping"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Concept-abstract"
+          },
+          "value": false
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Concept-partition"
+          },
+          "value": false
+        }
+      ],
+      "containments": [
+        {
+          "containment": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Concept-features"
+          },
+          "children": [
+            "nlmapping-ActionMapping-actionName",
+            "nlmapping-ActionMapping-targetConcept",
+            "nlmapping-ActionMapping-description",
+            "nlmapping-ActionMapping-parameters"
+          ]
+        }
+      ],
+      "references": [],
+      "parent": "nlmapping-lang"
+    },
+    {
+      "id": "nlmapping-ActionMapping-actionName",
+      "classifier": {
+        "language": "LionCore-M3",
+        "version": "2024.1",
+        "key": "Property"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "IKeyed-key"
+          },
+          "value": "ActionMapping-actionName"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "INamed-name"
+          },
+          "value": "actionName"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Feature-optional"
+          },
+          "value": false
+        }
+      ],
+      "containments": [],
+      "references": [
+        {
+          "reference": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Property-type"
+          },
+          "targets": [
+            {
+              "resolveInfo": "String",
+              "reference": "LionCore-builtins-String"
+            }
+          ]
+        }
+      ],
+      "parent": "nlmapping-ActionMapping"
+    },
+    {
+      "id": "nlmapping-ActionMapping-targetConcept",
+      "classifier": {
+        "language": "LionCore-M3",
+        "version": "2024.1",
+        "key": "Property"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "IKeyed-key"
+          },
+          "value": "ActionMapping-targetConcept"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "INamed-name"
+          },
+          "value": "targetConcept"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Feature-optional"
+          },
+          "value": false
+        }
+      ],
+      "containments": [],
+      "references": [
+        {
+          "reference": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Property-type"
+          },
+          "targets": [
+            {
+              "resolveInfo": "String",
+              "reference": "LionCore-builtins-String"
+            }
+          ]
+        }
+      ],
+      "parent": "nlmapping-ActionMapping"
+    },
+    {
+      "id": "nlmapping-ActionMapping-description",
+      "classifier": {
+        "language": "LionCore-M3",
+        "version": "2024.1",
+        "key": "Property"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "IKeyed-key"
+          },
+          "value": "ActionMapping-description"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "INamed-name"
+          },
+          "value": "description"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Feature-optional"
+          },
+          "value": false
+        }
+      ],
+      "containments": [],
+      "references": [
+        {
+          "reference": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Property-type"
+          },
+          "targets": [
+            {
+              "resolveInfo": "String",
+              "reference": "LionCore-builtins-String"
+            }
+          ]
+        }
+      ],
+      "parent": "nlmapping-ActionMapping"
+    },
+    {
+      "id": "nlmapping-ActionMapping-parameters",
+      "classifier": {
+        "language": "LionCore-M3",
+        "version": "2024.1",
+        "key": "Containment"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "IKeyed-key"
+          },
+          "value": "ActionMapping-parameters"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "INamed-name"
+          },
+          "value": "parameters"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Link-multiple"
+          },
+          "value": true
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Feature-optional"
+          },
+          "value": true
+        }
+      ],
+      "containments": [],
+      "references": [
+        {
+          "reference": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Link-type"
+          },
+          "targets": [
+            {
+              "resolveInfo": "ParameterMapping",
+              "reference": "nlmapping-ParameterMapping"
+            }
+          ]
+        }
+      ],
+      "parent": "nlmapping-ActionMapping"
+    },
+    {
+      "id": "nlmapping-ParameterMapping",
+      "classifier": {
+        "language": "LionCore-M3",
+        "version": "2024.1",
+        "key": "Concept"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "IKeyed-key"
+          },
+          "value": "ParameterMapping"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "INamed-name"
+          },
+          "value": "ParameterMapping"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Concept-abstract"
+          },
+          "value": false
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Concept-partition"
+          },
+          "value": false
+        }
+      ],
+      "containments": [
+        {
+          "containment": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Concept-features"
+          },
+          "children": [
+            "nlmapping-ParameterMapping-parameterName",
+            "nlmapping-ParameterMapping-targetFeature",
+            "nlmapping-ParameterMapping-description",
+            "nlmapping-ParameterMapping-clarificationPrompt",
+            "nlmapping-ParameterMapping-required"
+          ]
+        }
+      ],
+      "references": [],
+      "parent": "nlmapping-lang"
+    },
+    {
+      "id": "nlmapping-ParameterMapping-parameterName",
+      "classifier": {
+        "language": "LionCore-M3",
+        "version": "2024.1",
+        "key": "Property"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "IKeyed-key"
+          },
+          "value": "ParameterMapping-parameterName"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "INamed-name"
+          },
+          "value": "parameterName"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Feature-optional"
+          },
+          "value": false
+        }
+      ],
+      "containments": [],
+      "references": [
+        {
+          "reference": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Property-type"
+          },
+          "targets": [
+            {
+              "resolveInfo": "String",
+              "reference": "LionCore-builtins-String"
+            }
+          ]
+        }
+      ],
+      "parent": "nlmapping-ParameterMapping"
+    },
+    {
+      "id": "nlmapping-ParameterMapping-targetFeature",
+      "classifier": {
+        "language": "LionCore-M3",
+        "version": "2024.1",
+        "key": "Property"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "IKeyed-key"
+          },
+          "value": "ParameterMapping-targetFeature"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "INamed-name"
+          },
+          "value": "targetFeature"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Feature-optional"
+          },
+          "value": false
+        }
+      ],
+      "containments": [],
+      "references": [
+        {
+          "reference": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Property-type"
+          },
+          "targets": [
+            {
+              "resolveInfo": "String",
+              "reference": "LionCore-builtins-String"
+            }
+          ]
+        }
+      ],
+      "parent": "nlmapping-ParameterMapping"
+    },
+    {
+      "id": "nlmapping-ParameterMapping-description",
+      "classifier": {
+        "language": "LionCore-M3",
+        "version": "2024.1",
+        "key": "Property"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "IKeyed-key"
+          },
+          "value": "ParameterMapping-description"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "INamed-name"
+          },
+          "value": "description"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Feature-optional"
+          },
+          "value": false
+        }
+      ],
+      "containments": [],
+      "references": [
+        {
+          "reference": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Property-type"
+          },
+          "targets": [
+            {
+              "resolveInfo": "String",
+              "reference": "LionCore-builtins-String"
+            }
+          ]
+        }
+      ],
+      "parent": "nlmapping-ParameterMapping"
+    },
+    {
+      "id": "nlmapping-ParameterMapping-clarificationPrompt",
+      "classifier": {
+        "language": "LionCore-M3",
+        "version": "2024.1",
+        "key": "Property"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "IKeyed-key"
+          },
+          "value": "ParameterMapping-clarificationPrompt"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "INamed-name"
+          },
+          "value": "clarificationPrompt"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Feature-optional"
+          },
+          "value": false
+        }
+      ],
+      "containments": [],
+      "references": [
+        {
+          "reference": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Property-type"
+          },
+          "targets": [
+            {
+              "resolveInfo": "String",
+              "reference": "LionCore-builtins-String"
+            }
+          ]
+        }
+      ],
+      "parent": "nlmapping-ParameterMapping"
+    },
+    {
+      "id": "nlmapping-ParameterMapping-required",
+      "classifier": {
+        "language": "LionCore-M3",
+        "version": "2024.1",
+        "key": "Property"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "IKeyed-key"
+          },
+          "value": "ParameterMapping-required"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "INamed-name"
+          },
+          "value": "required"
+        },
+        {
+          "property": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Feature-optional"
+          },
+          "value": false
+        }
+      ],
+      "containments": [],
+      "references": [
+        {
+          "reference": {
+            "language": "LionCore-M3",
+            "version": "2024.1",
+            "key": "Property-type"
+          },
+          "targets": [
+            {
+              "resolveInfo": "Boolean",
+              "reference": "LionCore-builtins-Boolean"
+            }
+          ]
+        }
+      ],
+      "parent": "nlmapping-ParameterMapping"
+    }
+  ]
+}
