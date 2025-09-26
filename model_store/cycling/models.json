@@ -47,7 +47,45 @@
       "containments": [],
       "references": [],
       "annotations": [],
-      "parent": "d323f30b-e90c-48dc-ad3e-460932258732"
+      "parent": "2843cd7b-98a9-4ac5-bc96-f8cb0c3ddd5e"
+    },
+    {
+      "id": "0d27596e-a0f1-4fdb-a085-fe74eae68512",
+      "classifier": {
+        "language": "cycling",
+        "version": "1.0",
+        "key": "Rider"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Rider-name"
+          },
+          "value": "Niko Stotz"
+        },
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Rider-age"
+          },
+          "value": "23"
+        },
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Rider-country"
+          },
+          "value": "Germany"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "annotations": [],
+      "parent": "2843cd7b-98a9-4ac5-bc96-f8cb0c3ddd5e"
     },
     {
       "id": "2627460d-5d81-47aa-bdc0-a8fab6fada0f",
@@ -85,7 +123,7 @@
       "containments": [],
       "references": [],
       "annotations": [],
-      "parent": "d323f30b-e90c-48dc-ad3e-460932258732"
+      "parent": "2843cd7b-98a9-4ac5-bc96-f8cb0c3ddd5e"
     },
     {
       "id": "91a185e0-a107-4244-953b-51206256aa34",
@@ -131,49 +169,7 @@
       "containments": [],
       "references": [],
       "annotations": [],
-      "parent": "d323f30b-e90c-48dc-ad3e-460932258732"
-    },
-    {
-      "id": "d323f30b-e90c-48dc-ad3e-460932258732",
-      "classifier": {
-        "language": "cycling",
-        "version": "1.0",
-        "key": "Model"
-      },
-      "properties": [],
-      "containments": [
-        {
-          "containment": {
-            "language": "cycling",
-            "version": "1.0",
-            "key": "Model-riders"
-          },
-          "children": [
-            "4b41f8ee-a860-41f0-af0d-01f26f6b30fb",
-            "2627460d-5d81-47aa-bdc0-a8fab6fada0f",
-            "6c33c300-cddc-41be-8b39-55f7f600008c",
-            "aa75fc0a-375f-4d37-9491-cda93049409b",
-            "1bfaa977-4c86-460f-b854-b41f9b0af39e",
-            "567982db-5daf-4911-948f-147a4b00bac7",
-            "9408253f-c081-4602-9250-3b1aca2261c0"
-          ]
-        },
-        {
-          "containment": {
-            "language": "cycling",
-            "version": "1.0",
-            "key": "Model-teams"
-          },
-          "children": [
-            "91a185e0-a107-4244-953b-51206256aa34",
-            "cf00ce8c-d35a-497b-be74-805da8397272",
-            "129e71d0-8df9-4c75-9840-73a944725381"
-          ]
-        }
-      ],
-      "references": [],
-      "annotations": [],
-      "parent": null
+      "parent": "2843cd7b-98a9-4ac5-bc96-f8cb0c3ddd5e"
     },
     {
       "id": "1bfaa977-4c86-460f-b854-b41f9b0af39e",
@@ -211,7 +207,7 @@
       "containments": [],
       "references": [],
       "annotations": [],
-      "parent": "d323f30b-e90c-48dc-ad3e-460932258732"
+      "parent": "2843cd7b-98a9-4ac5-bc96-f8cb0c3ddd5e"
     },
     {
       "id": "9408253f-c081-4602-9250-3b1aca2261c0",
@@ -249,7 +245,7 @@
       "containments": [],
       "references": [],
       "annotations": [],
-      "parent": "d323f30b-e90c-48dc-ad3e-460932258732"
+      "parent": "2843cd7b-98a9-4ac5-bc96-f8cb0c3ddd5e"
     },
     {
       "id": "567982db-5daf-4911-948f-147a4b00bac7",
@@ -287,7 +283,7 @@
       "containments": [],
       "references": [],
       "annotations": [],
-      "parent": "d323f30b-e90c-48dc-ad3e-460932258732"
+      "parent": "2843cd7b-98a9-4ac5-bc96-f8cb0c3ddd5e"
     },
     {
       "id": "4b41f8ee-a860-41f0-af0d-01f26f6b30fb",
@@ -325,7 +321,52 @@
       "containments": [],
       "references": [],
       "annotations": [],
-      "parent": "d323f30b-e90c-48dc-ad3e-460932258732"
+      "parent": "2843cd7b-98a9-4ac5-bc96-f8cb0c3ddd5e"
+    },
+    {
+      "id": "2843cd7b-98a9-4ac5-bc96-f8cb0c3ddd5e",
+      "classifier": {
+        "language": "cycling",
+        "version": "1.0",
+        "key": "Model"
+      },
+      "properties": [],
+      "containments": [
+        {
+          "containment": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Model-riders"
+          },
+          "children": [
+            "4b41f8ee-a860-41f0-af0d-01f26f6b30fb",
+            "2627460d-5d81-47aa-bdc0-a8fab6fada0f",
+            "6c33c300-cddc-41be-8b39-55f7f600008c",
+            "aa75fc0a-375f-4d37-9491-cda93049409b",
+            "1bfaa977-4c86-460f-b854-b41f9b0af39e",
+            "567982db-5daf-4911-948f-147a4b00bac7",
+            "9408253f-c081-4602-9250-3b1aca2261c0",
+            "0d27596e-a0f1-4fdb-a085-fe74eae68512",
+            "a63252b9-6f75-4751-b7fa-d0e5ce65fd4f"
+          ]
+        },
+        {
+          "containment": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Model-teams"
+          },
+          "children": [
+            "91a185e0-a107-4244-953b-51206256aa34",
+            "cf00ce8c-d35a-497b-be74-805da8397272",
+            "129e71d0-8df9-4c75-9840-73a944725381",
+            "4242bc2d-dddf-4bc0-8138-d4c4e1aa53d4"
+          ]
+        }
+      ],
+      "references": [],
+      "annotations": [],
+      "parent": null
     },
     {
       "id": "6c33c300-cddc-41be-8b39-55f7f600008c",
@@ -355,7 +396,53 @@
       "containments": [],
       "references": [],
       "annotations": [],
-      "parent": "d323f30b-e90c-48dc-ad3e-460932258732"
+      "parent": "2843cd7b-98a9-4ac5-bc96-f8cb0c3ddd5e"
+    },
+    {
+      "id": "4242bc2d-dddf-4bc0-8138-d4c4e1aa53d4",
+      "classifier": {
+        "language": "cycling",
+        "version": "1.0",
+        "key": "Team"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Team-name"
+          },
+          "value": "Team SkyIT"
+        },
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Team-country"
+          },
+          "value": "Italy"
+        },
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Team-budget"
+          },
+          "value": "40000000"
+        },
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Team-founded"
+          },
+          "value": "2010"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "annotations": [],
+      "parent": "2843cd7b-98a9-4ac5-bc96-f8cb0c3ddd5e"
     },
     {
       "id": "cf00ce8c-d35a-497b-be74-805da8397272",
@@ -401,7 +488,45 @@
       "containments": [],
       "references": [],
       "annotations": [],
-      "parent": "d323f30b-e90c-48dc-ad3e-460932258732"
+      "parent": "2843cd7b-98a9-4ac5-bc96-f8cb0c3ddd5e"
+    },
+    {
+      "id": "a63252b9-6f75-4751-b7fa-d0e5ce65fd4f",
+      "classifier": {
+        "language": "cycling",
+        "version": "1.0",
+        "key": "Rider"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Rider-name"
+          },
+          "value": "Maarten Fekker"
+        },
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Rider-age"
+          },
+          "value": "42"
+        },
+        {
+          "property": {
+            "language": "cycling",
+            "version": "1.0",
+            "key": "Rider-country"
+          },
+          "value": "Netherlands"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "annotations": [],
+      "parent": "2843cd7b-98a9-4ac5-bc96-f8cb0c3ddd5e"
     },
     {
       "id": "129e71d0-8df9-4c75-9840-73a944725381",
@@ -447,7 +572,7 @@
       "containments": [],
       "references": [],
       "annotations": [],
-      "parent": "d323f30b-e90c-48dc-ad3e-460932258732"
+      "parent": "2843cd7b-98a9-4ac5-bc96-f8cb0c3ddd5e"
     }
   ]
 }

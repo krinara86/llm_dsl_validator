@@ -207,6 +207,22 @@
     "Room DXXX": {
       "capacity": 3000.0,
       "has_av_system": true
+    },
+    "Room AXXXX": {
+      "capacity": 10.0,
+      "has_av_system": false
+    },
+    "Room BXXXX": {
+      "capacity": 40.0,
+      "has_av_system": true
+    },
+    "Room CXXXX": {
+      "capacity": 20.0,
+      "has_av_system": true
+    },
+    "Room DXXXX": {
+      "capacity": 60.0,
+      "has_av_system": true
     }
   },
   "sessions": [

@@ -1,0 +1,106 @@
+digraph SystemArchitecture {
+    // Graph settings
+    rankdir=TB;
+    node [shape=box, style="rounded,filled", fontname="Arial"];
+    edge [fontname="Arial"];
+    
+    // Color scheme
+    // User interfaces - light blue
+    // System controllers - light green  
+    // Shared conversation layer - light yellow
+    // Domain-specific backends - light orange
+    // Persistence - light gray
+    
+    // User Interface Layer
+    subgraph cluster_ui {
+        label="User Interfaces";
+        style="dashed,rounded";
+        bgcolor="#e3f2fd";
+        
+        cycling_ui [label="Cycling Interface\n(LionWeb Example)", fillcolor="#bbdefb"];
+        event_ui [label="Event Management Interface\n(Lark Example)", fillcolor="#bbdefb"];
+    }
+    
+    // System Controllers
+    cycling_system [label="CyclingSystem", fillcolor="#c8e6c9"];
+    event_system [label="EventSystem", fillcolor="#c8e6c9"];
+    
+    // Shared Conversation Layer
+    subgraph cluster_conversation {
+        label="Shared Conversation Layer\n(Domain-Agnostic)";
+        style="dashed,rounded";
+        bgcolor="#fff9c4";
+        
+        orchestrator [label="ConversationOrchestrator\n• Manages flow\n• Handles state", fillcolor="#ffecb3"];
+        extractor [label="TaskExtractor\n• NL → JSON\n• Uses LLM", fillcolor="#ffecb3"];
+        formatter [label="MessageFormatter\n• HTML formatting\n• User feedback", fillcolor="#ffecb3"];
+        clarification [label="ClarificationGenerator\n• Missing params\n• Form generation", fillcolor="#ffecb3"];
+    }
+    
+    // Configuration/Schema Sources
+    subgraph cluster_config {
+        label="Configuration & Schema";
+        style="dashed,rounded";
+        bgcolor="#ffe0b2";
+        
+        lionweb_connector [label="LionWebConnectorLoader\n• get_connector_as_dict()\n• get_schema_as_dict()", fillcolor="#ffcc80"];
+        yaml_connector [label="connector.yml\n+\nDOMAIN_SCHEMA.py", fillcolor="#ffcc80"];
+    }
+    
+    // Execution Backends
+    subgraph cluster_backends {
+        label="Execution Backends";
+        style="dashed,rounded";
+        bgcolor="#ffccbc";
+        
+        lionweb_exec [label="Direct M1 Operations\n• create_m1_instance()\n• modify_m1_instance()\n• find_m1_instances()", fillcolor="#ffab91"];
+        lark_exec [label="TaskExecutor\n+\nDSL Builder\n+\nLark Parser", fillcolor="#ffab91"];
+    }
+    
+    // Persistence Layer
+    subgraph cluster_persistence {
+        label="Persistence";
+        style="dashed,rounded";
+        bgcolor="#e0e0e0";
+        
+        lionweb_store [label="LionWeb Models\n(model_store/*.json)", fillcolor="#bdbdbd"];
+        state_manager [label="StateManager\n(state.json)", fillcolor="#bdbdbd"];
+    }
+    
+    // LLM Service
+    llm [label="LLM Service\n(Ollama/Together/HF)", fillcolor="#f3e5f5", shape=ellipse];
+    
+    // Flow connections - all using simple arrows
+    // User input flow
+    cycling_ui -> cycling_system [label="User Query"];
+    event_ui -> event_system [label="User Query"];
+    
+    // System to Orchestrator
+    cycling_system -> orchestrator [label="process_query()"];
+    event_system -> orchestrator [label="process_query()"];
+    
+    // Orchestrator to components
+    orchestrator -> extractor [label="extract_task_details()"];
+    extractor -> llm [label="API Request"];
+    llm -> extractor [label="JSON Response"];
+    orchestrator -> formatter [label="format_understanding()"];
+    orchestrator -> clarification [label="generate_message()"];
+    
+    // Configuration loading
+    cycling_system -> lionweb_connector [label="Load Config"];
+    event_system -> yaml_connector [label="Load Config"];
+    lionweb_connector -> orchestrator [label="connector dict\nschema dict"];
+    yaml_connector -> orchestrator [label="connector dict\nschema dict"];
+    
+    // Execution paths
+    cycling_system -> lionweb_exec [label="execute_task()"];
+    event_system -> lark_exec [label="execute_task()"];
+    
+    // Persistence
+    lionweb_exec -> lionweb_store [label="save_models()"];
+    lark_exec -> state_manager [label="save()"];
+    
+    // Read operations
+    lionweb_store -> lionweb_exec [label="load_all()"];
+    state_manager -> lark_exec [label="load()"];
+}
