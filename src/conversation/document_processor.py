@@ -49,23 +49,31 @@ You are an expert assistant. Your task is to analyze the document below and extr
    - If the document mentions creating/modifying multiple items, each one is a separate task
    - "Create A and B" = TWO separate tasks
    - "Register the following items: A, B, C, D" = FOUR separate tasks
-3. Identify actions from this list: {action_str}
-4. For EACH individual task, create a separate JSON object with:
+3. **IMPORTANT: When an entity is described with its properties, it's ONE creation task**:
+   - "Room A - 10 seats, with AV" = ONE create task with all properties
+   - "Create rider John aged 25 from USA" = ONE create task with all properties
+   - Do NOT split an entity and its initial properties into separate create and modify tasks
+4. Identify actions from this list: {action_str}
+5. For EACH individual task, create a separate JSON object with:
    - "task_description": Brief summary of just that one task
-   - "action": The specific action from the list above
-   - "details": Parameters for that ONE entity only (as a flat object, not arrays)
-5. NEVER combine multiple entities into arrays - each needs its own task object
-6. Watch for phrases like "First", "Second", "Third", "Another", "Also", numbered lists, bullet points - these indicate separate tasks
+   - "action": The specific action from the list above (usually create_* for new entities)
+   - "details": ALL properties mentioned for that entity in one object
+6. NEVER combine multiple entities into arrays - each needs its own task object
+7. Watch for phrases like "First", "Second", "Third", "Another", "Also", numbered lists, bullet points - these indicate separate tasks
+8. Common patterns:
+   - "X with Y and Z" = create X with properties Y and Z (ONE task)
+   - "X. Modify it to have Y" = create X (one task), then modify X (second task)
+   - List of items with descriptions = one create task per item WITH all its properties
 
 {param_guidance}
 
-**Generic Example**: 
-Input: "Create entity A with property X. Create entity B with property Y."
+**Example**: 
+Input: "Room A - 50 seats, with AV system. Room B - 20 seats, no AV."
 Output: 
 {{
   "tasks": [
-    {{"task_description": "Create entity A", "action": "create_something", "details": {{"name": "A", "property": "X"}}}},
-    {{"task_description": "Create entity B", "action": "create_something", "details": {{"name": "B", "property": "Y"}}}}
+    {{"task_description": "Create Room A", "action": "create_venue", "details": {{"name": "Room A", "capacity": 50, "has_av_system": true}}}},
+    {{"task_description": "Create Room B", "action": "create_venue", "details": {{"name": "Room B", "capacity": 20, "has_av_system": false}}}}
   ]
 }}
 
@@ -74,7 +82,7 @@ Output:
 {document}
 ---
 
-Return ONLY the JSON with separate task objects for each entity. Each task must have action, task_description, and details fields."""
+Return ONLY the JSON with separate task objects for each entity. Include ALL mentioned properties in the details for each entity's creation task."""
         
         try:
             response_str = LLMClient.execute_request(
