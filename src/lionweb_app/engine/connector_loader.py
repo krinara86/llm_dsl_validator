@@ -272,7 +272,7 @@ class LionWebConnectorLoader:
     def get_schema_as_dict(self, domain: str) -> Dict[str, Any]:
         """Dynamically builds a DOMAIN_SCHEMA-like dictionary from the M2 Language and M1 Connector."""
         if domain not in self.m1_connectors:
-            self.load_all(domain)  # Ensure connector is loaded
+            self.load_all(domain)  
             
         connector_node = self.m1_connectors.get(domain)
         if not connector_node:
