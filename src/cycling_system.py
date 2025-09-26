@@ -7,6 +7,7 @@ from lionweb.language import Property
 
 from lionweb_app.engine.connector_loader import LionWebConnectorLoader
 from conversation.orchestrator import ConversationOrchestrator
+from conversation.document_processor import DocumentProcessor
 from core.llm_client import LLMClient
 
 
@@ -39,6 +40,9 @@ class CyclingSystem:
             schema=self.schema,
             state_manager=None  # LionWeb handles its own persistence
         )
+        
+        # Document processor for handling multi-task documents
+        self.document_processor = DocumentProcessor()
     
     def process_query(self, query: str, role: str, model_name: str,
                      conversation_state: Dict = None, pre_filled_details: Dict = None) -> Dict:
@@ -49,13 +53,12 @@ class CyclingSystem:
     
     def process_document(self, document: str, role: str, model_name: str) -> Dict:
         """Process a document containing multiple tasks."""
-        # Note: This would need adjustment for cycling-specific examples
-        # For now, just return a message that document processing isn't supported
-        return {
-            "status": "info",
-            "message": "Document processing for cycling domain is not yet implemented. Please enter individual commands.",
-            "tasks": []
-        }
+        # Pass the connector to document processor for domain-aware extraction
+        result = self.document_processor.extract_tasks(document, model_name, self.connector)
+        
+        # The result contains extracted tasks in the same format as event system
+        # So it will work with the existing task processing flow
+        return result
     
     def execute_task(self, role: str, conversation_state: Dict) -> Dict:
         """Execute a validated task by calling LionWeb loader methods."""

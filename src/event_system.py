@@ -7,6 +7,7 @@ from src.core.state_manager import StateManager
 from src.core.llm_client import LLMClient
 from src.conversation.orchestrator import ConversationOrchestrator
 from src.conversation.document_processor import DocumentProcessor
+from src.core.connector_loader import load_connector
 from src.execution.executor import TaskExecutor
 
 class EventSystem:
@@ -15,6 +16,7 @@ class EventSystem:
     def __init__(self):
         self.orchestrator = ConversationOrchestrator()
         self.executor = TaskExecutor()
+        self.connector = load_connector('event')
         self.document_processor = DocumentProcessor()
         self.state_manager = StateManager(AppConfig.STATE_FILE)
     
@@ -29,7 +31,8 @@ class EventSystem:
         return self.executor.execute(role, conversation_state)
     
     def process_document(self, document: str, role: str, model_name: str) -> dict:
-        return self.document_processor.extract_tasks(document, model_name)
+        result = self.document_processor.extract_tasks(document, model_name, self.connector)
+        return result
     
     def get_current_state(self) -> dict:
         """Get the current system state."""

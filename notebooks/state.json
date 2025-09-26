@@ -175,6 +175,38 @@
     "Zimmer Q1": {
       "capacity": 10.0,
       "has_av_system": false
+    },
+    "Room AXX": {
+      "capacity": 10.0,
+      "has_av_system": false
+    },
+    "Room BXX": {
+      "capacity": 40.0,
+      "has_av_system": true
+    },
+    "Room CXX": {
+      "capacity": 20.0,
+      "has_av_system": true
+    },
+    "Room DXX": {
+      "capacity": 60.0,
+      "has_av_system": true
+    },
+    "Room AXXX": {
+      "capacity": 10.0,
+      "has_av_system": false
+    },
+    "Room BXXX": {
+      "capacity": 40.0,
+      "has_av_system": true
+    },
+    "Room CXXX": {
+      "capacity": 20.0,
+      "has_av_system": true
+    },
+    "Room DXXX": {
+      "capacity": 3000.0,
+      "has_av_system": true
     }
   },
   "sessions": [
