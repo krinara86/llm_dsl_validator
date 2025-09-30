@@ -2,7 +2,12 @@
 import json
 import re
 from typing import Dict, Optional, Any
-from ..core.llm_client import LLMClient
+
+# Handle both relative and absolute imports
+try:
+    from ..core.llm_client import LLMClient
+except (ImportError, ValueError):
+    from core.llm_client import LLMClient
 
 class TaskExtractor:
     """Extracts structured task information from natural language."""
@@ -54,7 +59,7 @@ class TaskExtractor:
             clean_json_str = json_match.group(0)
             result = json.loads(clean_json_str)
             
-            # NEW: Filter out parameters with placeholder values
+            # Filter out parameters with placeholder values
             if "parameters" in result:
                 filtered_params = {}
                 invalid_values = [None, "", "unknown", "N/A", "n/a", "Unknown", "TBD", "tbd", 

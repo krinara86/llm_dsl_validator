@@ -1,0 +1,1070 @@
+{
+  "serializationFormatVersion": "2024.1",
+  "languages": [
+    {
+      "key": "nl_mappings",
+      "version": "1"
+    },
+    {
+      "key": "LionCore-builtins",
+      "version": "2024.1"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "param-create_team-budget",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "ParameterMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-parameterName"
+          },
+          "value": "budget"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-targetFeature"
+          },
+          "value": "budget"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-description"
+          },
+          "value": "Budget in millions"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-clarificationPrompt"
+          },
+          "value": "What is the team's budget (in millions)?"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-required"
+          },
+          "value": "false"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "annotations": [],
+      "parent": "action-create_team"
+    },
+    {
+      "id": "param-modify_rider-country",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "ParameterMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-parameterName"
+          },
+          "value": "country"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-targetFeature"
+          },
+          "value": "country"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-description"
+          },
+          "value": "New country"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-clarificationPrompt"
+          },
+          "value": "What is the new country?"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-required"
+          },
+          "value": "false"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "annotations": [],
+      "parent": "action-modify_rider"
+    },
+    {
+      "id": "param-modify_rider-age",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "ParameterMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-parameterName"
+          },
+          "value": "age"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-targetFeature"
+          },
+          "value": "age"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-description"
+          },
+          "value": "New age"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-clarificationPrompt"
+          },
+          "value": "What is the new age?"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-required"
+          },
+          "value": "false"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "annotations": [],
+      "parent": "action-modify_rider"
+    },
+    {
+      "id": "param-find_rider-country",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "ParameterMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-parameterName"
+          },
+          "value": "country"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-targetFeature"
+          },
+          "value": "country"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-description"
+          },
+          "value": "Country to filter by"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-clarificationPrompt"
+          },
+          "value": "Which country to filter by?"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-required"
+          },
+          "value": "false"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "annotations": [],
+      "parent": "action-find_rider"
+    },
+    {
+      "id": "action-modify_rider",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "ActionMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-actionName"
+          },
+          "value": "modify_rider"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-targetConcept"
+          },
+          "value": "Rider"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-description"
+          },
+          "value": "Modifies an existing rider"
+        }
+      ],
+      "containments": [
+        {
+          "containment": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-parameters"
+          },
+          "children": [
+            "param-modify_rider-name",
+            "param-modify_rider-age",
+            "param-modify_rider-country"
+          ]
+        }
+      ],
+      "references": [],
+      "annotations": [],
+      "parent": "cycling-connector"
+    },
+    {
+      "id": "param-find_rider-name_pattern",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "ParameterMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-parameterName"
+          },
+          "value": "name_pattern"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-targetFeature"
+          },
+          "value": "name"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-description"
+          },
+          "value": "Name pattern to search"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-clarificationPrompt"
+          },
+          "value": "What name should I search for?"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-required"
+          },
+          "value": "false"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "annotations": [],
+      "parent": "action-find_rider"
+    },
+    {
+      "id": "param-find_team-country",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "ParameterMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-parameterName"
+          },
+          "value": "country"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-targetFeature"
+          },
+          "value": "country"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-description"
+          },
+          "value": "Country to filter by"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-clarificationPrompt"
+          },
+          "value": "Which country to filter by?"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-required"
+          },
+          "value": "false"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "annotations": [],
+      "parent": "action-find_team"
+    },
+    {
+      "id": "action-create_rider",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "ActionMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-actionName"
+          },
+          "value": "create_rider"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-targetConcept"
+          },
+          "value": "Rider"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-description"
+          },
+          "value": "Creates a new cyclist/rider"
+        }
+      ],
+      "containments": [
+        {
+          "containment": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-parameters"
+          },
+          "children": [
+            "param-create_rider-name",
+            "param-create_rider-age",
+            "param-create_rider-country"
+          ]
+        }
+      ],
+      "references": [],
+      "annotations": [],
+      "parent": "cycling-connector"
+    },
+    {
+      "id": "cycling-connector",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "Connector"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "Connector-domainName"
+          },
+          "value": "Cycling Management"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "Connector-targetLanguage"
+          },
+          "value": "cycling"
+        }
+      ],
+      "containments": [
+        {
+          "containment": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "Connector-actions"
+          },
+          "children": [
+            "action-create_rider",
+            "action-modify_rider",
+            "action-create_team",
+            "action-find_rider",
+            "action-find_team"
+          ]
+        }
+      ],
+      "references": [],
+      "annotations": [],
+      "parent": null
+    },
+    {
+      "id": "action-find_rider",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "ActionMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-actionName"
+          },
+          "value": "find_rider"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-targetConcept"
+          },
+          "value": "Rider"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-description"
+          },
+          "value": "Search for riders"
+        }
+      ],
+      "containments": [
+        {
+          "containment": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-parameters"
+          },
+          "children": [
+            "param-find_rider-name_pattern",
+            "param-find_rider-country"
+          ]
+        }
+      ],
+      "references": [],
+      "annotations": [],
+      "parent": "cycling-connector"
+    },
+    {
+      "id": "param-create_rider-age",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "ParameterMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-parameterName"
+          },
+          "value": "age"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-targetFeature"
+          },
+          "value": "age"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-description"
+          },
+          "value": "Age in years"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-clarificationPrompt"
+          },
+          "value": "How old is the cyclist?"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-required"
+          },
+          "value": "false"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "annotations": [],
+      "parent": "action-create_rider"
+    },
+    {
+      "id": "param-find_team-name_pattern",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "ParameterMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-parameterName"
+          },
+          "value": "name_pattern"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-targetFeature"
+          },
+          "value": "name"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-description"
+          },
+          "value": "Name pattern to search"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-clarificationPrompt"
+          },
+          "value": "What team name should I search for?"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-required"
+          },
+          "value": "false"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "annotations": [],
+      "parent": "action-find_team"
+    },
+    {
+      "id": "param-create_rider-country",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "ParameterMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-parameterName"
+          },
+          "value": "country"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-targetFeature"
+          },
+          "value": "country"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-description"
+          },
+          "value": "Country of origin"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-clarificationPrompt"
+          },
+          "value": "Which country is the cyclist from?"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-required"
+          },
+          "value": "false"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "annotations": [],
+      "parent": "action-create_rider"
+    },
+    {
+      "id": "param-create_rider-name",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "ParameterMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-parameterName"
+          },
+          "value": "name"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-targetFeature"
+          },
+          "value": "name"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-description"
+          },
+          "value": "The cyclist's full name"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-clarificationPrompt"
+          },
+          "value": "What is the cyclist's name?"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-required"
+          },
+          "value": "true"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "annotations": [],
+      "parent": "action-create_rider"
+    },
+    {
+      "id": "param-create_team-name",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "ParameterMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-parameterName"
+          },
+          "value": "name"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-targetFeature"
+          },
+          "value": "name"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-description"
+          },
+          "value": "Team name"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-clarificationPrompt"
+          },
+          "value": "What is the team's name?"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-required"
+          },
+          "value": "true"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "annotations": [],
+      "parent": "action-create_team"
+    },
+    {
+      "id": "param-create_team-founded",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "ParameterMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-parameterName"
+          },
+          "value": "founded"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-targetFeature"
+          },
+          "value": "founded"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-description"
+          },
+          "value": "Year founded"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-clarificationPrompt"
+          },
+          "value": "What year was the team founded?"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-required"
+          },
+          "value": "false"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "annotations": [],
+      "parent": "action-create_team"
+    },
+    {
+      "id": "action-find_team",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "ActionMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-actionName"
+          },
+          "value": "find_team"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-targetConcept"
+          },
+          "value": "Team"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-description"
+          },
+          "value": "Search for teams"
+        }
+      ],
+      "containments": [
+        {
+          "containment": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-parameters"
+          },
+          "children": [
+            "param-find_team-name_pattern",
+            "param-find_team-country"
+          ]
+        }
+      ],
+      "references": [],
+      "annotations": [],
+      "parent": "cycling-connector"
+    },
+    {
+      "id": "param-modify_rider-name",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "ParameterMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-parameterName"
+          },
+          "value": "name"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-targetFeature"
+          },
+          "value": "name"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-description"
+          },
+          "value": "Name of rider to modify"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-clarificationPrompt"
+          },
+          "value": "Which rider do you want to modify?"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-required"
+          },
+          "value": "true"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "annotations": [],
+      "parent": "action-modify_rider"
+    },
+    {
+      "id": "action-create_team",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "ActionMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-actionName"
+          },
+          "value": "create_team"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-targetConcept"
+          },
+          "value": "Team"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-description"
+          },
+          "value": "Creates a new cycling team"
+        }
+      ],
+      "containments": [
+        {
+          "containment": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ActionMapping-parameters"
+          },
+          "children": [
+            "param-create_team-name",
+            "param-create_team-country",
+            "param-create_team-budget",
+            "param-create_team-founded"
+          ]
+        }
+      ],
+      "references": [],
+      "annotations": [],
+      "parent": "cycling-connector"
+    },
+    {
+      "id": "param-create_team-country",
+      "classifier": {
+        "language": "nl_mappings",
+        "version": "1",
+        "key": "ParameterMapping"
+      },
+      "properties": [
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-parameterName"
+          },
+          "value": "country"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-targetFeature"
+          },
+          "value": "country"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-description"
+          },
+          "value": "Team's country"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-clarificationPrompt"
+          },
+          "value": "Which country is the team from?"
+        },
+        {
+          "property": {
+            "language": "nl_mappings",
+            "version": "1",
+            "key": "ParameterMapping-required"
+          },
+          "value": "false"
+        }
+      ],
+      "containments": [],
+      "references": [],
+      "annotations": [],
+      "parent": "action-create_team"
+    }
+  ]
+}

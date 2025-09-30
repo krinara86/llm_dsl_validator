@@ -31,11 +31,14 @@ class DSLBuilder:
                 main_param_name = p_name
                 break
         
-        if not main_param_name or main_param_name not in params:
-             raise ValueError(f"Main parameter '{main_param_name}' not found for action '{action_name}'.")
+        if main_param_name:
+            if main_param_name not in params:
+                 raise ValueError(f"Main parameter '{main_param_name}' not found for action '{action_name}'.")
 
-        main_param_value = self._normalize(params[main_param_name])
-        dsl.append(f'  {action_syntax} "{main_param_value}" {{')
+            main_param_value = self._normalize(params[main_param_name])
+            dsl.append(f'  {action_syntax} "{main_param_value}" {{')
+        else:
+            dsl.append(f'  {action_syntax} {{')
 
         for param_name, param_value in params.items():
             if param_name == main_param_name:

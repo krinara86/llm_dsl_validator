@@ -1,3 +1,6 @@
 jupyter
 ollama
 lark
+lionweb
+# LionWeb from GitHub 
+#git+https://github.com/LionWeb-io/lionweb-python.git@main#egg=lionweb

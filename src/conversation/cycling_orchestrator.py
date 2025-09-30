@@ -1,0 +1,183 @@
+# src/lionweb_app/conversation/cycling_orchestrator.py
+# This is a new, separate orchestrator for the cycling domain.
+import re
+from typing import Dict, List, Any
+
+# It uses the generic conversation components from the core app
+from src.conversation.extractor import TaskExtractor
+from src.conversation.formatter import MessageFormatter
+from src.conversation.clarification import ClarificationGenerator
+from src.core.state_manager import StateManager
+from src.core.config import AppConfig
+
+class CyclingOrchestrator:
+    """Orchestrates the conversation flow for the Cycling domain."""
+    
+    def __init__(self, connector: Dict[str, Any], schema: Dict[str, Any]):
+        self.state_manager = StateManager(AppConfig.STATE_FILE)
+        self.extractor = TaskExtractor()
+        # NOTE: We are reusing the original Formatter and Clarifier.
+        # This works because we will feed them the schema they need.
+        self.formatter = MessageFormatter()
+        self.clarifier = ClarificationGenerator(self.state_manager)
+        self.connector = connector
+        self.schema = schema
+    
+    # ... (The rest of this class is identical to the generic orchestrator from our previous step)
+    def _request_clarification(self, understanding: Dict,
+                             conversation_state: Dict,
+                             role: str, model_name: str) -> Dict:
+        missing_params = understanding["missing_params"]
+        conversation_state["status"] = "awaiting_clarification"
+        conversation_state["missing_params"] = missing_params
+        
+        # We must pass the schema to the original clarifier
+        clarification_data = self.clarifier.generate_message(
+            missing_params,
+            conversation_state["task_details"],
+            role,
+            model_name,
+            self.connector,
+            self.schema
+        )
+        
+        return {
+            "status": "clarification_needed",
+            "understanding_html": understanding["formatted_html"],
+            "clarification_data": clarification_data, 
+            "new_state": conversation_state
+        }
+        
+    def process_request(self, query: str, role: str, model_name: str,
+                       conversation_state: Dict = None, pre_filled_details: Dict = None) -> Dict:
+        if not conversation_state:
+            conversation_state = self._new_conversation_state()
+        
+        conversation_state["history"].append({"role": "user", "content": query})
+        
+        if conversation_state.get("status") == "awaiting_clarification":
+            conversation_state = self._handle_clarification(
+                query, conversation_state
+            )
+        else:
+            if pre_filled_details and pre_filled_details.get('action') != 'unknown':
+                extracted = pre_filled_details
+            else:
+                extracted = self.extractor.extract_task_details(query, model_name, self.connector)
+            
+            if extracted.get("action") in [None, "unknown", "error"]:
+                return self._error_response(
+                    "I couldn't understand your request. Please try rephrasing."
+                )
+            conversation_state["task_details"] = extracted
+            conversation_state["status"] = "processing"
+        
+        validation_result = self._validate_request(
+            conversation_state["task_details"], role
+        )
+        if validation_result["status"] == "error":
+            return validation_result
+        
+        # We must pass the schema to the original formatter
+        understanding = self.formatter.format_understanding(
+            conversation_state["task_details"], role, self.schema
+        )
+        
+        if understanding["missing_params"]:
+            return self._request_clarification(
+                understanding, conversation_state, role, model_name
+            )
+        
+        action = conversation_state["task_details"].get("action")
+        if self.schema.get(action, {}).get("is_read_only"):
+            conversation_state["status"] = "awaiting_execution"
+            return {
+                "status": "direct_execute",
+                "understanding_html": understanding["formatted_html"],
+                "message": "This is a read-only query. Executing directly...",
+                "new_state": conversation_state
+            }
+
+        conversation_state["status"] = "awaiting_confirmation"
+        conversation_state["missing_params"] = []
+        
+        return {
+            "status": "confirmation_needed",
+            "understanding_html": understanding["formatted_html"],
+            "message": self.formatter.format_confirmation(),
+            "new_state": conversation_state
+        }
+    
+    def _validate_request(self, task_details: Dict, role: str) -> Dict:
+        action = task_details.get("action")
+        
+        if action in self.schema:
+            allowed_roles = self.schema[action].get("permissions", [])
+            if role not in allowed_roles:
+                return {
+                    "status": "error",
+                    "message": self.formatter.format_error(
+                        "Permission Denied",
+                        f"The action '{action.replace('_', ' ').title()}' "
+                        f"requires one of these roles: {', '.join(allowed_roles)}",
+                        f"Your current role is: {role}"
+                    ),
+                    "new_state": {}
+                }
+        
+        return {"status": "ok"}
+
+    def _handle_clarification(self, query: str, conversation_state: Dict) -> Dict:
+        missing_params = conversation_state.get("missing_params", [])
+        if not missing_params:
+            return conversation_state
+
+        task_details = conversation_state.get("task_details", {})
+        action = task_details.get("action")
+        param_types = self.schema.get(action, {}).get("param_types", {})
+        
+        updated_params = {}
+        
+        lines = query.strip().split('\n')
+        key_value_pattern = re.compile(r"([\w\s_]+)\s*:\s*(.+)")
+        
+        found_key_value = False
+        for line in lines:
+            match = key_value_pattern.match(line.strip())
+            if match:
+                found_key_value = True
+                key = match.group(1).strip().replace(' ', '_').lower()
+                raw_value = match.group(2).strip()
+                for param in missing_params:
+                    if param.lower() == key:
+                        updated_params[param] = raw_value
+                        break
+        
+        if not found_key_value and len(missing_params) == 1:
+            param = missing_params[0]
+            updated_params[param] = query.strip()
+        
+        if "parameters" not in task_details:
+            task_details["parameters"] = {}
+            
+        for param, raw_value in updated_params.items():
+            param_type = param_types.get(param, {}).get("type", "text")
+            value = None
+
+            if param_type == "boolean":
+                value = TaskExtractor.parse_boolean(raw_value)
+            elif param_type == "number":
+                value = TaskExtractor.parse_number(raw_value)
+            else:
+                value = raw_value
+                
+            task_details["parameters"][param] = value
+
+        conversation_state["task_details"] = task_details
+        return conversation_state
+    
+    def _new_conversation_state(self) -> Dict:
+        return { "status": "awaiting_query", "task_details": {}, "history": [], "missing_params": [] }
+    
+    def _error_response(self, message: str) -> Dict:
+        return { "status": "error", "message": message, "new_state": {} }

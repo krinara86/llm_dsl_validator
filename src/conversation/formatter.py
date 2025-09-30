@@ -1,6 +1,12 @@
 # src/conversation/formatter.py
 from typing import Dict, List
-from ..domains.event.schema import DOMAIN_SCHEMA
+
+# Handle both relative and absolute imports
+try:
+    from ..domains.event.schema import DOMAIN_SCHEMA
+except (ImportError, ValueError):
+    # When used with LionWeb, schema is passed dynamically
+    DOMAIN_SCHEMA = {}
 
 class MessageFormatter:
     """Formats messages and UI elements for the conversation."""
@@ -23,18 +29,15 @@ class MessageFormatter:
         optional = schema.get("optional", [])
         param_types = schema.get("param_types", {})
         
-        # Categorize parameters
         available_params = {}
         missing_params = []
         
-        # List of invalid placeholder values to check against
         invalid_values = ["unknown", "N/A", "n/a", "Unknown", "TBD", "tbd", 
                         "placeholder", "Placeholder", "UNKNOWN", "None", "none"]
         
         for param in required:
             if param in params:
                 value = params[param]
-                # Check for invalid placeholder values
                 str_value = str(value).strip() if value not in [None, ""] else ""
                 
                 if str_value and str_value not in invalid_values:
@@ -47,13 +50,11 @@ class MessageFormatter:
         for param in optional:
             if param in params:
                 value = params[param]
-                # Check for invalid placeholder values
                 str_value = str(value).strip() if value not in [None, ""] else ""
                 
                 if str_value and str_value not in invalid_values:
                     available_params[param] = value
         
-        # Build HTML response
         html = f"""
         <div style='background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;'>
             <h4 style='margin-top: 0;'>Here is what I understood:</h4>
@@ -82,17 +83,15 @@ class MessageFormatter:
             """
             for param in missing_params:
                 display_param = param.replace('_', ' ').title()
-                param_type = param_types.get(param, "text")
+                param_type = param_types.get(param, {}).get("type", "text")
                 
-                # Add guidance based on parameter type
+                guidance = ""
                 if param_type == "boolean":
                     guidance = "(Please answer: yes/no)"
                 elif param_type == "number":
                     guidance = "(Please provide a number)"
                 elif param_type == "venue_selection":
                     guidance = "(I'll show you available options)"
-                else:
-                    guidance = "(Please provide the text)"
                 
                 html += f"<li>{display_param} {guidance}</li>"
             
