@@ -8,6 +8,7 @@ from lionweb.language import Property
 from lionweb_app.engine.connector_loader import LionWebConnectorLoader
 from conversation.orchestrator import ConversationOrchestrator
 from conversation.document_processor import DocumentProcessor
+from conversation.selection_provider import LionWebSelectionProvider
 from core.llm_client import LLMClient
 
 
