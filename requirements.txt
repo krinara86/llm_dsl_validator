@@ -4,3 +4,15 @@ lark
 lionweb
 # LionWeb from GitHub 
 #git+https://github.com/LionWeb-io/lionweb-python.git@main#egg=lionweb
+
+# Core dependencies
+requests
+pyyaml
+python-dotenv
+
+# Testing dependencies
+pytest
+pytest-mock
+
+# Optional: for Hugging Face support (referenced in llm_client.py)
+# huggingface-hub
