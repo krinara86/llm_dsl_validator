@@ -15,18 +15,18 @@ except ImportError:
 class LLMClient:
     """Handles communication with LLM APIs."""
     
-    # --- MODIFIED ---
     @staticmethod
     def execute_request(prompt: str, model_name: str, 
-                       is_json_format: bool = False) -> str:
-        """Execute an LLM request to Ollama, Together AI, or Hugging Face."""
+                    is_json_format: bool = False) -> str:
+        """Execute an LLM request."""
         
-        if model_name.startswith("togetherai/"):
-            return LLMClient._together_request(prompt, model_name, is_json_format)
-        # --- NEW ---
+        if model_name.startswith("cloud/"):
+            # Explicitly use cloud
+            return LLMClient._ollama_cloud_request(prompt, model_name, is_json_format)
         elif model_name.startswith("huggingface/"):
             return LLMClient._huggingface_request(prompt, model_name, is_json_format)
-        else: # Default to Ollama
+        else:
+            # Try local Ollama first (original behavior)
             return LLMClient._ollama_request(prompt, model_name, is_json_format)
 
     # --- NEW ---
@@ -81,9 +81,12 @@ class LLMClient:
         except requests.exceptions.RequestException as e:
             raise ConnectionError(f"Together AI API request failed: {e}")
     
+ 
+        
     @staticmethod
     def _ollama_request(prompt: str, model_name: str, 
-                       is_json_format: bool) -> str:
+                    is_json_format: bool) -> str:
+        """Original local Ollama support - KEEP THIS."""
         payload = { "model": model_name, "prompt": prompt, "stream": False }
         if is_json_format:
             payload["format"] = "json"
@@ -93,32 +96,65 @@ class LLMClient:
             response.raise_for_status()
             return response.json().get('response', '')
         except requests.exceptions.RequestException as e:
+            # If local fails, try cloud
+            if os.getenv("OLLAMA_API_KEY"):
+                return LLMClient._ollama_cloud_request(prompt, model_name, is_json_format)
             raise ConnectionError(f"Ollama API request failed: {e}")
-    
-    # --- MODIFIED ---
+
     @staticmethod
+    def _ollama_cloud_request(prompt: str, model_name: str, 
+                            is_json_format: bool) -> str:
+        """NEW: Ollama Cloud support."""
+        api_key = os.getenv("OLLAMA_API_KEY")
+        if not api_key:
+            raise ValueError("OLLAMA_API_KEY not found")
+        
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        messages = [{"role": "user", "content": prompt}]
+        if is_json_format:
+            messages[0]["content"] += "\n\nRespond with valid JSON only."
+        
+        payload = {
+            "model": model_name.replace("cloud/", ""),  # Remove prefix if present
+            "messages": messages,
+            "stream": False
+        }
+        
+        response = requests.post("https://ollama.com/api/chat", 
+                            headers=headers, json=payload, timeout=90)
+        response.raise_for_status()
+        
+        result = response.json()
+        return result.get('message', {}).get('content', '')
+    
     def get_available_models():
-        """Get a curated list of available models."""
+        """Get available models."""
         models = []
         
+        # Try local Ollama first (original)
         try:
-            response = requests.get('http://localhost:11434/api/tags')
+            response = requests.get('http://localhost:11434/api/tags', timeout=1)
             response.raise_for_status()
             ollama_models = response.json().get('models', [])
             models.extend([m['name'] for m in ollama_models])
-        except requests.exceptions.RequestException:
+        except:
             pass
         
-        models.extend([
-            'togetherai/meta-llama/Llama-3-8b-chat-hf',
-            'togetherai/mistralai/Mixtral-8x7B-Instruct-v0.1',
-        ])
+        # Add cloud models if API key exists
+        if os.getenv("OLLAMA_API_KEY"):
+            models.extend([
+                'cloud/gpt-oss:20b',   # Cloud version
+                'cloud/gpt-oss:120b',  # Cloud version
+            ])
         
-        # --- NEW: Curated list for speed and reliability ---
+        # Hugging Face models (keep as before)
         models.extend([
             'huggingface/meta-llama/Meta-Llama-3-8B-Instruct',
             'huggingface/mistralai/Mistral-7B-Instruct-v0.2',
-            'huggingface/google/gemma-7b-it',
         ])
         
-        return models if models else ['llama3:8b'] # Fallback
+        return models if models else ['llama3:8b']
