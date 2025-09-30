@@ -202,8 +202,6 @@ class CyclingChatInterface:
             self.active_clarification_widgets[field["name"]] = widget
             form_elements.append(widgets.VBox([label, prompt, widget]))
             
-            self.active_clarification_widgets[field["name"]] = widget
-            form_elements.append(widgets.VBox([label, prompt, widget]))
 
         submit_button = widgets.Button(description="Submit Details", button_style='info', icon='check')
         submit_button.on_click(self._on_submit_clarification)
