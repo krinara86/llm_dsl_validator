@@ -192,12 +192,15 @@ class CyclingChatInterface:
                 widget = widgets.Checkbox(value=False, indent=False)
             elif field["type"] == "number":
                 widget = widgets.IntText(value=0)
-            elif field["type"] == "team_selection":
-                teams = self.system.get_current_state().get('teams', [])
-                team_names = [team['name'] for team in teams]
-                widget = widgets.Dropdown(options=team_names if team_names else ["No teams available"])
+            elif field["type"].endswith("_selection"):
+                # Use options provided by the clarification generator
+                options = field.get("options", ["No options available"])
+                widget = widgets.Dropdown(options=options)
             else:  # string
                 widget = widgets.Text(value="")
+            
+            self.active_clarification_widgets[field["name"]] = widget
+            form_elements.append(widgets.VBox([label, prompt, widget]))
             
             self.active_clarification_widgets[field["name"]] = widget
             form_elements.append(widgets.VBox([label, prompt, widget]))

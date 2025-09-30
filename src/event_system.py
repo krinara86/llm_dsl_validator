@@ -1,24 +1,55 @@
 # src/event_system.py
 """Main entry point for the event management system."""
 
-# Use absolute imports when the module will be imported from notebooks
-from src.core.config import AppConfig
-from src.core.state_manager import StateManager
-from src.core.llm_client import LLMClient
-from src.conversation.orchestrator import ConversationOrchestrator
-from src.conversation.document_processor import DocumentProcessor
-from src.core.connector_loader import load_connector
-from src.execution.executor import TaskExecutor
+# Use consistent imports - either all absolute or all relative
+try:
+    # Try relative imports first (when running as module)
+    from .core.config import AppConfig
+    from .core.state_manager import StateManager
+    from .core.llm_client import LLMClient
+    from .conversation.orchestrator import ConversationOrchestrator
+    from .conversation.document_processor import DocumentProcessor
+    from .conversation.selection_provider import StateBasedSelectionProvider
+    from .core.connector_loader import load_connector
+    from .domains.event.schema import DOMAIN_SCHEMA
+    from .execution.executor import TaskExecutor
+except ImportError:
+    # Fall back to absolute imports (when running from notebooks)
+    from core.config import AppConfig
+    from core.state_manager import StateManager
+    from core.llm_client import LLMClient
+    from conversation.orchestrator import ConversationOrchestrator
+    from conversation.document_processor import DocumentProcessor
+    from conversation.selection_provider import StateBasedSelectionProvider
+    from core.connector_loader import load_connector
+    from domains.event.schema import DOMAIN_SCHEMA
+    from execution.executor import TaskExecutor
 
 class EventSystem:
     """Main system coordinator."""
     
     def __init__(self):
-        self.orchestrator = ConversationOrchestrator()
-        self.executor = TaskExecutor()
-        self.connector = load_connector('event')
-        self.document_processor = DocumentProcessor()
+        # Initialize state manager first
         self.state_manager = StateManager(AppConfig.STATE_FILE)
+        
+        # Load connector and schema
+        self.connector = load_connector('event')
+        self.schema = DOMAIN_SCHEMA
+        
+        # Create selection provider for state-based system
+        selection_provider = StateBasedSelectionProvider(self.state_manager)
+        
+        # CRITICAL: Pass ALL parameters to orchestrator
+        self.orchestrator = ConversationOrchestrator(
+            connector=self.connector,
+            schema=self.schema,
+            state_manager=self.state_manager,
+            selection_provider=selection_provider  # This was missing!
+        )
+        
+        # Initialize other components
+        self.executor = TaskExecutor()
+        self.document_processor = DocumentProcessor()
     
     def process_query(self, query: str, role: str, model_name: str,
                      conversation_state: dict = None, pre_filled_details: dict = None) -> dict:

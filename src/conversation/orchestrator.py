@@ -21,7 +21,7 @@ class ConversationOrchestrator:
     """Orchestrates the conversation flow."""
     
     def __init__(self, connector: Dict = None, schema: Dict = None, 
-                 state_manager: StateManager = None):
+                 state_manager: StateManager = None, selection_provider = None):
         """
         Initialize the orchestrator with domain-specific dependencies.
         
@@ -29,6 +29,7 @@ class ConversationOrchestrator:
             connector: Domain connector dictionary (from YAML or LionWeb)
             schema: Domain schema dictionary (from Python or LionWeb)
             state_manager: Optional state manager (defaults to file-based)
+            selection_provider: Optional SelectionProvider for form dropdowns
         """
         # Use provided dependencies or fall back to event domain defaults
         if connector is None:
@@ -39,13 +40,22 @@ class ConversationOrchestrator:
             schema = DOMAIN_SCHEMA
         if state_manager is None:
             state_manager = StateManager(AppConfig.STATE_FILE)
+        
+        # Create default selection provider if none provided
+        if selection_provider is None:
+            try:
+                from .selection_provider import StateBasedSelectionProvider
+                selection_provider = StateBasedSelectionProvider(state_manager)
+            except ImportError:
+                from conversation.selection_provider import StateBasedSelectionProvider
+                selection_provider = StateBasedSelectionProvider(state_manager)
             
         self.connector = connector
         self.schema = schema
         self.state_manager = state_manager
         self.extractor = TaskExtractor()
         self.formatter = MessageFormatter()
-        self.clarifier = ClarificationGenerator(state_manager)
+        self.clarifier = ClarificationGenerator(selection_provider)
     
     def _request_clarification(self, understanding: Dict,
                              conversation_state: Dict,
