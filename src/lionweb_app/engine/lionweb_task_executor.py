@@ -1,5 +1,6 @@
 # src/lionweb_app/engine/lionweb_task_executor.py
 from typing import Dict, Any
+from lionweb.language import Property
 
 class LionWebTaskExecutor:
     """Executes tasks by interacting with the LionWebConnectorLoader."""
