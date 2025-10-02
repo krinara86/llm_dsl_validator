@@ -106,7 +106,7 @@ class CyclingChatInterface:
             self._process_query(query)
 
     def _process_query(self, query: str, pre_filled_details: dict = None):
-        """Process a single query."""
+        """Updated to handle direct execution after form submission."""
         if not pre_filled_details:
             self._add_message(f"<b>You:</b> {query}", 'user')
         self.user_input.value = ''
@@ -123,19 +123,40 @@ class CyclingChatInterface:
                 self._add_message(result['understanding_html'])
             self._build_clarification_form(result.get('clarification_data', {}))
             
-        elif result['status'] == 'confirmation_needed':
-            if 'understanding_html' in result:
-                self._add_message(result['understanding_html'])
-            self._add_message(result['message'])
-            self._show_confirmation_buttons(True)
-        
         elif result['status'] == 'direct_execute':
-            if 'understanding_html' in result:
-                self._add_message(result['understanding_html'])
-            self._on_confirm(None)
+            # Execute immediately without showing confirmation
+            self._execute_task()
+        
+        # Remove confirmation_needed branch - no longer needed
         else:
             self._add_message(f"<b>Assistant:</b><br>{result['message']}")
             self._reset_conversation()
+
+    def _execute_task(self):
+        """Execute the task directly without confirmation."""
+        self._add_message("<i>Executing...</i>", 'system')
+        result = self.system.execute_task(self.role_selector.value, self.conversation_state)
+        
+        # Remove the "Executing..." message
+        self.chat_history.children = self.chat_history.children[:-1]
+        
+        if result['status'] == 'success':
+            self._add_message(f"<b>Assistant:</b> {result['message']}", 'system')
+            
+            if result.get('action_type') == 'query':
+                self._display_query_results(result.get('results', []), 
+                                        self.conversation_state.get("task_details", {}).get("action"))
+            elif result.get('instance'):
+                self._display_instance(result['instance'], 
+                                    self.conversation_state.get("task_details", {}).get("action"))
+                self._update_state_display()
+            else:
+                self._update_state_display()
+        else:
+            self._add_message(f"<b>Assistant:</b> {result['message']}")
+        
+        self._reset_conversation()
+        self._process_next_task()
 
     def _process_document(self, document: str):
         """Process a document containing multiple tasks."""
@@ -174,7 +195,7 @@ class CyclingChatInterface:
         self._process_query(task_description, details_for_orchestrator)
 
     def _build_clarification_form(self, clarification_data: Dict):
-        """Build and display clarification form."""
+        """Build and display clarification form with two-column layout."""
         self._clear_clarification_form()
         self.active_clarification_widgets = {}
         
@@ -182,36 +203,65 @@ class CyclingChatInterface:
         fields = clarification_data.get("form_fields", [])
         
         form_elements = [widgets.HTML(f"<div class='assistant-bubble'>{message}</div>")]
-
+        
+        # Create field widgets in a list first
+        field_widgets = []
         for field in fields:
-            label = widgets.Label(f"{field['label']}:")
-            prompt = widgets.HTML(f"<i style='font-size: smaller;'>{field['prompt']}</i>")
+            # Make parameter label stand out with bold and color
+            label_html = f"<b style='color: #1976D2; font-size: 14px;'>{field['label']}:</b>"
+            label = widgets.HTML(label_html)
+            prompt = widgets.HTML(f"<i style='font-size: 12px; color: #666;'>{field['prompt']}</i>")
             
             widget = None
             if field["type"] == "boolean":
-                widget = widgets.Checkbox(value=False, indent=False)
+                value = field.get("value", False) if field.get("is_extracted") else False
+                widget = widgets.Checkbox(value=value, indent=False)
             elif field["type"] == "number":
-                widget = widgets.IntText(value=0)
+                value = field.get("value", 0) if field.get("is_extracted") else 0
+                widget = widgets.IntText(value=value, layout={'width': '100%'})
             elif field["type"].endswith("_selection"):
-                # Use options provided by the clarification generator
                 options = field.get("options", ["No options available"])
-                widget = widgets.Dropdown(options=options)
+                value = field.get("value") if field.get("is_extracted") else options[0]
+                if value not in options:
+                    value = options[0] if options else "No options available"
+                widget = widgets.Dropdown(options=options, value=value, layout={'width': '100%'})
             else:  # string
-                widget = widgets.Text(value="")
+                value = field.get("value", "") if field.get("is_extracted") else ""
+                widget = widgets.Text(value=value, layout={'width': '100%'})
             
             self.active_clarification_widgets[field["name"]] = widget
-            form_elements.append(widgets.VBox([label, prompt, widget]))
             
-
-        submit_button = widgets.Button(description="Submit Details", button_style='info', icon='check')
+            # Create a field container
+            field_container = widgets.VBox([label, prompt, widget], 
+                                        layout={'padding': '5px', 'width': '48%'})
+            field_widgets.append(field_container)
+        
+        # Arrange fields in two-column layout
+        rows = []
+        for i in range(0, len(field_widgets), 2):
+            if i + 1 < len(field_widgets):
+                # Two fields in this row
+                row = widgets.HBox([field_widgets[i], field_widgets[i + 1]], 
+                                layout={'width': '100%', 'justify_content': 'space-between'})
+            else:
+                # Single field in this row
+                row = widgets.HBox([field_widgets[i]], layout={'width': '100%'})
+            rows.append(row)
+        
+        form_elements.extend(rows)
+        
+        submit_button = widgets.Button(description="✓ Submit and Execute", 
+                                    button_style='success', 
+                                    icon='check',
+                                    layout={'margin': '10px 0'})
         submit_button.on_click(self._on_submit_clarification)
         
         form_elements.append(submit_button)
         self.clarification_form_area.children = form_elements
         self._toggle_main_input(False)
-
+        
     def _on_submit_clarification(self, b):
-        """Handle clarification form submission."""
+        """Handle form submission and direct execution."""
         lines = []
         for name, widget in self.active_clarification_widgets.items():
             value = widget.value
@@ -219,10 +269,11 @@ class CyclingChatInterface:
         
         query = "\n".join(lines)
         
-        self._add_message(f"<b>You (form submission):</b><br><pre>{query}</pre>", 'user')
+        self._add_message(f"<b>You (confirmed):</b><br><pre>{query}</pre>", 'user')
         self._clear_clarification_form()
         self._toggle_main_input(True)
         
+        # Process the query to update conversation state
         self._process_query(query)
 
     def _clear_clarification_form(self):
@@ -254,7 +305,6 @@ class CyclingChatInterface:
             "What would you like to do?"
         )
         self.chat_history.children = [widgets.HTML(f"<div class='chat-bubble assistant-bubble'>{welcome_msg}</div>")]
-        self._show_confirmation_buttons(False)
 
     def _on_cancel(self, b):
         """Handle cancel button click."""
