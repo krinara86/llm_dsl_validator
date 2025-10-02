@@ -58,9 +58,10 @@ class ConversationOrchestrator:
         self.clarifier = ClarificationGenerator(selection_provider)
     
     def _request_clarification(self, understanding: Dict,
-                             conversation_state: Dict,
-                             role: str, model_name: str) -> Dict:
+                         conversation_state: Dict,
+                         role: str, model_name: str) -> Dict:
         missing_params = understanding["missing_params"]
+        available_params = understanding.get("available_params", {})  # Get available params
         conversation_state["status"] = "awaiting_clarification"
         conversation_state["missing_params"] = missing_params
         
@@ -69,7 +70,9 @@ class ConversationOrchestrator:
             conversation_state["task_details"],
             role,
             model_name,
-            self.connector
+            self.connector,
+            self.schema,  # Add schema parameter
+            available_params  # Pass available params to clarifier
         )
         
         return {
@@ -77,10 +80,10 @@ class ConversationOrchestrator:
             "understanding_html": understanding["formatted_html"],
             "clarification_data": clarification_data, 
             "new_state": conversation_state
-        }
-        
+        }  
+    
     def process_request(self, query: str, role: str, model_name: str,
-                       conversation_state: Dict = None, pre_filled_details: Dict = None) -> Dict:
+                   conversation_state: Dict = None, pre_filled_details: Dict = None) -> Dict:
         if not conversation_state:
             conversation_state = self._new_conversation_state()
         
@@ -90,6 +93,14 @@ class ConversationOrchestrator:
             conversation_state = self._handle_clarification(
                 query, conversation_state
             )
+            # After handling clarification, go directly to execution
+            conversation_state["status"] = "awaiting_execution"
+            return {
+                "status": "direct_execute",
+                "understanding_html": "",
+                "message": "",
+                "new_state": conversation_state
+            }
         else:
             if pre_filled_details and pre_filled_details.get('action') != 'unknown':
                 extracted = pre_filled_details
@@ -113,31 +124,11 @@ class ConversationOrchestrator:
             conversation_state["task_details"], role
         )
         
-        if understanding["missing_params"]:
-            return self._request_clarification(
-                understanding, conversation_state, role, model_name
-            )
-        
-        action = conversation_state["task_details"].get("action")
-        if self.schema.get(action, {}).get("is_read_only"):
-            conversation_state["status"] = "awaiting_execution"
-            return {
-                "status": "direct_execute",
-                "understanding_html": understanding["formatted_html"],
-                "message": "This is a read-only query. Executing directly...",
-                "new_state": conversation_state
-            }
+        # Always show review form, regardless of missing parameters or action type
+        return self._request_clarification(
+            understanding, conversation_state, role, model_name
+        )
 
-        conversation_state["status"] = "awaiting_confirmation"
-        conversation_state["missing_params"] = []
-        
-        return {
-            "status": "confirmation_needed",
-            "understanding_html": understanding["formatted_html"],
-            "message": self.formatter.format_confirmation(),
-            "new_state": conversation_state
-        }
-    
     def _format_understanding(self, task_details: Dict, role: str) -> Dict:
         """Format the extracted task details into a structured response."""
         action = task_details.get("action", "unknown")
