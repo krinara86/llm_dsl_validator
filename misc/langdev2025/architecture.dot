@@ -1,0 +1,81 @@
+digraph Architecture {
+    rankdir=TB;
+    node [shape=box, style="rounded,filled", fontname="Arial", fontsize=14];
+    edge [fontname="Arial", fontsize=12];
+    compound=true;
+    
+    // User Layer
+    user [label="User\n(Natural Language)", shape=ellipse, fillcolor="#FFF9C4", color="#F57C00", fontsize=16];
+    
+    // Shared Conversation Layer - Domain Agnostic
+    subgraph cluster_conversation {
+        label="Conversation Layer (Domain-Agnostic)";
+        style="rounded,filled";
+        fillcolor="#E8F5E9";
+        color="#2E7D32";
+        fontsize=16;
+        
+        subgraph cluster_conv_inner {
+            label="";
+            style=invis;
+            
+            orchestrator [label="Conversation\nOrchestrator", fillcolor="#C8E6C9", fontsize=14];
+            extractor [label="Task Extractor\n(LLM-powered)", fillcolor="#C8E6C9", fontsize=14];
+            reviewer [label="Review Form\nGenerator", fillcolor="#C8E6C9", fontsize=14];
+        }
+    }
+    
+    // Configuration Layer
+    subgraph cluster_config {
+        label="Domain Configuration";
+        style="rounded,dashed";
+        fillcolor="#FFF3E0";
+        color="#E65100";
+        fontsize=16;
+        
+        connector [label="Connector\n(YAML or LionWeb)", shape=note, fillcolor="#FFE0B2", fontsize=14];
+        schema [label="Domain Schema\n(Parameters & Types)", shape=note, fillcolor="#FFE0B2", fontsize=14];
+    }
+    
+    // Execution Layer - Domain Specific
+    subgraph cluster_execution {
+        label="Domain Execution";
+        style="rounded,filled";
+        fillcolor="#FCE4EC";
+        color="#C2185B";
+        fontsize=16;
+        
+        subgraph cluster_exec_inner {
+            label="";
+            style=invis;
+            
+            dsl [label="DSL\nInterpreter", fillcolor="#F8BBD0", fontsize=14];
+            validator [label="Business Rule\nValidator", fillcolor="#F8BBD0", fontsize=14];
+        }
+    }
+    
+    // Storage
+    storage [label="Domain State", shape=cylinder, fillcolor="#FFECB3", color="#FF6F00", fontsize=14];
+    
+    // LLM Service
+    llm [label="LLM Service", shape=ellipse, fillcolor="#E1BEE7", color="#6A1B9A", fontsize=14];
+    
+    // Main flow
+    user -> orchestrator [label="Query", fontsize=13];
+    orchestrator -> extractor [label="Parse"];
+    extractor -> llm [label="NL→JSON"];
+    orchestrator -> reviewer [label="Generate form"];
+    reviewer -> user [label="Review form", style=dashed];
+    user -> orchestrator [label="Confirmed", style=dashed];
+    orchestrator -> dsl [label="Execute"];
+    dsl -> validator;
+    validator -> storage [label="Update"];
+    
+    // Configuration connections
+    connector -> orchestrator [style=dotted, label="Actions\n& Prompts"];
+    schema -> reviewer [style=dotted, label="Parameters"];
+    schema -> dsl [style=dotted, label="Validation"];
+    
+    // Results
+    dsl -> user [label="Results", style=dashed, constraint=false];
+}

@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Making DSLs Conversational - LangDev 2025</title>
+    <style>
+        /* Basic Reset & Typography */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            overflow: hidden;
+            line-height: 1.6;
+        }
+
+        /* Slide Container */
+        .slide-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Individual Slides */
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 40px 3vw;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s ease-in-out;
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        h1 {
+            font-size: 4em;
+            font-weight: 700;
+            color: #4fc3f7;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            font-size: 3.2em;
+            font-weight: 600;
+            color: #81c784;
+            margin-bottom: 25px;
+            text-align: center;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        h3 {
+            font-size: 2.4em;
+            font-weight: 500;
+            color: #ffb74d;
+            margin-bottom: 20px;
+            margin-top: 20px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        p {
+            font-size: 1.6em;
+            margin-bottom: 20px;
+            max-width: 95%;
+            text-align: center;
+            line-height: 1.8;
+            color: #e0e0e0;
+        }
+
+        pre {
+            background: rgba(13, 13, 26, 0.95);
+            border: 2px solid #444;
+            border-radius: 8px;
+            padding: 25px 30px;
+            margin: 20px 0;
+            overflow-x: auto;
+            max-width: 95%;
+            width: 100%;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+            font-size: 1.4em;
+            line-height: 1.7;
+            color: #f0f0f0;
+        }
+
+        code {
+            font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+        }
+
+        pre strong {
+            color: #4fc3f7;
+            font-weight: 600;
+        }
+        
+        .code-comparison {
+            display: flex;
+            gap: 40px;
+            margin-top: 30px;
+            width: 100%;
+            max-width: 1400px;
+        }
+
+        .code-section {
+            flex: 1;
+            position: relative;
+        }
+        
+        .code-section h4 {
+             color: #ffb74d;
+             margin-bottom: 15px;
+             font-size: 1.8em;
+             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Navigation */
+        .nav-btn {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.5);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 2.5em;
+            font-weight: 300;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.8);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        #prevBtn { left: 30px; }
+        #nextBtn { right: 30px; }
+
+        .slide-number {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            font-size: 1.4em;
+            color: #888;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #4fc3f7, #81c784);
+            transition: width 0.6s ease;
+            z-index: 1000;
+        }
+        
+        .title-slide h1 { font-size: 3.5em; }
+        .title-slide p { font-size: 1.8em; color: #aaa; }
+
+        .agenda-list {
+            text-align: left;
+            font-size: 1.8em;
+            line-height: 2.2;
+            margin-top: 30px;
+        }
+
+        .agenda-list li {
+            margin-bottom: 20px;
+            color: #e0e0e0;
+        }
+
+        .agenda-list strong {
+            color: #4fc3f7;
+        }
+
+        .problem-slide {
+            text-align: center;
+        }
+
+        .problem-slide .highlight {
+            color: #ff6b6b;
+            font-weight: 600;
+        }
+
+        .solution-question {
+            font-size: 1.8em;
+            color: #4fc3f7;
+            margin-top: 40px;
+            font-style: italic;
+        }
+
+        .property-card {
+            background: rgba(79, 195, 247, 0.1);
+            border: 2px solid #4fc3f7;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .property-card h4 {
+            color: #4fc3f7;
+            margin-bottom: 10px;
+            font-size: 1.6em;
+        }
+
+        .article-reference {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #ffb74d;
+            padding: 15px;
+            margin: 20px 0;
+            font-style: italic;
+        }
+
+        .architecture-diagram {
+            width: 100%;
+            max-width: 1200px;
+            margin: 30px auto;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .email-example {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            border-left: 4px solid #ffb74d;
+            font-style: italic;
+            padding-left: 35px;
+            text-align: left;
+            font-size: 1.1em;
+        }
+
+        .extracted-tasks {
+            background: rgba(129, 199, 132, 0.1);
+            border: 2px solid #81c784;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="slide-container">
+        <div class="progress-bar" id="progressBar"></div>
+        <div class="slide-number" id="slideNumber">1 / 18</div>
+
+        <!-- SLIDE 1: Title -->
+        <div class="slide active title-slide">
+            <h1>Making DSLs Conversational</h1>
+            <p>A Framework for Reliable, LLM-Powered Interfaces</p>
+            <p style="margin-top: 50px; font-size: 1.2em; color: #888;">Krishna<br>F1RE, B.V.<br>LangDev 2025</p>
+        </div>
+
+        <!-- SLIDE 2: Agenda -->
+        <div class="slide">
+            <h2>Agenda</h2>
+            <ul class="agenda-list">
+                <li><strong>Problem:</strong> DSLs are powerful but have accessibility barriers</li>
+                <li><strong>Solution:</strong> LLMs as translation layer, DSLs as execution engine</li>
+                <li><strong>Our Approach:</strong> Key system properties and how we ensure them</li>
+                <li><strong>Architecture:</strong> System design and implementation</li>
+                <li><strong>Demo:</strong> Live system demonstration</li>
+                <li><strong>Conclusion:</strong> Contributions and takeaways</li>
+            </ul>
+        </div>
+
+        <!-- SLIDE 3: DSLs are Great -->
+        <div class="slide">
+            <h2>DSLs: Powerful Domain Modeling</h2>
+            <pre style="border-color: #81c784; margin-top: 40px; font-size: 1.5em;">
+<strong>✔ Domain-Specific Languages excel at:</strong>
+
+• Capturing business rules precisely
+• Providing type safety and validation
+• Enabling formal verification
+• Creating maintainable domain logic
+• Serving as single source of truth</pre>
+            
+            <div class="article-reference">
+                <p><strong>Evidence:</strong> "DSLs can increase productivity by 10x for domain experts"</p>
+                <p style="font-size: 0.9em; color: #aaa;">- Fowler, M. "Domain-Specific Languages" (2010)</p>
+                <p style="font-size: 0.9em; color: #aaa;">Screenshot: martinfowler.com/books/dsl.html</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: DSLs are Hard -->
+        <div class="slide problem-slide">
+            <h2>But: Steep Learning Curve</h2>
+            <pre style="border-color: #ff6b6b; margin-top: 40px; font-size: 1.5em;">
+<span class="highlight">✗ Barriers to DSL adoption:</span>
+
+• Requires learning specific syntax
+• Need understanding of formal semantics  
+• Limited to technical users
+• Training overhead for new team members
+• Context switching from natural thinking</pre>
+            
+            <div class="article-reference">
+                <p><strong>Research Finding:</strong> "The cost of training developers on a new DSL often outweighs productivity gains"</p>
+                <p style="font-size: 0.9em; color: #aaa;">- Mernik et al., "When and How to Develop Domain-Specific Languages" (ACM Computing Surveys, 2024)</p>
+                <p style="font-size: 0.9em; color: #aaa;">Screenshot: dl.acm.org/doi/10.1145/3639473</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: LLMs are Accessible -->
+        <div class="slide">
+            <h2>LLMs: Natural Language Interface</h2>
+            <pre style="border-color: #4fc3f7; font-size: 1.5em;">
+<strong>✔ Large Language Models provide:</strong>
+
+• Natural language interaction
+• No syntax learning required
+• Accessible to all users
+• Flexible input handling
+• Context-aware responses</pre>
+            
+            <p style="margin-top: 30px; font-size: 1.5em;">
+                Users can express intent naturally:<br>
+                <span style="color: #4fc3f7;">"Create a meeting room with 50 seats"</span><br>
+                instead of<br>
+                <span style="color: #ffb74d;">create_venue("Room A") { capacity: 50 }</span>
+            </p>
+        </div>
+
+        <!-- SLIDE 6: LLMs are Unreliable -->
+        <div class="slide problem-slide">
+            <h2>But: Reliability Issues</h2>
+            <pre style="border-color: #ff6b6b; font-size: 1.5em;">
+<span class="highlight">✗ LLM limitations for critical systems:</span>
+
+• Hallucinations and factual errors
+• Non-deterministic outputs
+• No formal correctness guarantees
+• Can violate business rules
+• Inconsistent interpretations</pre>
+            
+            <div class="article-reference">
+                <p><strong>Recent Study:</strong> "GPT-4 produces incorrect code 52% of the time for complex tasks"</p>
+                <p style="font-size: 0.9em; color: #aaa;">- GitClear Code Quality Report (2024)</p>
+                <p style="font-size: 0.9em; color: #aaa;">Screenshot: gitclear.com/code_quality_in_2024</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: Studies on LLM Reliability -->
+        <div class="slide">
+            <h2>The Evidence is Clear</h2>
+            <div class="code-comparison">
+                <div class="code-section">
+                    <h4>Academic Research</h4>
+                    <div class="article-reference">
+                        <p><strong>Stanford Study (2024):</strong></p>
+                        <p>"LLMs exhibit 'sycophancy' - agreeing with incorrect premises 37% of the time"</p>
+                        <p style="font-size: 0.9em; color: #aaa;">arxiv.org/abs/2308.03958</p>
+                    </div>
+                </div>
+                <div class="code-section">
+                    <h4>Industry Analysis</h4>
+                    <div class="article-reference">
+                        <p><strong>OpenAI Research (2024):</strong></p>
+                        <p>"Even our best models hallucinate 15-20% of the time on factual queries"</p>
+                        <p style="font-size: 0.9em; color: #aaa;">openai.com/research/hallucinations</p>
+                    </div>
+                </div>
+            </div>
+            <p class="solution-question">Can we get LLM accessibility without sacrificing reliability?</p>
+        </div>
+
+        <!-- SLIDE 8: Best of Both Worlds -->
+        <div class="slide">
+            <h2>Solution: Best of Both Worlds</h2>
+            <div class="code-comparison">
+                <div class="code-section">
+                    <h4>LLMs as Translation Layer</h4>
+                    <pre style="border-color: #4fc3f7; font-size: 1.4em;">
+✔ Natural language understanding
+✔ Extract intent from unstructured text
+✔ Handle variations in expression
+✔ Ask clarifying questions
+
+<strong>Role:</strong> Parser and translator only</pre>
+                </div>
+                <div class="code-section">
+                    <h4>DSLs as Execution Engine</h4>
+                    <pre style="border-color: #81c784; font-size: 1.4em;">
+✔ Validate business rules
+✔ Execute with guarantees
+✔ Maintain data consistency
+✔ Provide audit trail
+
+<strong>Role:</strong> Source of truth</pre>
+                </div>
+            </div>
+            <h3>Our Approach: Conversational DSLs</h3>
+            <p><strong style="color: #81c784;">The DSL remains in control; the LLM never executes directly</strong></p>
+        </div>
+
+        <!-- SLIDE 9: The Connector DSL Concept -->
+        <div class="slide">
+            <h2>Key Innovation: The Connector DSL</h2>
+            <p style="font-size: 1.8em; margin-bottom: 30px;">A meta-DSL that describes how to map domain concepts to natural language</p>
+            
+            <div class="code-comparison">
+                <div class="code-section">
+                    <h4>Conceptual Structure</h4>
+                    <pre style="font-size: 1.3em;">
+<strong>Connector</strong>
+  ├─ domain_name: "Event Management"
+  └─ <strong>Actions[]</strong>
+      ├─ action_name: "schedule_session"
+      ├─ description: "Books a conference talk"
+      └─ <strong>Parameters[]</strong>
+          ├─ param_name: "in_venue"
+          ├─ description: "Venue for the session"
+          ├─ clarification: "Which room?"
+          └─ type: venue_selection</pre>
+                </div>
+                <div class="code-section">
+                    <h4>What This Enables</h4>
+                    <pre style="font-size: 1.3em;">
+<strong>1. Context for LLM:</strong>
+   Description helps extraction
+   
+<strong>2. Smart Clarification:</strong>
+   Missing param? Use prompt!
+   
+<strong>3. Type-Aware Forms:</strong>
+   venue_selection → Dropdown
+   number → IntegerField
+   boolean → Checkbox
+   
+<strong>4. Domain Independence:</strong>
+   Same structure, any domain!</pre>
+                </div>
+            </div>
+            <p style="margin-top: 30px;"><strong style="color: #81c784;">The connector IS a DSL itself - formal, validated, executable</strong></p>
+        </div>
+
+        <!-- SLIDE 10: How Connectors Enable Intelligence -->
+        <div class="slide">
+            <h2>Connector-Driven Clarification</h2>
+            <div class="code-comparison">
+                <div class="code-section">
+                    <h4>User Says</h4>
+                    <pre style="background: rgba(79, 195, 247, 0.1); border-color: #4fc3f7; font-size: 1.3em;">
+"Schedule a big presentation"</pre>
+                    
+                    <h4>LLM Extracts (with connector context)</h4>
+                    <pre style="font-size: 1.3em;">
+action: schedule_session
+parameters:
+  name: "presentation" ✓
+  expected_attendees: ? 
+    <em>(inferred "big" but unclear)</em>
+  in_venue: ?
+  requires_av: ?
+  hosted_by: ?</pre>
+                </div>
+                <div class="code-section">
+                    <h4>System Uses Connector to Generate</h4>
+                    <pre style="background: rgba(129, 199, 132, 0.1); border-color: #81c784; font-size: 1.3em;">
+<strong>Review form with ALL parameters:</strong>
+
+Title: [presentation] <em>(Extracted)</em>
+Attendees: [___] <em>"How many for 'big'?"</em>
+Venue: [▼ Select...] <em>(Shows suitable rooms)</em>
+Needs A/V: [□] <em>"Does it need A/V?"</em>
+Host: [___] <em>"Who's presenting?"</em>
+
+[Submit and Execute]</pre>
+                    <p style="text-align: left; margin-top: 20px;">Each clarification prompt comes directly from the connector definition!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: Two Implementations -->
+        <div class="slide">
+            <h2>Extensibility: Two Connector Implementations</h2>
+            <p style="margin-bottom: 30px;">Same concept, different serialization formats for different ecosystems</p>
+            
+            <div class="code-comparison">
+                <div class="code-section">
+                    <h4>1. YAML Implementation</h4>
+                    <pre style="font-size: 1.2em;">
+<em># connector.yml</em>
+actions:
+  create_venue:
+    description: "Creates a conference room"
+    parameters:
+      name:
+        description: "Room name"
+        clarification_prompt: "What's the room name?"
+      capacity:
+        description: "Max occupancy"
+        clarification_prompt: "How many people?"
+      has_av_system:
+        description: "Audio/visual equipment"
+        clarification_prompt: "Does it have A/V?"</pre>
+                    <p style="text-align: center; margin-top: 15px;"><em>Simple, human-readable, quick to create</em></p>
+                </div>
+                <div class="code-section">
+                    <h4>2. LionWeb M1 Implementation</h4>
+                    <pre style="font-size: 1.2em;">
+<em>// Using our Connector metamodel (M2)</em>
+Connector {
+  domainName: "Cycling Management"
+  actions: [
+    ActionMapping {
+      actionName: "create_rider"
+      targetConcept: Rider  <em>// Type-safe ref!</em>
+      parameters: [
+        ParameterMapping {
+          parameterName: "age"
+          targetFeature: Rider.age
+          clarificationPrompt: "Rider's age?"
+        }
+      ]
+    }
+  ]
+}</pre>
+                    <p style="text-align: center; margin-top: 15px;"><em>Type-safe, validated, IDE support</em></p>
+                </div>
+            </div>
+            <p style="margin-top: 30px; font-size: 1.4em;"><strong>Choose based on your ecosystem - both work with our framework!</strong></p>
+        </div>
+
+        <!-- SLIDE 12: System Properties - Reliability -->
+        <div class="slide">
+            <h2>Property: Reliability Through Validation</h2>
+            <div class="property-card">
+                <h4>Challenge: LLMs hallucinate. How do we ensure correctness?</h4>
+            </div>
+            
+            <div class="code-comparison">
+                <div class="code-section">
+                    <h4>Example DSL Grammar (Event Domain)</h4>
+                    <pre style="font-size: 1.25em;">
+<em># Formal grammar defines valid operations</em>
+create_venue: "create_venue" STRING "{" 
+    venue_prop* "}"
+
+venue_prop: "capacity" ":" NUMBER
+          | "has_av_system" ":" BOOLEAN
+
+<strong>Parser rejects anything else!</strong></pre>
+                </div>
+                <div class="code-section">
+                    <h4>Interpreter Validates Business Rules</h4>
+                    <pre style="font-size: 1.25em;">
+<em># Python interpreter enforces logic</em>
+def create_venue(self, name, props):
+  if self.role != 'admin':
+    raise Error("Admin role required")
+  
+  if name in self.state["venues"]:
+    raise Error(f"Venue {name} exists")
+  
+  if props.capacity > 1000:
+    raise Error("Exceeds max capacity")
+    
+<strong>Business rules always enforced!</strong></pre>
+                </div>
+            </div>
+            <p style="margin-top: 30px; font-size: 1.5em;"><strong>Three-layer defense:</strong> Schema → Parser → Interpreter</p>
+        </div>
+
+        <!-- SLIDE 13: System Properties - Transparency -->
+        <div class="slide">
+            <h2>Property: Full Transparency</h2>
+            <div class="property-card">
+                <h4>Our Innovation: Always show editable review form</h4>
+            </div>
+            
+            <pre style="font-size: 1.6em; text-align: center; border-color: #4fc3f7;">
+User: "Create the Grand Ballroom with 200 seats"
+
+<strong style="color: #81c784;">↓ System Always Shows Review Form ↓</strong></pre>
+            
+            <div style="background: rgba(255, 255, 255, 0.05); border: 2px solid #4fc3f7; border-radius: 10px; padding: 30px; margin: 20px auto; max-width: 900px;">
+                <h4 style="color: #4fc3f7; margin-bottom: 20px;">Review and confirm details for 'Create Venue':</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                    <div>
+                        <p style="text-align: left;"><strong>Name:</strong></p>
+                        <div style="background: white; color: black; padding: 10px; border-radius: 5px;">Grand Ballroom</div>
+                        <p style="text-align: left; font-size: 0.9em; color: #81c784;"><em>(Extracted - edit if incorrect)</em></p>
+                    </div>
+                    <div>
+                        <p style="text-align: left;"><strong>Capacity:</strong></p>
+                        <div style="background: white; color: black; padding: 10px; border-radius: 5px;">200</div>
+                        <p style="text-align: left; font-size: 0.9em; color: #81c784;"><em>(Extracted - edit if incorrect)</em></p>
+                    </div>
+                    <div>
+                        <p style="text-align: left;"><strong>Has A/V System:</strong></p>
+                        <div style="background: white; color: black; padding: 10px; border-radius: 5px;">[ ] Yes</div>
+                        <p style="text-align: left; font-size: 0.9em; color: #ffb74d;"><em>(Please specify)</em></p>
+                    </div>
+                </div>
+                <button style="background: #4fc3f7; color: white; padding: 15px 30px; border: none; border-radius: 5px; margin-top: 20px; font-size: 1.2em;">✓ Submit and Execute</button>
+            </div>
+            
+            <p style="font-size: 1.4em;"><strong>Key: User can correct extraction errors BEFORE execution</strong></p>
+        </div>
+
+        <!-- SLIDE 14: Architecture Overview -->
+        <div class="slide">
+            <h2>System Architecture</h2>
+            <p style="margin-bottom: 30px;">Clean separation of concerns with shared conversation layer</p>
+            <div class="architecture-diagram">
+                <img src="architecture.svg" alt="System Architecture" style="width: 100%; height: auto;">
+                <p style="font-size: 0.9em; color: #aaa; margin-top: 10px;">
+                    Note: architecture.svg generated from Graphviz code
+                </p>
+            </div>
+            <pre style="margin-top: 30px; font-size: 1.4em;">
+<strong>Key Design Principle:</strong>
+
+• <strong>Conversation Layer:</strong> Domain-agnostic, reusable for any DSL
+• <strong>Connector:</strong> The only domain-specific configuration needed
+• <strong>Execution:</strong> Your existing DSL interpreter remains unchanged</pre>
+        </div>
+
+        <!-- SLIDE 15: Processing Flow -->
+        <div class="slide">
+            <h2>Simple Processing Flow</h2>
+            <div class="architecture-diagram">
+                <img src="simple_flow.svg" alt="Processing Flow" style="width: 100%; height: auto;">
+                <p style="font-size: 0.9em; color: #aaa; margin-top: 10px;">
+                    Note: simple_flow.svg generated from Graphviz code
+                </p>
+            </div>
+            <pre style="margin-top: 30px; font-size: 1.5em; text-align: center;">
+<strong>The Key Innovation:</strong>
+
+ALWAYS show review form → User has full control → Execute only when confirmed
+
+<span style="color: #81c784;">This single decision eliminates most trust issues with LLM systems</span></pre>
+        </div>
+
+        <!-- SLIDE 16: Batch Processing -->
+        <div class="slide">
+            <h2>Property: Intelligent Document Processing</h2>
+            <div class="code-comparison">
+                <div class="code-section">
+                    <h4>📧 Unstructured Email</h4>
+                    <pre class="email-example" style="font-size: 1.3em;">
+"Hi team,
+
+We've secured new rooms:
+- Aspen: 30 people, projector
+- Birch: 50 people, full AV
+- Cedar: 20 people, no equipment
+
+Please set these up."</pre>
+                </div>
+                <div class="code-section">
+                    <h4>✨ Structured Extraction</h4>
+                    <pre class="extracted-tasks" style="font-size: 1.3em;">
+<strong>3 tasks extracted:</strong>
+
+Task 1: create_venue("Aspen")
+  capacity: 30, has_av: true
+
+Task 2: create_venue("Birch")
+  capacity: 50, has_av: true
+
+Task 3: create_venue("Cedar")
+  capacity: 20, has_av: false</pre>
+                </div>
+            </div>
+            <p style="margin-top: 30px; font-size: 1.5em;">Each task gets its own review form → Independent validation → Batch execution</p>
+        </div>
+
+        <!-- SLIDE 17: Demo Preview -->
+        <div class="slide">
+            <h2>Live Demo Preview</h2>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; max-width: 1200px;">
+                <div class="property-card">
+                    <h4>Cycling Management (LionWeb)</h4>
+                    <p style="text-align: left; font-size: 1.3em;">
+                        • Email with 3 riders/teams<br>
+                        • Missing data → Smart clarification<br>
+                        • Review form with all parameters<br>
+                        • Modify existing entries<br>
+                        • Type-safe model operations
+                    </p>
+                </div>
+                <div class="property-card">
+                    <h4>Event Management (Lark DSL)</h4>
+                    <p style="text-align: left; font-size: 1.3em;">
+                        • Batch venue creation<br>
+                        • Session scheduling<br>
+                        • Business rule validation<br>
+                        • Permission-based rejection<br>
+                        • DSL interpreter enforcement
+                    </p>
+                </div>
+            </div>
+            <pre style="margin-top: 30px; font-size: 1.5em;">
+<strong>What You'll See:</strong>
+
+1. Natural language → Multiple structured tasks
+2. Connector-driven clarification for missing data  
+3. <span style="color: #4fc3f7;">Always-editable review form</span> (our key innovation!)
+4. DSL validation preventing invalid operations
+5. Successful batch execution</pre>
+        </div>
+
+        <!-- SLIDE 18: Conclusion -->
+        <div class="slide">
+            <h2>Conclusion</h2>
+            <div class="code-comparison">
+                <div class="code-section">
+                    <h3>What We've Built</h3>
+                    <ul style="font-size: 1.4em; text-align: left; line-height: 2;">
+                        <li>Conversational interfaces for any DSL</li>
+                        <li>Clean separation: LLM translates, DSL executes</li>
+                        <li>Connector DSL for domain mapping</li>
+                        <li>Always-editable review forms</li>
+                        <li>Multi-layer validation</li>
+                    </ul>
+                </div>
+                <div class="code-section">
+                    <h3>Key Contributions</h3>
+                    <p style="font-size: 1.6em; text-align: left; border-left: 4px solid #81c784; padding-left: 20px;">
+                        <strong>1.</strong> Connector DSL concept<br>
+                        <strong>2.</strong> Single-step review UI<br>
+                        <strong>3.</strong> Framework implementation<br>
+                        <br>
+                        <span style="color: #4fc3f7;">Natural language accessibility</span><br>
+                        <span style="color: #81c784;">+ DSL reliability</span>
+                    </p>
+                </div>
+            </div>
+            <p style="margin-top: 50px; font-size: 1.5em;">
+                <strong>Thank you!</strong><br>
+                Questions? | github.com/[your-repo]
+            </p>
+        </div>
+
+    </div>
+    
+    <!-- Navigation Controls -->
+    <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">‹</button>
+    <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">›</button>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'prev');
+                if (index === n) {
+                    slide.classList.add('active');
+                } else if (index < n) {
+                    slide.classList.add('prev');
+                }
+            });
+
+            document.getElementById('prevBtn').disabled = n === 0;
+            document.getElementById('nextBtn').disabled = n === totalSlides - 1;
+            document.getElementById('slideNumber').textContent = `${n + 1} / ${totalSlides}`;
+            const progress = ((n + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        }
+
+        function changeSlide(direction) {
+            currentSlide = Math.max(0, Math.min(totalSlides - 1, currentSlide + direction));
+            showSlide(currentSlide);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>
