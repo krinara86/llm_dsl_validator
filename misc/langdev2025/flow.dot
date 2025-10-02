@@ -1,0 +1,45 @@
+digraph SimpleFlow {
+    rankdir=TB;
+    node [shape=box, style="rounded,filled", fontname="Arial", fontsize=14];
+    edge [fontname="Arial", fontsize=13];
+    
+    // Start
+    start [label="Natural Language Input\n(Query/Email/Document)", shape=ellipse, fillcolor="#FFF9C4", color="#F57C00", fontsize=16, penwidth=2];
+    
+    // Extract
+    extract [label="Extract Tasks\n(Using Connector Context)", fillcolor="#C8E6C9", color="#2E7D32", fontsize=15];
+    
+    // Review - The KEY innovation
+    review [label="Show Review Form\nALL Parameters\nEverything Editable", fillcolor="#4FC3F7", color="#0277BD", fontsize=16, penwidth=3, style="rounded,filled,bold"];
+    
+    // User action
+    user_edit [label="User Reviews/Edits\nConfirms Values", shape=parallelogram, fillcolor="#FFF9C4", color="#F57C00", fontsize=15];
+    
+    // Validate
+    validate [label="DSL Validation\n• Syntax Check\n• Business Rules\n• Permissions", fillcolor="#F8BBD0", color="#C2185B", fontsize=15];
+    
+    // Decision
+    valid [label="Valid?", shape=diamond, fillcolor="#E1F5FE", color="#0277BD", fontsize=15];
+    
+    // Outcomes
+    execute [label="Execute\n✓ Update State", fillcolor="#A5D6A7", color="#1B5E20", fontsize=15, penwidth=2];
+    reject [label="Reject\n✗ Show Error", fillcolor="#FFCCBC", color="#BF360C", fontsize=15];
+    
+    // Flow
+    start -> extract [label="1. Parse"];
+    extract -> review [label="2. Always show", penwidth=2, color="#4CAF50"];
+    review -> user_edit [label="3. User control"];
+    user_edit -> validate [label="4. Submit"];
+    validate -> valid;
+    valid -> execute [label="Yes", color="#4CAF50"];
+    valid -> reject [label="No", color="#F44336"];
+    
+    // Feedback loops
+    reject -> review [label="Try again", style=dashed, constraint=false];
+    execute -> start [label="Next task", style=dashed, constraint=false];
+    
+    // Annotation
+    note [label="KEY: Review form ALWAYS shown\nwith ALL parameters editable", 
+          shape=note, fillcolor="#FFFDE7", color="#F57F17", fontsize=14, style="filled"];
+    note -> review [style=dotted, arrowhead=none, color="#F57F17"];
+}
