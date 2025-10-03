@@ -121,6 +121,7 @@
             margin-top: 30px;
             width: 100%;
             max-width: 1400px;
+            align-items: center;
         }
 
         .code-section {
@@ -317,7 +318,7 @@
 <body>
     <div class="slide-container">
         <div class="progress-bar" id="progressBar"></div>
-        <div class="slide-number" id="slideNumber">1 / 23</div>
+        <div class="slide-number" id="slideNumber">1 / 21</div>
 
         <div class="slide active title-slide">
             <h1>Making DSLs Conversational</h1>
@@ -367,9 +368,9 @@
 • Context switching from natural thinking</pre>
             
             <div class="article-reference">
-                <p><strong>Research Finding:</strong> "The high cost associated with developing a DSL, including the steep learning curve for developers, is a major barrier that can outweigh its benefits."</p>
-                <p style="font-size: 0.9em; color: #aaa;">- Mernik et al., "When and How to Develop Domain-Specific Languages" (ACM Computing Surveys, 2024)</p>
-                <p style="font-size: 0.9em; color: #aaa;">Source: dl.acm.org/doi/10.1145/3639473</p>
+                <p><strong>Research Finding:</strong> "A major obstacle to the adoption of a DSL is the cost of learning the new language, in addition to the high cost of designing, implementing, and maintaining it."</p>
+                <p style="font-size: 0.9em; color: #aaa;">- van Deursen et al., "Domain-Specific Languages: An Annotated Bibliography" (ACM SIGPLAN Notices, 2000)</p>
+                <p style="font-size: 0.9em; color: #aaa;">Source: https://dl.acm.org/doi/10.1145/352029.352035</p>
             </div>
         </div>
 
@@ -412,7 +413,7 @@
 
         <div class="slide">
             <h2>More than just hallucinations</h2>
-           <div class="code-section">
+           <div class="code-section" style="max-width: 1000px;">
                     <div class="article-reference">
                         <p><strong>Sycophancy:</strong></p>
                         <p>Research has identified that models may agree with user premises even when they are incorrect, a behavior termed 'sycophancy'.</p>
@@ -450,7 +451,37 @@
         </div>
 
         <div class="slide">
-            <h2>The Connector DSL</h2>
+            <h2>Bridging Two Worlds</h2>
+            <div class="code-comparison">
+                <div class="code-section">
+                    <h4>The Structured World</h4>
+                    <pre style="border-color: #81c784; font-size: 1.3em;">
+<strong>The Domain Model (DSL)</strong>
+
+• Concepts: Rider, Team
+• Properties: name, age
+• Rules: age > 18
+• Actions: create_rider()</pre>
+                </div>
+                
+                <div style="font-size: 4em; color: #4fc3f7; text-align: center;">↔</div>
+
+                <div class="code-section">
+                    <h4>The Unstructured World</h4>
+                    <pre style="border-color: #4fc3f7; font-size: 1.3em;">
+<strong>The User's Language</strong>
+
+"add a new cyclist"
+"register Jonas"
+"can we get a new rider on the team?"
+"sign up a person"</pre>
+                </div>
+            </div>
+            <p class="solution-question">How does our system reliably translate between them? It needs a map.</p>
+        </div>
+
+        <div class="slide">
+            <h2>The 'Map': Our Connector DSL</h2>
             <p style="font-size: 1.8em; margin-bottom: 30px;">Describes how to map domain concepts to natural language</p>
             
             <div class="code-comparison">
@@ -525,24 +556,29 @@ Host: [___] <em>"Who's presenting?"</em>
             </div>
         </div>        
 
-        <div class="slide">
-            <h2>System Architecture</h2>
-            <p style="margin-bottom: 30px;">Clean separation of concerns with shared conversation layer</p>
-            <div class="architecture-diagram">
+       <div class="slide">
+    <h2>Architecture</h2>
+
+    <div class="code-comparison" style="align-items: center; margin-top: 10px; max-width: 1400px;">
+        
+        <div class="code-section" style="flex: 3;">
+             <div class="architecture-diagram" style="margin: 0;">
                 <img src="architecture.svg" alt="System Architecture" style="width: 100%; height: auto;">
-                <p style="font-size: 0.9em; color: #aaa; margin-top: 10px;">
-                    Note: architecture.svg generated from Graphviz code
-                </p>
-            </div>
-            <pre style="margin-top: 30px; font-size: 1.4em;">
-<strong>Key Design Principle:</strong>
+             </div>
+        </div>
+        
+        <div class="code-section" style="flex: 3;">
+            <pre style="font-size: 1.3em; margin: 0; text-align: left; height: 100%;">
 
 • <strong>Conversation Layer:</strong> Domain-agnostic, reusable for any DSL
+
 • <strong>Connector:</strong> The only domain-specific configuration needed
-• <strong>Execution:</strong> Your existing DSL interpreter remains unchanged</pre>
+
+• <strong>Execution:</strong> Your existing DSL pipeline remains unchanged</pre>
         </div>
 
-        
+    </div>
+</div>
 
         <div class="slide">
             <h2>Example Walkthrough</h2>
@@ -664,7 +700,7 @@ Permissions: admin can create ✓</pre>
         </div>
 
         <div class="slide">
-            <h2>Property: Reliability Through Validation</h2>
+            <h2>Property: Validation</h2>
             <div class="property-card">
                 <h4>Challenge: LLMs hallucinate. How do we ensure correctness?</h4>
             </div>
@@ -703,7 +739,7 @@ def create_venue(self, name, props):
         </div>
 
         <div class="slide">
-            <h2>Property: Full Transparency</h2>
+            <h2>Property: Transparency</h2>
             <div class="property-card">
                 <h4>Our Innovation: Always show editable review form</h4>
             </div>
@@ -822,35 +858,47 @@ Connector {
         </div>
 
         <div class="slide">
-            <h2>Conclusion</h2>
-            <div class="code-comparison">
-                <div class="code-section">
-                    <h3>What We've Built</h3>
-                    <ul style="font-size: 1.4em; text-align: left; line-height: 2;">
-                        <li>Conversational interfaces for any DSL</li>
-                        <li>Clean separation: LLM translates, DSL executes</li>
-                        <li>Connector DSL for domain mapping</li>
-                        <li>Always-editable review forms</li>
-                        <li>Multi-layer validation</li>
-                    </ul>
-                </div>
-                <div class="code-section">
-                    <h3>Key Contributions</h3>
-                    <p style="font-size: 1.6em; text-align: left; border-left: 4px solid #81c784; padding-left: 20px;">
-                        <strong>1.</strong> Connector DSL concept<br>
-                        <strong>2.</strong> Single-step review UI<br>
-                        <strong>3.</strong> Framework implementation<br>
-                        <br>
-                        <span style="color: #4fc3f7;">Natural language accessibility</span><br>
-                        <span style="color: #81c784;">+ DSL reliability</span>
-                    </p>
-                </div>
-            </div>
-            <p style="margin-top: 50px; font-size: 1.5em;">
-                <strong>Thank you!</strong><br>
-                Questions? | github.com/[your-repo]
+    <h2>Conclusion</h2>
+    <div class="code-comparison">
+        <div class="code-section">
+            <h3>What We've Built</h3>
+            <ul style="font-size: 1.4em; text-align: left; line-height: 2;">
+                <li>Conversational interfaces for any DSL</li>
+                <li>Clean separation: LLM translates, DSL executes</li>
+                <li>Connector DSL for domain mapping</li>
+                <li>Always-editable review forms</li>
+                <li>Multi-layer validation</li>
+            </ul>
+        </div>
+        <div class="code-section">
+            <h3>Key Contributions</h3>
+            <p style="font-size: 1.6em; text-align: left; border-left: 4px solid #81c784; padding-left: 20px;">
+                <strong>1.</strong> Connector DSL concept<br>
+                <strong>2.</strong> Single-step review UI<br>
+                <strong>3.</strong> Framework implementation<br>
+                <br>
+                <span style="color: #4fc3f7;">Natural language accessibility</span><br>
+                <span style="color: #81c784;">+ DSL reliability</span>
             </p>
         </div>
+    </div>
+    
+    <div style="display: flex; align-items: center; justify-content: center; gap: 60px; margin-top: 40px; width: 100%;">
+        
+        <div style="text-align: center;">
+            <p style="font-size: 2.2em; margin: 0;"><strong>Thank you!</strong></p>
+            <p style="font-size: 1.6em; margin-top: 10px; color: #aaa;">Questions?</p>
+        </div>
+
+        <div style="text-align: center; border-left: 2px solid #444; padding-left: 60px;">
+            <img src="repologo.svg" alt="Repository QR Code" style="width: 150px; height: 150px; border-radius: 8px; background: white; padding: 5px;">
+            <p style="font-size: 1em; margin-top: 10px; font-family: 'Fira Code', monospace; color: #bbb;">
+                github.com/krinara86/llm_dsl_validator
+            </p>
+        </div>
+
+    </div>
+</div>
 
     </div>
     

@@ -4,8 +4,6 @@ import requests
 from typing import List
 from .config import AppConfig
 
-# --- MODIFIED ---
-# Use InferenceApi for older library versions or InferenceClient for newer ones
 try:
     from huggingface_hub import InferenceClient
     HUGGINGFACE_AVAILABLE = True
@@ -21,15 +19,12 @@ class LLMClient:
         """Execute an LLM request."""
         
         if model_name.startswith("cloud/"):
-            # Explicitly use cloud
             return LLMClient._ollama_cloud_request(prompt, model_name, is_json_format)
         elif model_name.startswith("huggingface/"):
             return LLMClient._huggingface_request(prompt, model_name, is_json_format)
         else:
-            # Try local Ollama first (original behavior)
             return LLMClient._ollama_request(prompt, model_name, is_json_format)
 
-    # --- NEW ---
     @staticmethod
     def _huggingface_request(prompt: str, model_name: str, 
                             is_json_format: bool) -> str:
@@ -86,7 +81,6 @@ class LLMClient:
     @staticmethod
     def _ollama_request(prompt: str, model_name: str, 
                     is_json_format: bool) -> str:
-        """Original local Ollama support - KEEP THIS."""
         payload = { "model": model_name, "prompt": prompt, "stream": False }
         if is_json_format:
             payload["format"] = "json"
@@ -104,7 +98,6 @@ class LLMClient:
     @staticmethod
     def _ollama_cloud_request(prompt: str, model_name: str, 
                             is_json_format: bool) -> str:
-        """NEW: Ollama Cloud support."""
         api_key = os.getenv("OLLAMA_API_KEY")
         if not api_key:
             raise ValueError("OLLAMA_API_KEY not found")
@@ -119,7 +112,7 @@ class LLMClient:
             messages[0]["content"] += "\n\nRespond with valid JSON only."
         
         payload = {
-            "model": model_name.replace("cloud/", ""),  # Remove prefix if present
+            "model": model_name.replace("cloud/", ""),  
             "messages": messages,
             "stream": False
         }
@@ -135,7 +128,6 @@ class LLMClient:
         """Get available models."""
         models = []
         
-        # Try local Ollama first (original)
         try:
             response = requests.get('http://localhost:11434/api/tags', timeout=1)
             response.raise_for_status()
@@ -144,17 +136,18 @@ class LLMClient:
         except:
             pass
         
-        # Add cloud models if API key exists
         if os.getenv("OLLAMA_API_KEY"):
             models.extend([
-                'cloud/gpt-oss:20b',   # Cloud version
-                'cloud/gpt-oss:120b',  # Cloud version
+                'cloud/gpt-oss:20b',   
+                'cloud/gpt-oss:120b',  
             ])
         
-        # Hugging Face models (keep as before)
         models.extend([
             'huggingface/meta-llama/Meta-Llama-3-8B-Instruct',
             'huggingface/mistralai/Mistral-7B-Instruct-v0.2',
+            'huggingface/openai/gpt-oss-120b',
+            'huggingface/openai/gpt-oss-20b',
+            'huggingface/deepseek-ai/DeepSeek-V3.1',
         ])
         
         return models if models else ['llama3:8b']
