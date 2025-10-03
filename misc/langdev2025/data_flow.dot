@@ -1,0 +1,70 @@
+digraph DataFlow {
+    rankdir=TB;
+    node [shape=box, style="rounded,filled", fontname="Arial", fontsize=13];
+    edge [fontname="Arial", fontsize=11];
+    compound=true;
+    
+    input [label="\"Register Jonas\nfrom Denmark\"", shape=parallelogram, fillcolor="#FFF9C4", color="#F57C00", fontsize=14];
+    
+    json1 [label="{\n  action: \"create_rider\",\n  parameters: {\n    name: \"Jonas\",\n    country: \"Denmark\"\n  }\n}", shape=note, fillcolor="#E8F5E9", color="#2E7D32"];
+    
+    validation [label="✓ Permissions OK\n✓ name present\n✗ age missing", shape=diamond, fillcolor="#FFE0B2", color="#E65100"];
+    
+    form [label="REVIEW FORM\nName: [Jonas] ✓\nCountry: [Denmark] ✓\nAge: [___] ←Need input", shape=box3d, fillcolor="#4FC3F7", color="#0277BD", fontsize=14, penwidth=3];
+    
+    json2 [label="{\n  name: \"Jonas\",\n  country: \"Denmark\",\n  age: 28\n}", shape=note, fillcolor="#E8F5E9", color="#2E7D32"];
+    
+    node_creation [label="DynamicNode\nconcept: Rider\nproperties validated\nagainst M2", shape=component, fillcolor="#BBDEFB", color="#1565C0"];
+    
+    result [label="✅ Rider 'Jonas' created\nSaved to models.json", shape=ellipse, fillcolor="#A5D6A7", color="#1B5E20", fontsize=14];
+    
+    subgraph cluster_llm {
+        label="LLM Processing";
+        style="rounded,dashed";
+        fillcolor="#F5F5F5";
+        color="#666";
+        
+        llm_process [label="Extract with\nConnector Context", fillcolor="#EEEEEE"];
+    }
+    
+    subgraph cluster_validation {
+        label="Schema Validation";
+        style="rounded,dashed";
+        fillcolor="#FFF8E1";
+        color="#F57C00";
+        
+        schema_check [label="Check M2 Schema\n& Permissions", fillcolor="#FFFDE7"];
+    }
+    
+    subgraph cluster_user {
+        label="User Interaction";
+        style="rounded,dashed";
+        fillcolor="#E3F2FD";
+        color="#1565C0";
+        
+        user_review [label="User Reviews\n& Completes", fillcolor="#E1F5FE"];
+    }
+    
+    subgraph cluster_lionweb {
+        label="LionWeb Execution";
+        style="rounded,dashed";
+        fillcolor="#F3E5F5";
+        color="#7B1FA2";
+        
+        lionweb_exec [label="Create M1 Instance\nType-safe Operation", fillcolor="#F8BBD0"];
+    }
+    
+    input -> llm_process [label="1. Input"];
+    llm_process -> json1 [label="2. Extract"];
+    json1 -> schema_check [label="3. Validate"];
+    schema_check -> validation;
+    validation -> form [label="4. Generate\nForm"];
+    form -> user_review [label="5. Show to\nUser"];
+    user_review -> json2 [label="6. Complete"];
+    json2 -> lionweb_exec [label="7. Execute"];
+    lionweb_exec -> node_creation [label="8. Create"];
+    node_creation -> result [label="9. Persist"];
+    
+    trust_boundary [label="TRUST BOUNDARY\nUser verifies before execution", shape=plaintext, fontcolor="#FF0000", fontsize=16];
+    form -> trust_boundary [style=dotted, arrowhead=none, color="#FF0000"];
+}

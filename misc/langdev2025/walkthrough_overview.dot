@@ -1,0 +1,59 @@
+digraph WalkthroughOverview {
+    rankdir=LR;
+    node [shape=box, style="rounded,filled", fontname="Arial", fontsize=14];
+    edge [fontname="Arial", fontsize=12];
+    
+    // Style definitions
+    subgraph cluster_input {
+        label="Input Layer";
+        style="rounded,filled";
+        fillcolor="#FFF9C4";
+        color="#F57C00";
+        fontsize=16;
+        
+        user [label="User\n\"Register Jonas\nfrom Denmark\"", shape=ellipse, fillcolor="#FFE082"];
+    }
+    
+    subgraph cluster_conversation {
+        label="Conversation Layer (Domain-Agnostic)";
+        style="rounded,filled";
+        fillcolor="#E8F5E9";
+        color="#2E7D32";
+        fontsize=16;
+        
+        orchestrator [label="Orchestrator", fillcolor="#C8E6C9"];
+        extractor [label="TaskExtractor\n+ LLM", fillcolor="#C8E6C9"];
+        clarifier [label="ClarificationGenerator", fillcolor="#C8E6C9"];
+    }
+    
+    subgraph cluster_lionweb {
+        label="LionWeb Backend";
+        style="rounded,filled";
+        fillcolor="#E3F2FD";
+        color="#1565C0";
+        fontsize=16;
+        
+        connector [label="nl_connector_m1.json\n(M1 Instance)", shape=note, fillcolor="#BBDEFB"];
+        schema [label="Cycling M2\n(Language)", shape=note, fillcolor="#BBDEFB"];
+        executor [label="LionWeb\nLoader", fillcolor="#BBDEFB"];
+    }
+    
+    subgraph cluster_storage {
+        label="Model Storage";
+        style="rounded,filled";
+        fillcolor="#FFF3E0";
+        color="#E65100";
+        fontsize=16;
+        
+        models [label="models.json\n(M1 Instances)", shape=cylinder, fillcolor="#FFE0B2"];
+    }
+    
+    // Connections
+    user -> orchestrator;
+    orchestrator -> extractor;
+    orchestrator -> clarifier;
+    extractor -> connector [style=dotted, label="context"];
+    clarifier -> schema [style=dotted, label="types"];
+    orchestrator -> executor [label="execute"];
+    executor -> models;
+}
