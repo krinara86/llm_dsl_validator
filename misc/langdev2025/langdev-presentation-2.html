@@ -12,6 +12,92 @@
             box-sizing: border-box;
         }
 
+        code {
+            font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+            font-size: 0.95em;
+            /* This is relative to pre, so actual size is 1.05em * 0.95em */
+            line-height: 1.5;
+        }
+
+        /* Syntax Highlighting */
+        .keyword {
+            color: #d792ff;
+            /* Changed: Brighter purple */
+            font-weight: bold;
+            text-shadow: 0 0 2px rgba(215, 146, 255, 0.5);
+            /* Added: Glow effect */
+        }
+
+        .type {
+            color: #82aaff;
+            /* Already good, but add: */
+            font-weight: bold;
+            /* Added: Bold for visibility */
+        }
+
+        .string {
+            color: #c3e88d;
+            /* Already good, but add: */
+            font-weight: 500;
+            /* Added: Medium weight */
+        }
+
+        .comment {
+            color: #676e95;
+            font-style: italic;
+        }
+
+        .annotation {
+            color: #ffcb6b;
+            font-weight: bold;
+            /* Added: Bold for visibility */
+        }
+
+        .method {
+            color: #82ddff;
+            /* Changed: Brighter cyan */
+        }
+
+        .variable {
+            color: #ff8c6c;
+            /* Changed: Brighter orange */
+        }
+
+        /* Blocks */
+        .block,
+        .example-block,
+        .alert-block {
+            padding: 25px 35px;
+            margin: 25px 0;
+            border-radius: 12px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .block {
+            background: rgba(79, 195, 247, 0.1);
+            border: 2px solid #4fc3f7;
+        }
+
+        .example-block {
+            background: rgba(129, 199, 132, 0.1);
+            border: 2px solid #81c784;
+        }
+
+        .alert-block {
+            background: rgba(239, 83, 80, 0.1);
+            border: 2px solid #ef5350;
+        }
+
+        .block h3,
+        .example-block h3,
+        .alert-block h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: #1a1a2e;
@@ -412,6 +498,31 @@
         </div>
 
         <div class="slide">
+            <h2>Why Current LLMs Fail at Program Comprehension - Dictionary learning</h2>
+            <div class="alert-block">
+                <p>A recent study reveals that code LLMs operate as sophisticated <strong>dictionary lookup
+                        systems</strong> rather than true program comprehenders</p>
+                <ul>
+                    <li><strong>✓ Syntax ↔ Syntax:</strong> LLMs learn co-occurrence (e.g., 'if' appears with '{')</li>
+                    <li><strong>✓ Identifier ↔ Identifier:</strong> LLMs match naming patterns (e.g., 'key' with
+                        'encrypt')</li>
+                    <li><strong>✗ Syntax ↔ Semantics:</strong> Cannot connect structure to meaning</li>
+                    <li><strong>✗ Cross-Component Integration:</strong> Cannot reason about
+                        program behavior</li>
+                </ul>
+            </div>
+            <div class="example-block">
+                <pre><code><span class="comment">// LLMs see this pattern frequently in training data:</span>
+<span class="type">Cipher</span> <span class="variable">cipher</span> = <span class="type">Cipher</span>.<span class="method">getInstance</span>(<span class="string">"AES"</span>);
+
+<span class="comment">// So they reproduce it, not understanding that "AES" → ECB mode → insecure</span></code></pre>
+                <p>The model matches syntactic patterns without grasping security semantics</p>
+            </div>
+
+            <p class="citation">A. Anand et al., ACL Findings 2024: "What Code (LLMs) donot learn"</p>
+        </div>
+        
+        <div class="slide">
             <h2>More than just hallucinations</h2>
            <div class="code-section" style="max-width: 1000px;">
                     <div class="article-reference">
@@ -809,11 +920,10 @@ Task 3: create_venue("Cedar")
 
         <div class="slide">
             <h2>Extensibility: Two Connector Implementations</h2>
-            <p style="margin-bottom: 30px;">Same concept, different serialization formats for different ecosystems</p>
             
             <div class="code-comparison">
                 <div class="code-section">
-                    <h4>1. YAML Implementation</h4>
+                    <h4>1. LARK Implementation(YAML)</h4>
                     <pre style="font-size: 1.2em;">
 <em># connector.yml</em>
 actions:
@@ -829,7 +939,7 @@ actions:
       has_av_system:
         description: "Audio/visual equipment"
         clarification_prompt: "Does it have A/V?"</pre>
-                    <p style="text-align: center; margin-top: 15px;"><em>Simple, human-readable, quick to create</em></p>
+                    
                 </div>
                 <div class="code-section">
                     <h4>2. LionWeb M1 Implementation</h4>
@@ -851,10 +961,10 @@ Connector {
     }
   ]
 }</pre>
-                    <p style="text-align: center; margin-top: 15px;"><em>Type-safe, validated, IDE support</em></p>
+                  
                 </div>
             </div>
-            <p style="margin-top: 30px; font-size: 1.4em;"><strong>Choose based on your ecosystem - both work with our framework!</strong></p>
+            
         </div>
 
         <div class="slide">
