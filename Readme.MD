@@ -422,36 +422,6 @@ class CustomSelectionProvider(SelectionProvider):
 - **State Managers**: Override `StateManager` for custom persistence
 - **LLM Clients**: Extend `LLMClient` for additional model providers
 
-## Contributing
-
-We welcome contributions to improve and extend the framework. Please follow these guidelines:
-
-1. Fork the repository and create a feature branch
-2. Write tests for new functionality
-3. Follow PEP 8 style guidelines
-4. Document new features and API changes
-5. Submit a pull request with a clear description
-
-For major changes, please open an issue first to discuss the proposed changes.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-This work builds upon research in natural language interfaces for formal systems and leverages:
-- [LionWeb](https://lionweb.io/) for model-driven language engineering
-- [Lark](https://github.com/lark-parser/lark) for grammar-based parsing
-- Various LLM providers for natural language understanding
-
-## Citation
-
-If you use this framework in your research, please cite:
-
-```bibtex
-@software{conversational_dsl_framework,
-  title = {Conversational DSL Framework: Reliable Natural Language Interfaces for Domain-Specific Languages},
   author = {[Author Names]},
   year = {2025},
   url = {https://github.com/yourusername/conversational-dsl-framework}
