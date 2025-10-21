@@ -1,117 +1,459 @@
-# LLM-Powered DSL Framework
+# Conversational DSL Framework
 
-This project is a framework for building reliable, rule-based applications that use a Large Language Model (LLM) for natural language understanding. The core principle is to leverage an LLM for its powerful language parsing capabilities while using a deterministic, custom-built interpreter to enforce critical, domain-specific rules.
+## Reliable Natural Language Interfaces for Domain-Specific Languages
 
-## The Semantic Firewall Concept
+This framework provides a systematic approach to building natural language interfaces for Domain-Specific Languages (DSLs) while maintaining formal verification and rule enforcement. By separating natural language understanding from domain logic execution, the system achieves both accessibility and reliability.
 
-While LLMs are effective at interpreting human language, they lack a verifiable understanding of specific business rules and constraints. They might confidently hallucinate answers or make unsafe assumptions. This framework uses a Domain-Specific Language (DSL) and a custom interpreter to act as a **semantic firewall**, ensuring that the LLM's output conforms to a set of hard-coded, verifiable rules before any action is taken.
+## Table of Contents
 
-The DSL interpreter doesn't just check syntax; it validates the *meaning* and *implications* of a request against a trusted model of the domain. For example:
+1. [Motivation](#motivation)
+2. [System Architecture](#system-architecture)
+3. [Installation](#installation)
+4. [Quick Start](#quick-start)
+5. [Reference Implementations](#reference-implementations)
+6. [Building LionWeb Connectors](#building-lionweb-connectors)
+7. [Extending the Framework](#extending-the-framework)
+8. [API Reference](#api-reference)
+9. [Contributing](#contributing)
 
-* An LLM might correctly understand a request to schedule a 30-person meeting in "Workshop Room A".
-* However, a stateful interpreter, programmed with expert knowledge, knows that "Workshop Room A" has a maximum capacity of 20. It will reject the command, not because the language was misunderstood, but because it violated a fundamental business rule.
+## Motivation
 
----
+### The Problem
+
+Domain-Specific Languages provide powerful abstractions for modeling complex domains with precision, ensuring type safety, and enforcing business rules. However, they suffer from significant accessibility barriers:
+
+- **Steep learning curves** requiring understanding of formal syntax and semantics
+- **Limited to technical users** who can work with specialized tooling
+- **Context switching overhead** between natural thinking and formal notation
+- **Documentation gaps** that compound the training burden
+
+Large Language Models (LLMs) offer natural language interfaces that are immediately accessible to non-technical users. However, they present critical reliability issues for production systems:
+
+- **Hallucinations** producing plausible but incorrect outputs
+- **Non-deterministic behavior** making verification impossible
+- **No formal guarantees** about constraint satisfaction
+- **Rule violations** due to lack of domain understanding
+
+### The Semantic Firewall Approach
+
+This framework implements a **semantic firewall** pattern that leverages the strengths of both technologies while mitigating their weaknesses:
+
+- **LLMs serve as the translation layer**, converting natural language to structured intent
+- **DSLs act as the verification and execution engine**, enforcing all domain rules
+- **Connectors bridge the gap**, providing domain context to the LLM without giving it execution control
+- **Review forms create a trust boundary**, allowing users to verify and correct extracted information before execution
+
+The DSL interpreter validates not just syntax but the semantic implications of requests against a trusted domain model. For example, while an LLM might correctly parse "schedule a 30-person meeting in Room A," the interpreter knows Room A has a capacity of 20 and will reject the semantically invalid request.
 
 ## System Architecture
 
-The framework is designed with a modular, layered architecture to separate concerns. This makes the system extensible, allowing new domains and DSLs to be added primarily through configuration rather than extensive code changes.
+The framework employs a three-layer architecture with clean separation of concerns:
 
-![Overall System Architecture](misc/overall_architecture.png)
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    User Interface Layer                     │
+│                  (Natural Language Input)                   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│              Conversation Layer (Domain-Agnostic)           │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐ │
+│  │ Orchestrator │──│ TaskExtractor│──│ ClarificationGen │ │
+│  └──────────────┘  └──────────────┘  └──────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                    ┌─────────┴─────────┐
+                    ▼                   ▼
+┌──────────────────────────┐  ┌──────────────────────────────┐
+│   Domain Configuration    │  │     Execution Layer          │
+│  ┌──────────────────────┐ │  │  ┌────────────────────────┐ │
+│  │ Connector Definition │ │  │  │ DSL Parser/Interpreter │ │
+│  │ (YAML or LionWeb M1) │ │  │  │    or LionWeb Loader   │ │
+│  └──────────────────────┘ │  │  └────────────────────────┘ │
+│  ┌──────────────────────┐ │  │  ┌────────────────────────┐ │
+│  │   Domain Schema      │ │  │  │    State Management    │ │
+│  └──────────────────────┘ │  │  └────────────────────────┘ │
+└──────────────────────────┘  └──────────────────────────────┘
+```
 
-1.  **UI Layer:** The user-facing component (e.g., a Jupyter Notebook) that captures user input and displays conversation history.
-2.  **Conversation Layer:**  It uses an **Orchestrator** to manage the conversation flow. It leverages an **Extractor** (powered by an LLM) to turn natural language into a structured command, a **Clarifier** to ask for missing information, and a **Formatter** to generate UI messages.
-3.  **Execution Layer:** Once a command is confirmed, control is shifted to the execution layer. A **DSL Builder** converts the structured command into a formal DSL string. This string is then parsed and executed by a domain-specific **Interpreter**.
-4.  **Domain Definition:** A new domain is defined by providing three key files:
-    * `connector.yml`: Provides natural language descriptions for the LLM.
-    * `schema.py`: Defines the formal structure, permissions, and DSL syntax of the domain.
-    * `grammar.dsl`: Defines the formal grammar for the DSL parser.
+### Key Components
 
-![Conversation Flow](misc/conversation_flow.png)
+- **Conversation Orchestrator**: Manages the multi-turn conversation flow, maintaining state across interactions
+- **Task Extractor**: Uses LLM to parse natural language into structured task representations
+- **Clarification Generator**: Creates type-aware forms for missing or ambiguous parameters
+- **Connector**: Provides domain-specific mappings between natural language and formal concepts
+- **Execution Engine**: Either DSL interpreter (Lark) or model manipulation (LionWeb)
 
----
+## Installation
 
-## How to Run the Demo
+### Prerequisites
 
-### 1. Prerequisites: Install Ollama
+- Python 3.8 or higher
+- pip package manager
+- Git for cloning the repository
 
-A running Ollama server is required for local model inference.
+### Basic Setup
 
-1.  **Install Ollama:** Download from <https://ollama.com>.
-2.  **Download a Model:** In a terminal, run `ollama pull llama3:8b`.
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/conversational-dsl-framework.git
+cd conversational-dsl-framework
 
-### 2. Optional: Configure Together AI
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-For faster performance, you can use remote models from Together AI.
+# Install dependencies
+pip install -r requirements.txt
+```
 
-1.  **Get an API Key:** Sign up at <https://www.together.ai/>.
-2.  **Store Your API Key:** Copy the `.env.example` file to a new file named `.env`. Open `.env` and paste your API key. The `.env` file is included in `.gitignore`, so your key will remain private.
-3.  **Select a Model:** The UI dropdown will include `togetherai/` models. Choosing one will use the remote API.
+### LLM Backend Configuration
 
-### 3. Setup the Python Environment
+The framework supports multiple LLM providers. Configure at least one:
 
-1.  Navigate to the project folder and create a virtual environment.
-2.  Install dependencies: `pip install -r requirements.txt`.
+#### Option 1: Ollama Local
 
-### 4. Launch the Notebook
+For running models locally on your machine:
 
-1.  Start the Jupyter Server: `jupyter notebook`
-2.  Open `notebooks/event_chatbot_simplified.ipynb` and run the cells to start the chat interface.
+```bash
+# Install Ollama from https://ollama.com
+# Pull a model (recommended for starting)
+ollama pull llama3.2:3b
 
----
+# Verify installation
+ollama list
+```
 
-## How to Extend the Framework with a New DSL
+The system will automatically detect the local Ollama instance on `http://localhost:11434`.
 
-The framework is designed to be easily extended. To add a new domain (e.g., "Inventory Management"), you would follow this recipe:
+#### Option 2: Ollama Cloud
 
-1.  **Create a `connector.yml` file:** Define your new actions (e.g., `add_item`) and parameters (e.g., `item_name`, `quantity`) with user-friendly descriptions and clarification prompts for the LLM.
-2.  **Create a `schema.py` file:** Define the formal structure for your new actions. Specify required parameters, permissions, and, most importantly, the `dsl_syntax` and `dsl_keyword` metadata that the generic `DSLBuilder` will use.
-3.  **Create a `grammar.dsl` file:** Write the formal Lark grammar for your new DSL's syntax.
-4.  **Write a new `Interpreter` class:** This is the main piece of new code required. Create a class like `InventoryInterpreter` that inherits from `BaseInterpreter`. Implement methods with names that match your grammar rules (e.g., an `add_item` method) to contain the execution logic.
-5.  **Wire it into the system:** Update the main system coordinator to load the configuration and interpreter for your new domain.
+For using Ollama's cloud infrastructure:
 
----
+1. Sign up at [Ollama Cloud](https://ollama.com/cloud)
+2. Create a `.env` file in the project root:
+```bash
+OLLAMA_CLOUD_API_KEY=your_api_key_here
+OLLAMA_CLOUD_URL=https://api.ollama.com
+```
 
-## Example Domain: Event Management
+#### Option 3: HuggingFace
 
-The primary example is for managing a conference. It demonstrates Role-Based Access Control (RBAC), a conversational interface for handling incomplete requests, and strict rule enforcement.
+For using models from HuggingFace:
 
-![Successful multi-turn booking](docs/multi_turn_success.png)
+1. Get an API token from [HuggingFace](https://huggingface.co/settings/tokens)
+2. Add to `.env` file:
+```bash
+HUGGINGFACE_API_KEY=your_token_here
+```
 
-#### Admin Command: `create_venue`
-Allows an **admin** to add a new room.
-![Creating multiple rooms](docs/addingworkshopmultiadmin.png)
+### LionWeb Setup (Optional)
 
-#### Admin Command: `modify_venue`
-Allows an **admin** to change a venue's properties.
-![Updating a venue's capacity](docs/updatecapacity.png)
+For the model-driven implementation:
 
-#### Admin & Scheduler Command: `schedule_session`
-Used by both roles to book a session.
-![Successful booking](docs/schedule1.png)
+```bash
+pip install lionweb-python>=0.3.0
+```
 
-#### The Interpreter as a "Semantic Firewall"
-The interpreter rejects commands that are syntactically correct but logically invalid according to the domain's rules.
+## Quick Start
 
-**Role Mismatch:** A `scheduler` attempts an admin-only action.
-![Role Mismatch Error](docs/rolemismatch.png)
+### Running the Event Management Example (Lark-based)
 
-**Venue Must Exist:** A user tries to book a session in an "Imaginary Room".
-![Missing Room Error](docs/missingroom.png)
+```bash
+# Start Jupyter notebook
+jupyter notebook
 
-**No Double Booking:** A user tries to book a session in an already-booked venue.
-![Conflicting Schedule Error](docs/conflictingschedule.png)
+# Open and run: notebooks/event_chatbot_simplified.ipynb
+```
 
-**Capacity Check:** A booking for 40 people is attempted in a room with a capacity of 35.
-![Exceeds Capacity Error](docs/exceedscapacity.png)
+Example interaction:
+```
+User: Create a conference room called Aspen with 50 seats
+System: [Shows review form with extracted parameters]
+User: [Confirms]
+System: ✅ Successfully created venue 'Aspen'
+```
 
-**A/V System Check:** A user requests an A/V system in a room that doesn't have one.
-![No A/V System Error](docs/noavsystem.png)
+### Running the Cycling Management Example (LionWeb-based)
 
----
+```bash
+# Open and run: notebooks/cycling_chatbot.ipynb
+```
 
-## Next Steps
+## Reference Implementations
 
-* **Implement a Dynamic Domain Loader:** Improve the system coordinator to dynamically load the correct domain's configuration based on user input.
-* **Enhance the Feedback Loop:** Send interpreter errors back to the LLM to generate more context-aware, helpful responses to the user.
-* **Evolve the DSLs:** Continue to add complexity and rules to handle more sophisticated scenarios.
+### 1. Lark-based Implementation (Event Management Domain)
+
+Located in `src/domains/event/`, this implementation demonstrates:
+
+- **Grammar-based parsing** using Lark parser
+- **File-based state persistence** via JSON
+- **Role-based access control** (admin vs scheduler)
+- **Business rule enforcement** (capacity limits, double-booking prevention)
+
+Key files:
+- `connector.yml`: Natural language mappings
+- `schema.py`: Domain structure and permissions
+- `grammar.dsl`: Formal grammar specification
+- `interpreter.py`: Rule enforcement logic
+
+### 2. LionWeb-based Implementation (Cycling Management Domain)
+
+Located in `src/lionweb_app/`, this implementation showcases:
+
+- **Model-driven architecture** with M1/M2 separation
+- **Type-safe operations** through metamodel validation
+- **Dynamic schema generation** from language definitions
+- **Programmatic connector generation**
+
+Key components:
+- `language_generators.py`: M2 language definitions
+- `m1_connector_generator.py`: Connector instance creation
+- `connector_loader.py`: Runtime model management
+
+## Building LionWeb Connectors
+
+### Understanding the Connector Metamodel
+
+The connector acts as a bridge between natural language and your domain metamodel. It conforms to the `NLMappings` language (M2) and consists of:
+
+```python
+Connector
+├── domainName: String
+├── targetLanguage: String
+└── actions: ActionMapping[]
+    ├── actionName: String
+    ├── targetConcept: String
+    ├── description: String
+    └── parameters: ParameterMapping[]
+        ├── parameterName: String
+        ├── targetFeature: String
+        ├── description: String
+        ├── clarificationPrompt: String
+        └── required: Boolean
+```
+
+### Programmatic Connector Generation
+
+Create a connector programmatically using the LionWeb API:
+
+```python
+from lionweb.model import DynamicNode
+from lionweb_app.engine.m1_connector_generator import generate_and_save_connector_m1
+
+def create_connector_for_domain(domain_name, concepts):
+    connector = DynamicNode(id=f"{domain_name}-connector", 
+                          concept=concepts["Connector"])
+    
+    connector.set_property_value(
+        connector.concept.get_feature_by_name("domainName"),
+        domain_name
+    )
+    
+    # Add action mappings
+    action = DynamicNode(id=f"create-entity", 
+                        concept=concepts["ActionMapping"])
+    action.set_property_value(
+        action.concept.get_feature_by_name("actionName"),
+        "create_entity"
+    )
+    action.set_property_value(
+        action.concept.get_feature_by_name("targetConcept"),
+        "YourConcept"
+    )
+    
+    # Add parameter mappings
+    param = DynamicNode(id=f"param-name",
+                       concept=concepts["ParameterMapping"])
+    param.set_property_value(
+        param.concept.get_feature_by_name("parameterName"),
+        "name"
+    )
+    param.set_property_value(
+        param.concept.get_feature_by_name("clarificationPrompt"),
+        "What should we call it?"
+    )
+    
+    action.add_child(
+        action.concept.get_feature_by_name("parameters"),
+        param
+    )
+    connector.add_child(
+        connector.concept.get_feature_by_name("actions"),
+        action
+    )
+    
+    return connector
+```
+
+### Linking to Domain Concepts
+
+The connector references your domain language concepts through the `targetConcept` and `targetFeature` properties:
+
+```python
+# Your domain M2 defines:
+Concept: Person
+  Properties:
+    - name: String
+    - age: Integer
+
+# Your connector maps:
+ActionMapping:
+  actionName: "register_person"
+  targetConcept: "Person"  # Links to M2 concept
+  parameters:
+    - parameterName: "full_name"
+      targetFeature: "name"  # Links to M2 property
+      clarificationPrompt: "What is the person's name?"
+```
+
+## Extending the Framework
+
+### Adding a New Domain
+
+To add support for a new domain, follow these steps:
+
+#### 1. Define the Connector
+
+Create `src/domains/yourdomain/connector.yml`:
+
+```yaml
+domain_name: "Your Domain"
+actions:
+  your_action:
+    description: "Performs domain-specific action"
+    parameters:
+      param1:
+        description: "First parameter"
+        clarification_prompt: "Please specify param1"
+```
+
+#### 2. Define the Schema
+
+Create `src/domains/yourdomain/schema.py`:
+
+```python
+DOMAIN_SCHEMA = {
+    "your_action": {
+        "permissions": ["user", "admin"],
+        "required": ["param1"],
+        "optional": ["param2"],
+        "param_types": {
+            "param1": {"type": "string"},
+            "param2": {"type": "number"}
+        }
+    }
+}
+```
+
+#### 3. Implement Domain Logic
+
+For Lark-based domains, create an interpreter:
+
+```python
+from framework.base_interpreter import BaseInterpreter
+
+class YourDomainInterpreter(BaseInterpreter):
+    def your_action(self, tree):
+        # Validation and execution logic
+        params = self.extract_params(tree)
+        if self.validate_business_rules(params):
+            self.state["entities"].append(params)
+            return {"status": "success"}
+        raise ValidationError("Business rule violated")
+```
+
+For LionWeb-based domains, extend the task executor to handle your actions through model operations.
+
+## API Reference
+
+### Core Classes
+
+#### ConversationOrchestrator
+
+Manages the conversation flow and state.
+
+```python
+orchestrator = ConversationOrchestrator(
+    connector=connector_dict,
+    schema=schema_dict,
+    state_manager=state_manager,
+    selection_provider=selection_provider
+)
+
+response = orchestrator.process_request(
+    query="Create a new entity",
+    role="admin",
+    model_name="llama3.2:3b",
+    conversation_state=state
+)
+```
+
+#### TaskExtractor
+
+Extracts structured information from natural language.
+
+```python
+extractor = TaskExtractor()
+task_details = extractor.extract_task_details(
+    query="Register John from Denmark",
+    model_name="llama3.2:3b",
+    connector=connector_dict
+)
+```
+
+#### SelectionProvider
+
+Provides dynamic options for form fields.
+
+```python
+class CustomSelectionProvider(SelectionProvider):
+    def get_options(self, selection_type: str, context: Dict) -> List[str]:
+        if selection_type == "entity_selection":
+            return self.fetch_available_entities()
+        return []
+```
+
+### Extension Points
+
+- **Custom Interpreters**: Extend `BaseInterpreter` for new DSL execution logic
+- **Selection Providers**: Implement `SelectionProvider` for dynamic form options
+- **State Managers**: Override `StateManager` for custom persistence
+- **LLM Clients**: Extend `LLMClient` for additional model providers
+
+## Contributing
+
+We welcome contributions to improve and extend the framework. Please follow these guidelines:
+
+1. Fork the repository and create a feature branch
+2. Write tests for new functionality
+3. Follow PEP 8 style guidelines
+4. Document new features and API changes
+5. Submit a pull request with a clear description
+
+For major changes, please open an issue first to discuss the proposed changes.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+This work builds upon research in natural language interfaces for formal systems and leverages:
+- [LionWeb](https://lionweb.io/) for model-driven language engineering
+- [Lark](https://github.com/lark-parser/lark) for grammar-based parsing
+- Various LLM providers for natural language understanding
+
+## Citation
+
+If you use this framework in your research, please cite:
+
+```bibtex
+@software{conversational_dsl_framework,
+  title = {Conversational DSL Framework: Reliable Natural Language Interfaces for Domain-Specific Languages},
+  author = {[Author Names]},
+  year = {2025},
+  url = {https://github.com/yourusername/conversational-dsl-framework}
+}
+```
